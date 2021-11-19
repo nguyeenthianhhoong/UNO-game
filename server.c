@@ -1,26 +1,3 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <sys/select.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include "../symtab/object_data.h"
-#include "../symtab/error_invalid.h"
-// #include "../symtab/database.h"
-#include "../symtab/jsonapi.h"
-#define QUEUE_MAX 10
-//test
-typedef struct {
-    char username[30];
-    int sockfd;
-}Elementtype;
-typedef struct Node_ {
-    Elementtype element;  
-    struct Node_ *next;
-}Node;
 
 
 Node *new_node(Elementtype e){
