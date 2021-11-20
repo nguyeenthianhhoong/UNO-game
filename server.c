@@ -192,7 +192,7 @@ int main(int argc, char *argv[])
                         strcpy(password, str);
                         printf("%s %s\n", username, password);
                         node *tmp = checkUsername(username);
-                        if (tmp == NULL)
+                        if (tmp == NULL) 
                         {
                             strcpy(buff, "Tài khoản không tồn tại");
                             printf("%s\n", buff);

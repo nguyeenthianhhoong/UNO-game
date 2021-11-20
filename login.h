@@ -31,7 +31,7 @@ void trim(char s[])
             s[j] = s[j + 1];
         i--;
     }
-    while (s[i-1] == ' ' || s[i-1] == '\n')
+    while (s[i - 1] == ' ' || s[i - 1] == '\n')
         i--;
     s[i] = '\0';
 }
@@ -45,7 +45,6 @@ int checkSpace(char s[])
     }
     return 0;
 }
-
 
 int app(int argc, char **argv, int sockfd)
 {
@@ -105,41 +104,48 @@ void on_loginSubmitBtn_clicked()
     char tmp[128];
     sprintf(tmp, "%s", gtk_entry_get_text(GTK_ENTRY(usernameLoginEntry)));
     trim(tmp);
-    if (checkSpace(tmp) == -1)
+    if (checkSpace(tmp) == 1)
     {
         //loi
         gtk_label_set_text(GTK_LABEL(errorLoginLabel), "username khong co dau cach!");
     }
-    printf("-%s-\n", tmp);
-    strcpy(buff, tmp);
-    sprintf(tmp, "%s", gtk_entry_get_text(GTK_ENTRY(passwordLoginEntry)));
-    printf("-%s-\n", tmp);
-    trim(tmp);
-    if (checkSpace(tmp) == -1)
-    {
-        //loi
-        gtk_label_set_text(GTK_LABEL(errorLoginLabel), "password khong co dau cach!");
-    }
-    strcat(buff, " ");
-    strcat(buff, tmp);
-    send(sock_app, buff, strlen(buff), 0);
-    rcvBytes = recv(sock_app, buff, BUFF_SIZE, 0);
-    if (rcvBytes < 0)
-    {
-        perror("Error: ");
-        return;
-    }
-    buff[rcvBytes] = '\0';
-    if (strcmp(buff, "OK") == 0)
-    {
-        printf("\n-------------Let's play-------------\n");
-        on_LoginWindow_destroy();
-        //break;
-    }
     else
     {
-        gtk_label_set_text(GTK_LABEL(errorLoginLabel), buff);
-        //continue;
+
+        printf("-%s-\n", tmp);
+        strcpy(buff, tmp);
+        sprintf(tmp, "%s", gtk_entry_get_text(GTK_ENTRY(passwordLoginEntry)));
+        printf("-%s-\n", tmp);
+        trim(tmp);
+        if (checkSpace(tmp) == 1)
+        {
+            //loi
+            gtk_label_set_text(GTK_LABEL(errorLoginLabel), "password khong co dau cach!");
+        }
+        else
+        {
+            strcat(buff, " ");
+            strcat(buff, tmp);
+            send(sock_app, buff, strlen(buff), 0);
+            rcvBytes = recv(sock_app, buff, BUFF_SIZE, 0);
+            if (rcvBytes < 0)
+            {
+                perror("Error: ");
+                return;
+            }
+            buff[rcvBytes] = '\0';
+            if (strcmp(buff, "OK") == 0)
+            {
+                printf("\n-------------Let's play-------------\n");
+                on_LoginWindow_destroy();
+                //break;
+            }
+            else
+            {
+                gtk_label_set_text(GTK_LABEL(errorLoginLabel), buff);
+                //continue;
+            }
+        }
     }
 }
 
@@ -166,44 +172,57 @@ void on_registerSubmitBtn_clicked()
 {
     char tmp[128];
     sprintf(tmp, "%s", gtk_entry_get_text(GTK_ENTRY(usernameRegEntry)));
+    trim(tmp);
     printf("-%s-\n", tmp);
-    if (checkSpace(tmp) == -1)
+    if (checkSpace(tmp) == 1)
     {
         //loi
-        gtk_label_set_text(GTK_LABEL(errorLoginLabel), "username khong co dau cach!");
+        gtk_label_set_text(GTK_LABEL(errorRegisLabel), "username khong co dau cach!");
     }
-    strcpy(buff, tmp);
-    strcat(buff, " ");
-    sprintf(tmp, "%s", gtk_entry_get_text(GTK_ENTRY(passwordRegEntry)));
-    if (checkSpace(tmp) == -1)
+    else
     {
-        //loi
-        gtk_label_set_text(GTK_LABEL(errorLoginLabel), "password khong co dau cach!");
+
+        strcpy(buff, tmp);
+        strcat(buff, " ");
+        sprintf(tmp, "%s", gtk_entry_get_text(GTK_ENTRY(passwordRegEntry)));
+        if (checkSpace(tmp) == 1)
+        {
+            //loi
+            gtk_label_set_text(GTK_LABEL(errorRegisLabel), "password khong co dau cach!");
+        }
+        else
+        {
+
+            printf("-%s-\n", tmp);
+            strcat(buff, tmp);
+            strcat(buff, " ");
+            sprintf(tmp, "%s", gtk_entry_get_text(GTK_ENTRY(passwordAgainRegEntry)));
+            if (checkSpace(tmp) == 1)
+            {
+                //loi
+                gtk_label_set_text(GTK_LABEL(errorRegisLabel), "password khong co dau cach!");
+            }
+            else
+            {
+
+                printf("-%s-\n", tmp);
+                strcat(buff, tmp);
+                printf("-%s-\n", buff);
+                send(sock_app, buff, strlen(buff), 0);
+                rcvBytes = recv(sock_app, buff, BUFF_SIZE, 0);
+                if (rcvBytes < 0)
+                {
+                    perror("Error: ");
+                    return;
+                }
+                buff[rcvBytes] = '\0';
+                if (strcmp(buff, "OK") == 0)
+                {
+                    printf("\nĐăng ký tài khoản thành công\n");
+                    on_RegisterWindow_destroy();
+                }
+                gtk_label_set_text(GTK_LABEL(errorRegisLabel), buff);
+            }
+        }
     }
-    printf("-%s-\n", tmp);
-    strcat(buff, tmp);
-    strcat(buff, " ");
-    sprintf(tmp, "%s", gtk_entry_get_text(GTK_ENTRY(passwordAgainRegEntry)));
-    if (checkSpace(tmp) == -1)
-    {
-        //loi
-        gtk_label_set_text(GTK_LABEL(errorLoginLabel), "password khong co dau cach!");
-    }
-    printf("-%s-\n", tmp);
-    strcat(buff, tmp);
-    printf("-%s-\n", buff);
-    send(sock_app, buff, strlen(buff), 0);
-    rcvBytes = recv(sock_app, buff, BUFF_SIZE, 0);
-    if (rcvBytes < 0)
-    {
-        perror("Error: ");
-        return ;
-    }
-    buff[rcvBytes] = '\0';
-    if (strcmp(buff, "OK") == 0)
-    { 
-        printf("\nĐăng ký tài khoản thành công\n");
-        on_RegisterWindow_destroy();
-    }
-    gtk_label_set_text(GTK_LABEL(errorRegisLabel), buff);
 }
