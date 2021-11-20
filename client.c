@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include "login.h"
 #define BUFF_SIZE 80
 
 int menu()
@@ -37,29 +38,29 @@ int main_menu()
     return choice;
 }
 
-void trim(char s[])
-{
-    int i = strlen(s);
-    while (s[0] == ' ')
-    {
-        for (int j = 0; j < i; j++)
-            s[j] = s[j + 1];
-        i--;
-    }
-    while (s[i-1] == ' ' || s[i-1] == '\n')
-        i--;
-    s[i] = '\0';
-}
+// void trim(char s[])
+// {
+//     int i = strlen(s);
+//     while (s[0] == ' ')
+//     {
+//         for (int j = 0; j < i; j++)
+//             s[j] = s[j + 1];
+//         i--;
+//     }
+//     while (s[i-1] == ' ' || s[i-1] == '\n')
+//         i--;
+//     s[i] = '\0';
+// }
 
-int checkSpace(char s[])
-{
-    for (int i = 0; i < strlen(s); i++)
-    {
-        if (s[i] == ' ')
-            return 1;
-    }
-    return 0;
-}
+// int checkSpace(char s[])
+// {
+//     for (int i = 0; i < strlen(s); i++)
+//     {
+//         if (s[i] == ' ')
+//             return 1;
+//     }
+//     return 0;
+// }
 
 int main(int argc, char *argv[])
 {
@@ -108,7 +109,10 @@ int main(int argc, char *argv[])
         return 0;
     }
 
+    app(argc,argv,sockfd);
+
     // Step4: Communicate with server
+    /*
     while (1)
     {
         len = sizeof(servaddr);
@@ -235,6 +239,7 @@ int main(int argc, char *argv[])
             return 1;
         }
     }
-    // close(sockfd);
-    // return 1;
+    */
+    close(sockfd);
+    return 1;
 }
