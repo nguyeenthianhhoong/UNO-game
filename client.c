@@ -6,7 +6,10 @@
 #include <stdlib.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include "test.h"
 #define BUFF_SIZE 80
+
+
 
 int menu()
 {
@@ -46,7 +49,7 @@ void trim(char s[])
             s[j] = s[j + 1];
         i--;
     }
-    while (s[i-1] == ' ' || s[i-1] == '\n')
+    while (s[i - 1] == ' ' || s[i - 1] == '\n')
         i--;
     s[i] = '\0';
 }
@@ -75,6 +78,13 @@ int main(int argc, char *argv[])
     char buff[BUFF_SIZE + 1];
     char buff2[BUFF_SIZE + 1];
     char buff3[BUFF_SIZE + 1];
+    LIST l, l1, l2;
+    STACK s, s1;
+    Init(&l);
+    loadTuFile(fileIn, &l);
+    inPutStack(&s, l);
+    //user *username = (user *)malloc(sizeof(user));
+    //Init(&username->l);
 
     //char SERV_ADDR[50];
     struct sockaddr_in servaddr;
@@ -135,9 +145,9 @@ int main(int argc, char *argv[])
                 }
                 printf("Enter Password: ");
                 fgets(buff2, sizeof(buff2), stdin);
-                buff2[strcspn(buff2, "\n")] = '\0';  // replace \n with \0
+                buff2[strcspn(buff2, "\n")] = '\0'; // replace \n with \0
 
-                strcat(buff," ");
+                strcat(buff, " ");
                 strcat(buff, buff2);
                 //printf("%s\n",buff);
                 sendBytes = send(sockfd, buff, strlen(buff), 0);
@@ -157,6 +167,32 @@ int main(int argc, char *argv[])
                 {
                     printf("\n-------------Let's play-------------\n");
                     choice1 = main_menu();
+                    if (choice1 == 1)
+                    {
+                        getchar();
+                        strcpy(buff, "1");
+                        send(sockfd, buff, strlen(buff), 0);
+                        
+                        rcvBytes = recv(sockfd,buff, sizeof(buff), 0);
+                        buff[rcvBytes] = '\0';
+                        printf("%s\n", buff);
+                        may(&s, &s1, &l1, &l2);
+                        // char *str,result[100],result1[100],result2[1000];
+                        // str = strtok(buff, "\n");
+                        // strcpy(result, str);
+                        // str = strtok(NULL, "\n");
+                        // strcpy(result1, str);
+                        // str = strtok(NULL, "\0");
+                        // strcpy(result2, str);
+                        // printf("%s\n",result);
+                        // ATOI(l,l1, result);
+                        // printf("%s\n",result1);
+                        // ATOI(l,l2, result1);
+                        // printf("%s\n",result2);
+                        // show(*l1);
+                        // show(*l2);
+                        // may(&s, &s1, &l1, &l2);
+                    }
                     break;
                 }
                 else
@@ -164,9 +200,9 @@ int main(int argc, char *argv[])
                     printf("\n%s\n\n", buff);
                     continue;
                 }
-            } 
+            }
             continue;
-            
+
         case 2:
             getchar();
             strcpy(buff, "2");
@@ -204,9 +240,9 @@ int main(int argc, char *argv[])
                     continue;
                 }
 
-                strcat(buff," ");
+                strcat(buff, " ");
                 strcat(buff, buff2);
-                strcat(buff," ");
+                strcat(buff, " ");
                 strcat(buff, buff3);
                 //printf("%s\n", buff);
                 sendBytes = send(sockfd, buff, strlen(buff), 0);
@@ -224,7 +260,7 @@ int main(int argc, char *argv[])
                 }
                 printf("\n%s\n\n", buff);
                 continue;
-            } 
+            }
             continue;
 
         case 3:
