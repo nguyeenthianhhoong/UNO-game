@@ -1308,7 +1308,7 @@ void nguoi(LIST* xxx, char* x, int* y, int chonMau, int* n, char* result){
 		}
         show(*xxx);
 	    printf("\ndanh: ");
-	    scanf("%c%d%*c", x, y);
+	    // scanf("%c%d%*c", x, y);
 	}
 }
 // hàm của máy 
@@ -1492,7 +1492,7 @@ void tongKet(LIST* l, LIST* l1,LIST* l2,LIST* l3,LIST* l4, STACK* s, STACK* s1) 
 
 	//choiNhieuNguoi(l1, l2, l3, l4, s, s1);
 
-	may(s, s1, l1, l2);
+	// may(s, s1, l1, l2);
 	
 	    
 
