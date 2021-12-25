@@ -2,7 +2,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
-#include "test.h"
+// #include "test.h"
+#include "uno.h"
 #define BUFF_SIZE 80
 
 const int WINDOW_WIDTH = 1140;
@@ -711,184 +712,20 @@ void main_play_game()
 {
 
     g_print("les't go");
-    Init(&l);               //khởi tạo x
-    loadTuFile(fileIn, &l); // đọc từ file và lưu vào l \o
-    inPutStack(&s, l);      // lưu quân bài đã tráo \o -> tráo bài
-
-    // may(&s, &s1, &l1, &l2);
-
-    //******************************************************************************************
-    char str[4], result[256] = "";
-    InitStack(&s1); // khởi tạo \x
-    NODE *p;
-    UNO uno;
-    int u = 0;                                                   // luu vi tri nguoi choi truoc do
-    int t = 0;                                                   // so quan bai cong don de them cho nguoi choi neu k đỡ được bài
-    int n, y = 1000, chuyen = -1; // checkk luu thu tu nguoi choi
-    // chuyen = -1: chay theo chieu kim dong ho, chuyen = 1: chay nguoc chieu
-    char x, tmp; // x de luu mau, y luu so tren quan bai,
-
-    hand_size = 7;
-    inPutL1(&s, &l1); // l2 la bai cua may \\phat bài cho người chơi l1 \o
-    draw_hand(playerBox);
     
-    hand_size = 7;
-    inPutL1(&s, &l2); // l1 la bai cua nguoi choi
-    draw_enemyCards();
+    Init(&l);
+	loadTuFile(fileIn, &l); // do bai tu file vao dslk
+	inPutStack(&s, l);
 
-    printf("\n==========================");
-    printf("\nbai cua nguoi choi");
-    show(l1); //in ra màn hình
-    printf("\n==========================");
-    // for (NODE *p = (&l1)->pHead; p != NULL; p = p->pNext)
-    // {
-    //     my_itoa(p->data.id, str);
-    //     strcat(result, str);
-    //     strcat(result, " ");
-    // }
-    // int z = strlen(result);
-    // result[z - 1] = '\0';
+    // hand_size = 7;
+    // inPutL1(&s, &l1); // l2 la bai cua may \\phat bài cho người chơi l1 \o
+    // draw_hand(playerBox);
+    
+    // hand_size = 7;
+    // inPutL1(&s, &l2); // l1 la bai cua nguoi choi
+    // draw_enemyCards();
 
-    // while (check0 == 0) | check0 = 1 -> kết thúc ván bài
-    // {
-        // if (checkk == 0)
-        // {
-            printf("\nnguoi danh: "); // gia su nguoi la 1, may la 2
-            nguoi(&l1, &x, &y, 0, &n, result);
-            //đến lượt người -> gọi thao tác \o
-            printf("\nbai vua danh: %c-%d", x, y);
-            p = findL1(l1, x, y); //tìm bài theo màu | số trên quân bài
-            uno = p->data;
-            push2(&s1, uno); //nhặt quân bài vừa đánh cho vào s1
-            deleteNode(&l1, p->data.id); // nhặt xong xóa khỏi list \o
-            hand_size -= 1;
-            if (y == -2)
-            {
-                chuyen *= -1;
-            }
-            if (chuyen == 1)
-            { // nguoc kim dong ho
-                checkk = 2;
-            }
-            else
-            {
-                if (y == -1)
-                {
-                    checkk = 1;
-                }
-                else
-                {
-                    checkk = 2;
-                }
-            }
-            if (y == -5)
-            {
-                t += 4;
-            }
-            if (y == -3)
-            {
-                t += 2;
-            }
-
-            //printf("\nden day chua, tai sao k xoa");
-            //printf("\nid = %d",p->data.id );
-            
-            strcpy(result, "");
-            for (NODE *p = (&l1)->pHead; p != NULL; p = p->pNext)
-            {
-                my_itoa(p->data.id, str);
-                strcat(result, str);
-                strcat(result, " ");
-            }
-            int z = strlen(result);
-            result[z - 1] = '\0';
-
-    //     }
-    //     else if (checkk == 1)
-    //     {
-    //         trungGian22(&l1, &s, &s1, checkk, &x, &y, &t, u, &check0, &hand_size, result);
-    //         //đến máy thì random | người thì gọi hàm đánh
-    //         //checkk = 1 -> người chơi | =2 máy chơi
-    //         //check0: nếu người hoặc máy/thắng -> kết thúc
-    //         if (check0 == 1)
-    //         {
-    //             break;
-    //         }
-
-    //         u = checkk;
-    //         if (y == -2)
-    //         {                 // thuộc tính số
-    //             chuyen *= -1; // 1 cùng chiều đồng hồ | -1 ngược
-    //         }
-    //         if (chuyen == 1)
-    //         {
-    //             if (y == -1)
-    //             {
-    //                 checkk = 1;
-    //             }
-    //             else
-    //             {
-    //                 checkk = 2;
-    //             }
-    //         }
-    //         else
-    //         {
-    //             if (y == -1)
-    //             {
-    //                 checkk = 1;
-    //             }
-    //             else
-    //             {
-    //                 checkk = 2;
-    //             }
-    //         }
-    //         if (y == 67)
-    //         { //khôi phục
-    //             y -= 69;
-    //         }
-    //     }
-
-    //     if (checkk == 2)
-    //     {
-            // trungGian22(&l2, &s, &s1, checkk, &x, &y, &t, u, &check0, &enemy_size, result);
-    //         if (check0 == 1)
-    //         {
-    //             break;
-    //         }
-
-    //         u = checkk;
-    //         if (y == -2)
-    //         {
-    //             chuyen *= -1;
-    //         }
-    //         if (chuyen == 1)
-    //         {
-    //             if (y == -1)
-    //             {
-    //                 checkk = 2;
-    //             }
-    //             else
-    //             {
-    //                 checkk = 1;
-    //             }
-    //         }
-    //         else
-    //         {
-    //             if (y == -1)
-    //             {
-    //                 checkk = 2;
-    //             }
-    //             else
-    //             {
-    //                 checkk = 1;
-    //             }
-    //         }
-    //         if (y == 67)
-    //         {
-    //             y -= 69;
-    //         }
-    //     }
-    // // }
+    choiVoiMay(&yyy, &l1, &l2, &s1);
 
 
     //******************************************************************************************

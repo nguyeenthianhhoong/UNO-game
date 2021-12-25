@@ -1,252 +1,77 @@
-#pragma warning (disable: 4996)
-#include<stdio.h>
-//#include<conio.h>
-#include<stdlib.h>
-#include<time.h>
-#include<string.h>
-// #include <gtk/gtk.h>
-// #include "login.h"
-FILE* fileIn;
-FILE* fileOut;
-
-//===============CAC CAU TRUC SE DUNG==================
-// cau truc luu 108 la bai
-typedef struct uno {
-	int id; // tu 1 - 108
-	char color; // r: do, y : vang, g: xanh la, b: xanh duong, k: khong mau
-	int number; // 
-	// 0 - 9 la con bai thong thuong
-	// -1 : cam 1 
-	// -2 : dao chieu
-	// -3 : cong 2
-	// -4 doi mau
-	// -5 cong 4
-}UNO;
-typedef struct Node {
-	UNO data;
-	struct Node* pNext;
-}NODE;
-typedef struct List {
-	NODE* pHead;
-	NODE* pTail;
-}LIST;
-typedef struct stack {
-	NODE* top;
-}STACK;
+//#pragma warning (disable: 4996)
+#include "test.h"
 
 LIST l; // danh sach de luu 108 quan bai
-//LIST l1, l2, l3, l4;// danh sach luu quan bai tren tay nguoi choi
+LIST l1, l2, l3, l4;// danh sach luu quan bai tren tay nguoi choi
 STACK s; // luu quan bai da dao
 STACK s1;// luu quan bai da danh
 
-void Init(LIST* l) {
-	l->pHead = l->pTail = NULL;
-}
-
-void InitStack(STACK* s) {
-	s->top = NULL;
-}
-
-//===================================
-NODE* getNode(UNO DATA) {
-	NODE* p = (NODE*)malloc(sizeof(NODE));//new NODE;// khoi tao
-	if (p == NULL) {
-		printf("\nkhong du bo nho de cap phat con tro.");
-		return NULL;
-	}
-	p->data = DATA; // dua data vao trong node
-	p->pNext = NULL; // khoi tao moi lien ket
-	return p; // tra ve node p
-}
-
-
-
-//======================================
-void addHead(LIST* l, NODE* p) {
-	// danh sach rong
-	if (l->pHead == NULL) {
-		l->pHead = l->pTail = p;// p vua la dau, vua la cuoi
-	}
-	else {
-		p->pNext = l->pHead; // cho p tro toi dau danh sach
-		l->pHead = p; // cap nhat lai dau danh sach
-// them vao dau tk can them tro toi dau, dau cap nhat lai la no
-	}
-}
-void addTail(LIST* l, NODE* p) {
-	if (l->pHead == NULL) {
-		l->pHead = l->pTail = p;
-	}
-	else {
-		l->pTail->pNext = p;// pTail tro Next toi p
-		l->pTail = p;// cap nhat lai pTail
-// them vao cuoi thi thang cuoi tro no, no cap nhat thanh cuoi
-	}
-}
-
-// xoa nude dau
-void xoaDau(LIST* l) {
-	if (l->pHead != NULL) {
-		NODE* p = l->pHead;
-		l->pHead = l->pHead->pNext;
-		free(p);
-	}
-}
-
-//xoa cuoi
-void XoaCuoi(LIST* l)
-{
-	NODE* g = l->pHead; // Node trÆ°á»›c
-	NODE* p;
-	for (p = l->pHead; p != NULL; p = p->pNext)
-	{
-		if (p == l->pTail)
-		{
-			g->pNext = NULL;
-			l->pTail = g;
-			free(p);
-			return;
-		}
-		g = p;
-	}
-}
-
-//============PHAN HAM CUA STACK===================
-int isEmpty(STACK* s) {
-	if (s->top == NULL) {
-		return 1;
-	}
-	return 0;
-}
-
-int push(STACK* s, NODE* p) {
-	if (p == NULL) {
-		return 0;
-	}
-	//truong hop stack rong
-	if (s->top == NULL) {
-		s->top = p;
-	}
-	else {
-		p->pNext = s->top;
-		s->top = p;
-	}
-	return 1;
-}
-
-int push2(STACK* s, UNO uno) {
-	NODE* p = getNode(uno);
-	if (s->top == NULL) {
-		s->top = p;
-	}
-	else {
-		p->pNext = s->top;
-		s->top = p;
-	}
-	return 1;
-}
-
-// xoa dinh stack, thanh cong tra ve 1, nguoc lai 0
-//int Pop(STACK* s, UNO* DATA) {
-//	DATA = s->top;
-//	NODE* p = s->top;
-//	////s->top = p->pNext;  // s->top = s->top->pNext;
-//	free(p);
-//	return 1;
-//}
-
-UNO pop(STACK* s) //Loai bo phan tu khoi Stack
-{
-	if (!isEmpty(s))
-	{
-		UNO x = s->top->data; //luu lai gia tri
-		s->top = s->top->pNext; //Xoa phan tu Top
-		return x;
-	}
-}
-
-// giai phong
-void outPut(STACK* s) {
-	while (isEmpty(s) == 0) {
-		UNO uno;
-		uno = pop(s);
-		//xuat(uno);
-	}
-}
-
-//============================================ 
-// 
 //doc file;
-void docFile(FILE* fileIn, LIST* l) {
-	UNO uno;
-
-	fscanf(fileIn, "%d", &uno.id);
-	fseek(fileIn, 1, SEEK_CUR);
-	fscanf(fileIn, "%c", &uno.color);
-	fseek(fileIn, 1, SEEK_CUR);
-	fscanf(fileIn, "%d", &uno.number);
-	//printf("%d %c %d", uno.id, uno.color, uno.number);
-	NODE* p;
-	p = getNode(uno);
-	addTail(l, p);
-}
+void docFile(FILE* fileIn, LIST* l);
 
 // load danh sach nguoi dung tu file len danh sach lien ket
-void loadTuFile(FILE* fileIn, LIST* l) {
-	fileIn = fopen("input.txt", "rt");
-	if (!fileIn) {
-		printf("\nkhong tim thay file can doc.");
-		return;
-	}
-	while (!feof(fileIn)) {
-		docFile(fileIn, l);
-	}
-	//XoaCuoi(l);
-	fclose(fileIn);
-}
+void loadTuFile(FILE* fileIn, LIST* l);
 
-void giaiPhong(LIST* l) {
-	NODE* p;
-	while (l->pHead != NULL) {
-		p = l->pHead;// cho con tro p tro toi nude dau
-		l->pHead = l->pHead->pNext;// pHead dc tro sang node ben canh
-		free(p);
-	}
-}
+void Swap(int* number_1, int* number_2);
 
-void Output(LIST l) {
-	for (NODE* p = l.pHead; p != NULL; p = p->pNext) {
-		printf("%d %c %d", p->data.id, p->data.color, p->data.number);
-		printf("\n");
-	}
-}
+void ShuffleArray(int* arr, int n);
 
-// ham tim kiem 1 node trong dslk bang id
-NODE* find(LIST l, int id) {
-	//UNO uno = NULL;
-	int check = 0;
-	NODE* q = NULL;
-	//Output(l);
-	for (NODE* p = l.pHead; p != NULL; p = p->pNext) {
-		//Output(l);
-		//printf("%d \n",p->data.id);
-		if (p->data.id == id) {
-			//uno = p->data;
-			q = getNode(p->data);
-			check = 1;
-			break;
-		}
-	}
-	if (check == 0) {
-		printf("\np null");
-	}
-	//p = getNode(uno);
-	return q;
-}
+// ham trao bai roi nap no vao stack
+void inPutStack(STACK* s, LIST l);
 
-void Swap(int* number_1, int* number_2)
-{
-	int temp = *number_1;
-	*number_1 = *number_2;
-	*number_2 = temp;
-}
+int CHECK(LIST xxx, int id, UNO* uno);
+
+// ham nap bai khi bi phat
+void phat(int n, LIST* tmp, STACK* s);
+
+void my_random(char* x);
+
+char* my_itoa(int num, char* str);
+
+void ITOA(LIST xxx, char* result);
+
+//ham chia bai cho nguoi choi
+void chiaBai(LIST* l1, LIST* l2, LIST* l3, LIST* l4, STACK* s, int m);
+
+void ATOI(LIST l, LIST* xxx, char* str);
+
+// ham kiem tra con bai co trong bo bai cua nguoi choi hay k
+int quanBaiHopLe(LIST xxx, int id);
+// ham cong don quan bai de phat
+void soQuanBiPhat(int number, int* t);
+// ham cho luot danh dau tien
+void luotDanhDau(LIST* xxx, STACK* s1, int* id, int* cml, char* mau, int* t);
+
+void luotDanhDauchoMay(LIST* xxx, STACK* s1, int* id, int* cml, char* mau, int* t);
+
+//ham kiem tra quan bai hop le sau khi danh
+int kt(NODE* p, NODE* r);
+
+int doiMau(LIST xxx, char mau, NODE* r);
+int doiMau2(LIST xxx, char mau, NODE* r);
+// ham danh bai cho nguoi choi trong truong hop co quan bai hop le
+void danhBai(LIST* xxx, int* id, int* cml, char* mau, int* t);
+
+// ham kiem tra quan bai sau khi danh con doi mau
+int doiMau2(LIST xxx, char mau, NODE* r);
+
+int doiMau(LIST xxx, char mau, NODE* r);
+
+void danhBaiChoMay(LIST* xxx, int* id, int* cml, char* mau, int* t);
+
+//ham tim thu tu nguoi choi tiep theo
+void XXX(int* idUser, int* chuyen, int id, int ID);
+LIST yyy;
+void khoiPhuc0(LIST* xxx, char* result);
+
+void nguoiDanh(LIST* xxx, STACK* s1, int* idUser, int* id, int* t, int* cml, char* mau, int* chonMau) ;
+
+void mayDanh(LIST* xxx, STACK* s1, int* idUser, int* id, int* t, int* cml, char* mau, int* chonMau);
+void choiVoiMay(LIST* yyy, LIST* l1, LIST* l2, STACK* s1);
+//=======================================================================================
+//ham khoi phuc la bai
+LIST yyy2, yyy3, yyy4;
+void khoiPhuc(LIST* yyy, LIST* yyy2, LIST* yyy3, LIST* yyy4, char* result1, char* result2, char* result3, char* result4);
+//ham choi nay danh cho choi 4 nguoi
+void Nguoi(LIST *xxx, STACK* s1, int idUser, int* id, int* t, int* cml, char* mau, int* chonMau);
+void choi4Nguoi(LIST* yyy, LIST* yyy2, LIST* yyy3, LIST* yyy4, LIST* l1, LIST* l2, LIST* l3, LIST* l4, STACK* s1) ;
