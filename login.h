@@ -760,6 +760,8 @@ void main_play_game()
             p = findL1(l1, x, y); //tìm bài theo màu | số trên quân bài
             uno = p->data;
             push2(&s1, uno); //nhặt quân bài vừa đánh cho vào s1
+            deleteNode(&l1, p->data.id); // nhặt xong xóa khỏi list \o
+            hand_size -= 1;
             if (y == -2)
             {
                 chuyen *= -1;
@@ -790,8 +792,7 @@ void main_play_game()
 
             //printf("\nden day chua, tai sao k xoa");
             //printf("\nid = %d",p->data.id );
-            deleteNode(&l1, p->data.id); // nhặt xong xóa khỏi list \o
-            hand_size -= 1;
+            
             strcpy(result, "");
             for (NODE *p = (&l1)->pHead; p != NULL; p = p->pNext)
             {
