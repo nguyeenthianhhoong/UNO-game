@@ -68,10 +68,12 @@ UNO hand[52];
 int hand_size = 0;
 int enemy_size = 7;
 
-
-    LIST l, l1, l2;
-    STACK s, s1;
-    
+	int t = 0;// t luu tong so quan bai bi phat
+	char mau = 'z';// luu mau khi 1 trong hai danh con doi mau va chon mau
+    int chonMau = 0; 
+	int idUser = 1;
+    // luu giu id nguoi danh, idUser = 1 la nguoi, idUser = 2 la may
+	// id la id cua quan bai
 
 void deal_random_hand(int);
 void card_clicked(GtkWidget *, gpointer);
@@ -83,7 +85,7 @@ void remove_card(UNO *, int);
 void clear_container(GtkWidget *);
 void buildUIGameWindow();
 
-void main_play_game();
+void main_play_game_with_bot();
 
 char *get_link_fileImage(int id, char *link)
 {
@@ -422,7 +424,7 @@ void on_startGameBtn_clicked()
     gtk_widget_show_all(boardWindow);
     gtk_widget_hide(mainMenuWindow);
 
-    main_play_game();
+    main_play_game_with_bot();
 }
 
 /**
@@ -545,9 +547,10 @@ void card_clicked(GtkWidget *card_button, gpointer card_data)
 {
     // cast generic gpointer to a card
     UNO *card = (UNO *)card_data;
-
     // play the card
-    play(card);
+    if(idUser == 1){
+        play(card);
+    }
 }
 
 /**
@@ -558,23 +561,22 @@ void card_clicked(GtkWidget *card_button, gpointer card_data)
 int play(UNO *card)
 {
     // if either value or color matches, then move is valid
-    // if (card->color == up_card.color || card->color == 'k' || card->number == up_card.number)
-    // {
-    //     // change the up card
-    //     up_card = *card;
+    if (card->color == up_card.color || card->color == 'k' || card->number == up_card.number)
+    {
+        // change the up card
+        up_card = *card;
 
-    //     // // clear game so we can remove the card that was played
-    //     // clear_container(boardWindowFixed);
+        // // clear game so we can remove the card that was played
+        // clear_container(boardWindowFixed);
 
-    //     remove_card(card, PLAYER);
+        // // draw the new game state
+        remove_card(card, PLAYER);
+        draw_hand(playerBox);
+        return 1;
+    }
 
-    //     // // draw the new game state
-    //     draw_hand(playerBox);
-    //     return 1;
-    // }
-
-    // // illegal move
-    // return 0;
+    // illegal move
+    return 0;
 }
 
 /**
@@ -708,25 +710,61 @@ void buildUIGameWindow()
     gtk_fixed_put(GTK_FIXED(boardWindowFixed), playerBox, (WINDOW_WIDTH - CARD_WIDTH * 12) / 2, 582);
 }
 
-void main_play_game()
+void main_play_game_with_bot()
 {
-
-    g_print("les't go");
-    
     Init(&l);
 	loadTuFile(fileIn, &l); // do bai tu file vao dslk
 	inPutStack(&s, l);
+//**********************************************************************************
+    hand_size = 7;
+	inPutL1(&s, &l1);
+    draw_hand(playerBox);
 
-    // hand_size = 7;
-    // inPutL1(&s, &l1); // l2 la bai cua may \\phat bài cho người chơi l1 \o
-    // draw_hand(playerBox);
+    enemy_size = 7;
+	inPutL1(&s, &l2);
+    draw_enemyCards();
+
+    InitStack(&s1);
+
+    UNO uno = pop(&s);
+    int id = uno.id;
+    push2(&s1, uno);
+    clear_container(controllerBox);
+    draw_card(controllerBox, &uno, OTHER, 2);
     
-    // hand_size = 7;
-    // inPutL1(&s, &l2); // l1 la bai cua nguoi choi
-    // draw_enemyCards();
+	// char result[256] = "";
+	// ITOA(l1, result);
+	// printf("\nresult = %s", result);
+	
+    // khoiPhuc0(&yyy, result);
+	// show(l1);
+	// printf("\n=== NGUOI DANH ===");
+	// nguoiDanh(&l1, &s1, &idUser, &id, &t, &hand_size, &mau, &chonMau);
 
-    choiVoiMay(&yyy, &l1, &l2, &s1);
+	while (hand_size != 0 && enemy_size != 0) {
+		if (idUser == 1) {
+			printf("\n=== NGUOI DANH ===");
+			nguoiDanh(&l1, &s1, &idUser, &id, &t, &hand_size, &mau, &chonMau);
+			printf("\nnguoi con lai %d con bai", hand_size);
+		}
+		else {
+			mayDanh(&l2, &s1, &idUser, &id, &t, &enemy_size, &mau, &chonMau);
+			printf("\nmay con lai %d con bai", enemy_size);
+		}
+	}
+	if (hand_size == 0) {
+		printf("\nnguoi thang");
 
+	}
+	else {
+		printf("\nmay thang");
+	}
+
+	giaiPhong(&l1);
+	giaiPhong(&l2);
+	giaiPhong(&yyy);
 
     //******************************************************************************************
+
+    // choiVoiMay(&yyy, &l1, &l2, &s1);
 }

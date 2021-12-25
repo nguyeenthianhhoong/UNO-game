@@ -76,6 +76,7 @@ void inPutStack(STACK* s, LIST l) {
 	}
 }
 
+//kiểm tra quân bài phù hợp trong list bài của mik | đánh được là 1 | 0 ko được
 int CHECK(LIST xxx, int id, UNO* uno) {
 	//printf("\nvao check chua");
 	NODE* q = find(l, id);
@@ -222,6 +223,8 @@ void soQuanBiPhat(int number, int* t) {
 	}
 }
 // ham cho luot danh dau tien
+
+//xử lý ko phụ thuộc
 void luotDanhDau(LIST* xxx, STACK* s1, int* id, int* cml, char* mau, int* t) {
 	UNO uno;
 	NODE* p;//= find(*xxx, *id);
@@ -301,11 +304,16 @@ void danhBai(LIST* xxx, int* id, int* cml, char* mau, int* t) {
 	//int ID;
 	//ID = *id;
 	p = find(l, *id);
+	//phía trước có con chọn màu
+
+	//th có màu
 	if (*mau != 'z') {
 		do {
 			printf("\nDANH: ");
 			scanf("%d%*c", id);
 			r = find(l, *id);
+			//quan bai hop le -> so có ở trong list ko ???
+			//doimau2 -> check thoa man
 			if (quanBaiHopLe(*xxx, *id) != 1 || doiMau2(*xxx, *mau, r) != 1) {
 				printf("quan bai khong hop le, moi danh lai.");
 			}
@@ -317,13 +325,14 @@ void danhBai(LIST* xxx, int* id, int* cml, char* mau, int* t) {
 			printf("\nDANH: ");
 			scanf("%d%*c", id);
 			r = find(l, *id);
+			//kt kiểm tra cả màu hoặc số
 			if (quanBaiHopLe(*xxx, *id) != 1 || kt(p, r) != 1) {
 				printf("quan bai khong hop le, moi danh lai.");
 			}
 			//r = find(l, *id);
 		} while (quanBaiHopLe(*xxx, *id) != 1 || kt(p, r) != 1);
 	}
-	
+	//tìm uno để push vào s1
 	p = find(l, *id);
 	uno = p->data;
 	push2(&s1, uno);
@@ -480,13 +489,16 @@ void nguoiDanh(LIST* xxx, STACK* s1, int* idUser, int* id, int* t, int* cml, cha
 	//}
 	
 	show(*xxx);
-	if (*idUser != 0) {
+	// if (*idUser != 0) {
 		p = find(l, *id);
 		printf("\nBAI VUA DANH: %d. %c-%d", p->data.id, p->data.color, p->data.number);
 		if (*mau != 'z') {
 			printf("\nmau hien tai: %c", *mau);
 		}
-	}
+	// }
+
+//**************************************************************************
+
 	if (*idUser == 0 || *chonMau == 1) {
 		if (*chonMau == 1) {
 			*chonMau = 0;
@@ -494,6 +506,7 @@ void nguoiDanh(LIST* xxx, STACK* s1, int* idUser, int* id, int* t, int* cml, cha
 		luotDanhDau(xxx, s1, id, cml, mau, t);
 	}
 	else {
+	//*********************** kiểm tra và đánh bài
 		if (CHECK(*xxx, *id, &uno) == 1 || doiMau(*xxx, *mau, p) == 1) {
 			if (*mau != 'z') {
 				printf("\nmau hien tai: %c", *mau);
@@ -501,6 +514,7 @@ void nguoiDanh(LIST* xxx, STACK* s1, int* idUser, int* id, int* t, int* cml, cha
 			danhBai(xxx, id, cml, mau, t);
 		}
 		else {
+	//************** bị phat
 			if ((p->data.number == -3 || p->data.number == -5) && *t != 0) {
 				printf("\n\nbi phat %d con bai", *t);
 				phat(*t, xxx, &s);
@@ -515,6 +529,7 @@ void nguoiDanh(LIST* xxx, STACK* s1, int* idUser, int* id, int* t, int* cml, cha
 					*mau = p->data.color;
 				}
 			}
+//******************************** ko co bai
 			else {
 				printf("\nnhan '1' de boc bai.");
 				scanf("%d", idUser);
@@ -523,6 +538,7 @@ void nguoiDanh(LIST* xxx, STACK* s1, int* idUser, int* id, int* t, int* cml, cha
 				// cap nhat lai chuoi result sau khi boc bai
 				//ITOA(yyy, result);
 				show(*xxx);
+		//***********cần xử lý thêm next 
 				if (CHECK(*xxx, *id, &uno) == 1 || doiMau(*xxx, *mau, p) == 1) {
 					danhBai(xxx, id, cml, mau, t);
 					//*mau = 'z';
@@ -531,7 +547,7 @@ void nguoiDanh(LIST* xxx, STACK* s1, int* idUser, int* id, int* t, int* cml, cha
 		}
 	}
 
-	// kiem tra xem luot danh tiep theo thuoc ve ai
+//**********************************	// kiem tra xem luot danh tiep theo thuoc ve ai
 	p = find(l, *id);
 	if (p->data.number == -1 && *id != ID) {
 		*idUser = 1;
@@ -539,6 +555,8 @@ void nguoiDanh(LIST* xxx, STACK* s1, int* idUser, int* id, int* t, int* cml, cha
 	else {
 		*idUser = 2;
 	}
+
+//*******************************	//xu ly uno
 	if (*cml == 1) {
 		printf("\nsap UNO, nhan 1 de xac nhan: ");
 		scanf("%d", &ID);
