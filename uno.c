@@ -1,7 +1,12 @@
 
 #include "uno.h"
-
 //doc file;
+void WAIT (int Seconds){
+  clock_t Timer;
+  Timer = clock() + Seconds * CLOCKS_PER_SEC ;
+  Seconds++;
+  while (clock() < Timer) {}
+}
 void docFile(FILE* fileIn, LIST* l) {
 	UNO uno;
 
@@ -228,24 +233,24 @@ void soQuanBiPhat(int number, int* t) {
 void luotDanhDau(LIST* xxx, STACK* s1, int* id, int* cml, char* mau, int* t) {
 	UNO uno;
 	NODE* p;//= find(*xxx, *id);
-	printf("\nDANH: ");
-	do {
-		scanf("%d%*c", id);
-		if (quanBaiHopLe(*xxx, *id) != 1) {
-			printf("\nquan bai khong hop le, moi danh lai.");
-		}
-	} while (quanBaiHopLe(*xxx, *id) != 1);
+	// printf("\nDANH: ");
+	// do {
+	// 	scanf("%d%*c", id);
+	// 	if (quanBaiHopLe(*xxx, *id) != 1) {
+	// 		printf("\nquan bai khong hop le, moi danh lai.");
+	// 	}
+	// } while (quanBaiHopLe(*xxx, *id) != 1);
 	p = find(*xxx, *id);
 	uno = p->data;
 	push2(s1, uno);
 	soQuanBiPhat(p->data.number, t);
 	if (p->data.number == -4) {
-		printf("\nCHON MAU: ");
-		scanf("%c%*c", mau);
+	// 	printf("\nCHON MAU: ");
+	// 	scanf("%c%*c", mau);
 	}
 	deleteNode(xxx, *id);
-	printf("\nsau khi xoa id = %d", *id);
-	show(*xxx);
+	// printf("\nsau khi xoa id = %d", *id);
+	// show(*xxx);
 	// cap nhat lai chuoi result sau khi danh bai
 	//ITOA(*xxx, result);
 	*cml -= 1;
@@ -306,7 +311,7 @@ void danhBai(LIST* xxx, int* id, int* cml, char* mau, int* t) {
 	p = find(l, *id);
 	//phía trước có con chọn màu
 
-	//th có màu
+	//ktra màu
 	if (*mau != 'z') {
 		do {
 			printf("\nDANH: ");
@@ -338,7 +343,7 @@ void danhBai(LIST* xxx, int* id, int* cml, char* mau, int* t) {
 	push2(&s1, uno);
 	// cap nhat so quan bai bi phat
 	soQuanBiPhat(p->data.number, t);
-	if (p->data.number == -4) {
+	if (p->data.number == -4 || p->data.number == -5) {
 		printf("\nCHON MAU: ");
 		scanf("%c%*c", mau);
 	}
@@ -483,11 +488,7 @@ void nguoiDanh(LIST* xxx, STACK* s1, int* idUser, int* id, int* t, int* cml, cha
 	NODE* p = NULL;
 	UNO uno;
 	int ID = *id;
-	//LIST xxx;
-	//if (*idUser == 0) {
-	//	ATOI(l, &yyy, result);
-	//}
-	
+
 	show(*xxx);
 	// if (*idUser != 0) {
 		p = find(l, *id);
@@ -507,6 +508,7 @@ void nguoiDanh(LIST* xxx, STACK* s1, int* idUser, int* id, int* t, int* cml, cha
 	}
 	else {
 	//*********************** kiểm tra và đánh bài
+	// kiểm tra đỡ bài
 		if (CHECK(*xxx, *id, &uno) == 1 || doiMau(*xxx, *mau, p) == 1) {
 			if (*mau != 'z') {
 				printf("\nmau hien tai: %c", *mau);
@@ -514,6 +516,7 @@ void nguoiDanh(LIST* xxx, STACK* s1, int* idUser, int* id, int* t, int* cml, cha
 			danhBai(xxx, id, cml, mau, t);
 		}
 		else {
+			//nếu bị phạt -> phạt
 	//************** bị phat
 			if ((p->data.number == -3 || p->data.number == -5) && *t != 0) {
 				printf("\n\nbi phat %d con bai", *t);
@@ -529,21 +532,22 @@ void nguoiDanh(LIST* xxx, STACK* s1, int* idUser, int* id, int* t, int* cml, cha
 					*mau = p->data.color;
 				}
 			}
+			//nếu ko có bài -> bốc
 //******************************** ko co bai
-			else {
-				printf("\nnhan '1' de boc bai.");
-				scanf("%d", idUser);
-				phat(1, xxx, &s);
-				*cml += 1;
-				// cap nhat lai chuoi result sau khi boc bai
-				//ITOA(yyy, result);
-				show(*xxx);
-		//***********cần xử lý thêm next 
-				if (CHECK(*xxx, *id, &uno) == 1 || doiMau(*xxx, *mau, p) == 1) {
-					danhBai(xxx, id, cml, mau, t);
-					//*mau = 'z';
-				}
-			}
+		// 	else {
+		// 		printf("\nnhan '1' de boc bai.");
+		// 		scanf("%d", idUser);
+		// 		phat(1, xxx, &s);
+		// 		*cml += 1;
+		// 		// cap nhat lai chuoi result sau khi boc bai
+		// 		//ITOA(yyy, result);
+		// 		show(*xxx);
+		// //***********cần xử lý thêm next 
+		// 		if (CHECK(*xxx, *id, &uno) == 1 || doiMau(*xxx, *mau, p) == 1) {
+		// 			danhBai(xxx, id, cml, mau, t);
+		// 			//*mau = 'z';
+		// 		}
+		// 	}
 		}
 	}
 
@@ -578,6 +582,7 @@ void mayDanh(LIST* xxx, STACK* s1, int* idUser, int* id, int* t, int* cml, char*
 		if (*chonMau == 2) {
 			*chonMau = 0;
 		}
+		// WAIT(3);
 		luotDanhDauchoMay(xxx, s1, id, cml, mau, t);
 	}
 	else {
@@ -585,6 +590,7 @@ void mayDanh(LIST* xxx, STACK* s1, int* idUser, int* id, int* t, int* cml, char*
 		//printf("\nmau : %c", *mau);
 		if (CHECK(*xxx, *id, &uno) == 1 || doiMau(*xxx, *mau, p) == 1) {
 			printf("\nvao day hu");
+		// WAIT(3);
 			danhBaiChoMay(xxx, id, cml, mau, t);
 		}
 		else {
@@ -608,6 +614,8 @@ void mayDanh(LIST* xxx, STACK* s1, int* idUser, int* id, int* t, int* cml, char*
 
 				show(*xxx);
 				if (CHECK(*xxx, *id, &uno) == 1 || doiMau(*xxx, *mau, p) == 1) {
+		// WAIT(3);
+
 					danhBaiChoMay(xxx, id, cml, mau, t);
 					//*mau = 'z';
 				}
@@ -619,6 +627,7 @@ void mayDanh(LIST* xxx, STACK* s1, int* idUser, int* id, int* t, int* cml, char*
 	p = find(l, *id);
 	if (p->data.number == -1 && *id != ID) {
 		*idUser = 2;
+		mayDanh(xxx, s1, idUser, id, t, cml, mau, chonMau);
 	}
 	else {
 		*idUser = 1;
