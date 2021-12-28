@@ -1,7 +1,7 @@
 //#pragma warning (disable: 4996)
 #include "test.h"
 
-void WAIT (int Seconds);
+// void WAIT (int Seconds);
 LIST l; // danh sach de luu 108 quan bai
 LIST l1, l2, l3, l4;// danh sach luu quan bai tren tay nguoi choi
 STACK s; // luu quan bai da dao
@@ -67,7 +67,7 @@ void khoiPhuc0(LIST* xxx, char* result);
 
 void nguoiDanh(LIST* xxx, STACK* s1, int* idUser, int* id, int* t, int* cml, char* mau, int* chonMau) ;
 
-void mayDanh(LIST* xxx, STACK* s1, int* idUser, int* id, int* t, int* cml, char* mau, int* chonMau);
+// void mayDanh(LIST* xxx, STACK* s1, int* idUser, int* id, int* t, int* cml, char* mau, int* chonMau);
 void choiVoiMay(LIST* yyy, LIST* l1, LIST* l2, STACK* s1);
 //=======================================================================================
 //ham khoi phuc la bai

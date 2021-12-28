@@ -19,7 +19,8 @@ test.o : test.c
 	${CC} ${CFLAGS} test.c
 
 clean:
-	rm -rf *.o *.~ | clear
+	rm -rf *.o *.~ tmp.jpg make
+	
 
 # server.o: server.c uno.o test.o
 # 	${CC} server.c uno.o test.c
