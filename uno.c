@@ -166,11 +166,11 @@ void ITOA(LIST xxx, char* result) {
 //ham chia bai cho nguoi choi
 void chiaBai(LIST* l1, LIST* l2, LIST* l3, LIST* l4, STACK* s, int m) {
 	if (m == 2) {
-		printf("huhu");
+		// printf("huhu");
 		inPutL1(s, l1);
-		printf("huhu");
+		// printf("huhu");
 		inPutL1(s, l2);
-		printf("huhu");
+		// printf("huhu");
 	}
 	else if (m == 3) {
 		inPutL1(s, l1);
@@ -349,7 +349,7 @@ void danhBai(LIST* xxx, int* id, int* cml, char* mau, int* t) {
 	}
 	deleteNode(xxx, *id);
 	printf("\nsau khi xoa id = %d", *id);
-	show(*xxx);
+	// show(*xxx);
 	*cml -= 1;
 	// cap nhat lai chuoi result sau khi danh bai
 	//ITOA(*xxx, result);
@@ -572,111 +572,111 @@ void nguoiDanh(LIST* xxx, STACK* s1, int* idUser, int* id, int* t, int* cml, cha
 	}
 }
 
-void mayDanh(LIST* xxx, STACK* s1, int* idUser, int* id, int* t, int* cml, char* mau, int* chonMau) {
-	NODE* p = find(l, *id);
-	UNO uno;
-	int ID = *id;
-	printf("\n\n=== MAY DANH ===");
-	show(*xxx);
-	if (*chonMau == 2) {
-		if (*chonMau == 2) {
-			*chonMau = 0;
-		}
-		// WAIT(3);
-		luotDanhDauchoMay(xxx, s1, id, cml, mau, t);
-	}
-	else {
-		//printf("\nid = %d", *id);
-		//printf("\nmau : %c", *mau);
-		if (CHECK(*xxx, *id, &uno) == 1 || doiMau(*xxx, *mau, p) == 1) {
-			printf("\nvao day hu");
-		// WAIT(3);
-			danhBaiChoMay(xxx, id, cml, mau, t);
-		}
-		else {
-			if ((p->data.number == -3 || p->data.number == -5) && *t != 0) {
-				printf("bi phat %d con bai", *t);
-				phat(*t, xxx, &s);
-				*cml += *t;
-				*t = 0;
+// void mayDanh(LIST* xxx, STACK* s1, int* idUser, int* id, int* t, int* cml, char* mau, int* chonMau) {
+// 	NODE* p = find(l, *id);
+// 	UNO uno;
+// 	int ID = *id;
+// 	printf("\n\n=== MAY DANH ===");
+// 	show(*xxx);
+// 	if (*chonMau == 2) {
+// 		if (*chonMau == 2) {
+// 			*chonMau = 0;
+// 		}
+// 		// WAIT(3);
+// 		luotDanhDauchoMay(xxx, s1, id, cml, mau, t);
+// 	}
+// 	else {
+// 		//printf("\nid = %d", *id);
+// 		//printf("\nmau : %c", *mau);
+// 		if (CHECK(*xxx, *id, &uno) == 1 || doiMau(*xxx, *mau, p) == 1) {
+// 			printf("\nvao day hu");
+// 		// WAIT(3);
+// 			danhBaiChoMay(xxx, id, cml, mau, t);
+// 		}
+// 		else {
+// 			if ((p->data.number == -3 || p->data.number == -5) && *t != 0) {
+// 				printf("bi phat %d con bai", *t);
+// 				phat(*t, xxx, &s);
+// 				*cml += *t;
+// 				*t = 0;
 
-				if (p->data.number == -5) {
-					*chonMau = 1;
-				}
-				if (p->data.number == -3) {
-					*mau = p->data.color;
-				}
-			}
-			else {
-				printf("\nhe thong da tu dong boc bai.");
-				phat(1, xxx, &s);
-				*cml += 1;
+// 				if (p->data.number == -5) {
+// 					*chonMau = 1;
+// 				}
+// 				if (p->data.number == -3) {
+// 					*mau = p->data.color;
+// 				}
+// 			}
+// 			else {
+// 				printf("\nhe thong da tu dong boc bai.");
+// 				phat(1, xxx, &s);
+// 				*cml += 1;
 
-				show(*xxx);
-				if (CHECK(*xxx, *id, &uno) == 1 || doiMau(*xxx, *mau, p) == 1) {
-		// WAIT(3);
+// 				show(*xxx);
+// 				if (CHECK(*xxx, *id, &uno) == 1 || doiMau(*xxx, *mau, p) == 1) {
+// 		// WAIT(3);
 
-					danhBaiChoMay(xxx, id, cml, mau, t);
-					//*mau = 'z';
-				}
+// 					danhBaiChoMay(xxx, id, cml, mau, t);
+// 					//*mau = 'z';
+// 				}
 				
-			}
-		}
-	}
-	// kiem tra xem luot danh tiep theo thuoc ve ai
-	p = find(l, *id);
-	if (p->data.number == -1 && *id != ID) {
-		*idUser = 2;
-		mayDanh(xxx, s1, idUser, id, t, cml, mau, chonMau);
-	}
-	else {
-		*idUser = 1;
-	}
+// 			}
+// 		}
+// 	}
+// 	// kiem tra xem luot danh tiep theo thuoc ve ai
+// 	p = find(l, *id);
+// 	if (p->data.number == -1 && *id != ID) {
+// 		*idUser = 2;
+// 		mayDanh(xxx, s1, idUser, id, t, cml, mau, chonMau);
+// 	}
+// 	else {
+// 		*idUser = 1;
+// 	}
 
-}
+// }
 
-void choiVoiMay(LIST* yyy, LIST* l1, LIST* l2, STACK* s1) {
-	inPutL1(&s, l1);
-	inPutL1(&s, l2);
-	//chiaBai(&l1, &l2, &l3, &l4, &s, 2); 
-	char result[256] = "";
-	ITOA(*l1, result);
-	printf("\nresult = %s", result);
-	InitStack(s1);
-	int cml1, cml2, t = 0, chonMau = 0;// t luu tong so quan bai bi phat
-	char mau = 'z';// luu mau khi 1 trong hai danh con doi mau va chon mau
-	cml1 = cml2 = 7;
-	int idUser = 0, id = 0; // luu giu id nguoi danh, idUser = 1 la nguoi, idUser = 2 la may
-	// id la id cua quan bai
-	khoiPhuc0(yyy, result);
-	show(*yyy);
-	printf("\n=== NGUOI DANH ===");
-	nguoiDanh(yyy, s1, &idUser, &id, &t, &cml1, &mau, &chonMau);
+// void choiVoiMay(LIST* yyy, LIST* l1, LIST* l2, STACK* s1) {
+// 	inPutL1(&s, l1);
+// 	inPutL1(&s, l2);
+// 	//chiaBai(&l1, &l2, &l3, &l4, &s, 2); 
+// 	char result[256] = "";
+// 	ITOA(*l1, result);
+// 	printf("\nresult = %s", result);
+// 	InitStack(s1);
+// 	int cml1, cml2, t = 0, chonMau = 0;// t luu tong so quan bai bi phat
+// 	char mau = 'z';// luu mau khi 1 trong hai danh con doi mau va chon mau
+// 	cml1 = cml2 = 7;
+// 	int idUser = 0, id = 0; // luu giu id nguoi danh, idUser = 1 la nguoi, idUser = 2 la may
+// 	// id la id cua quan bai
+// 	khoiPhuc0(yyy, result);
+// 	show(*yyy);
+// 	printf("\n=== NGUOI DANH ===");
+// 	nguoiDanh(yyy, s1, &idUser, &id, &t, &cml1, &mau, &chonMau);
 
-	while (cml1 != 0 && cml2 != 0) {
-		if (idUser == 1) {
-			printf("\n=== NGUOI DANH ===");
-			nguoiDanh(yyy, s1, &idUser, &id, &t, &cml1, &mau, &chonMau);
-			printf("\nnguoi con lai %d con bai", cml1);
-		}
-		else {
-			mayDanh(l2, s1, &idUser, &id, &t, &cml2, &mau, &chonMau);
-			printf("\nmay con lai %d con bai", cml2);
-		}
-	}
-	if (cml1 == 0) {
-		printf("\nnguoi thang");
+// 	while (cml1 != 0 && cml2 != 0) {
+// 		if (idUser == 1) {
+// 			printf("\n=== NGUOI DANH ===");
+// 			nguoiDanh(yyy, s1, &idUser, &id, &t, &cml1, &mau, &chonMau);
+// 			printf("\nnguoi con lai %d con bai", cml1);
+// 		}
+// 		else {
+// 			mayDanh(l2, s1, &idUser, &id, &t, &cml2, &mau, &chonMau);
+// 			printf("\nmay con lai %d con bai", cml2);
+// 		}
+// 	}
+// 	if (cml1 == 0) {
+// 		printf("\nnguoi thang");
 
-	}
-	else {
-		printf("\nmay thang");
-	}
+// 	}
+// 	else {
+// 		printf("\nmay thang");
+// 	}
 
-	giaiPhong(l1);
-	giaiPhong(l2);
-	giaiPhong(yyy);
+// 	giaiPhong(l1);
+// 	giaiPhong(l2);
+// 	giaiPhong(yyy);
 
-}
+// }
 
 //=======================================================================================
 //ham khoi phuc la bai

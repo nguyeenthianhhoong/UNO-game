@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <unistd.h>
 // #include "test.h"
 #include "uno.h"
 #define BUFF_SIZE 80
@@ -34,9 +35,12 @@ GtkWidget *passwordAgainRegEntry;
 GtkWidget *mainMenuWindow;
 GtkWidget *boardWindow;
 
+void change_on_off_icon(int mode);
+
 char buff[80];
 int rcvBytes;
 int sock_app;
+void mayDanh(LIST* xxx, STACK* s1, int* idUser, int* id, int* t, int* cml, char* mau, int* chonMau);
 
 void trim(char s[])
 {
@@ -81,6 +85,7 @@ int drawCardCount = 0;
 
 void deal_random_hand(int);
 void card_clicked(GtkWidget *, gpointer);
+void bot_play(GtkWidget *);
 int play(UNO *);
 void draw_hand();
 void draw_card(GtkWidget *, UNO *, int, float);
@@ -143,6 +148,7 @@ GtkWidget *iconOFF;
 
 int check_up_card(LIST *xxx, int *cml) //check phạt ko đỡ đk thì phạt luôn
 {
+    change_on_off_icon(PLAYER);
     // printf("vao check\n");
     int ID = up_card.id;
     // printf("id: %d %d\n", ID, up_card.id);
@@ -150,12 +156,12 @@ int check_up_card(LIST *xxx, int *cml) //check phạt ko đỡ đk thì phạt l
     UNO uno;
     if (CHECK(*xxx, ID, &uno) != 1 && doiMau(*xxx, mau, p) != 1)
     {
-        printf("check 1\n");
+        // printf("check 1\n");
 
         //************** bị phat
         if ((p->data.number == -3 || p->data.number == -5) && t != 0)
         {
-            printf("check 2\n");
+            // printf("check 2\n");
             printf("\n\nbi phat %d con bai", t);
             phat(t, xxx, &s);
             *cml += t;
@@ -224,12 +230,7 @@ void drawCardButtonClick(GtkWidget *button)
         if (CHECK(l1, up_card.id, &uno) != 1 && doiMau(l1, mau, p) != 1)
         {
             idUser = 2;
-            int id = up_card.id;
-
-            mayDanh(&l2, &s1, &idUser, &id, &t, &enemy_size, &mau, &chonMau);
-            up_card = timUno(l, id);
-            draw_enemyCards();
-            check_up_card(&l1, &hand_size);
+            change_on_off_icon(ENEMY);
             return;
         }
         drawCardCount++;
@@ -255,9 +256,8 @@ GtkWidget *resize_image(GtkWidget *image, char *link, float x)
     strcpy(link, "tmp.jpg");
 
     image = gtk_image_new_from_file(link);
-
+    // system("rm tmp.jpg");
     return image;
-    system("rm tmp.jpg");
 }
 
 void unoButtonClick(GtkWidget *button)
@@ -273,11 +273,86 @@ void nextButtonClick(GtkWidget *button)
         //xử lý next
         drawCardCount--;
         idUser = 2;
-        int id = up_card.id;
-        mayDanh(&l2, &s1, &idUser, &id, &t, &enemy_size, &mau, &chonMau);
-        up_card = timUno(l, id);
-        draw_enemyCards();
-        check_up_card(&l1, &hand_size);
+        change_on_off_icon(ENEMY);
+    }
+}
+
+void mayDanh(LIST* xxx, STACK* s1, int* idUser, int* id, int* t, int* cml, char* mau, int* chonMau) {
+    NODE* p = find(l, *id);
+	UNO uno;
+	int ID = *id;
+	printf("\n\n=== MAY DANH ===");
+	show(*xxx);
+	if (*chonMau == 2) {
+		if (*chonMau == 2) {
+			*chonMau = 0;
+		}
+		    // WAIT(2);
+		luotDanhDauchoMay(xxx, s1, id, cml, mau, t);
+	}
+	else {
+		//printf("\nid = %d", *id);
+		//printf("\nmau : %c", *mau);
+		if (CHECK(*xxx, *id, &uno) == 1 || doiMau(*xxx, *mau, p) == 1) {
+			// printf("\nvao day hu");
+		    // WAIT(2);
+			danhBaiChoMay(xxx, id, cml, mau, t);
+		}
+		else {
+			if ((p->data.number == -3 || p->data.number == -5) && *t != 0) {
+				printf("bi phat %d con bai", *t);
+				phat(*t, xxx, &s);
+				*cml += *t;
+				*t = 0;
+
+				if (p->data.number == -5) {
+					*chonMau = 1;
+				}
+				if (p->data.number == -3) {
+					*mau = p->data.color;
+				}
+			}
+			else {
+    		// WAIT(2);
+            // sleep(1);
+
+				printf("\nhe thong da tu dong boc bai.");
+				phat(1, xxx, &s);
+				*cml += 1;
+
+				show(*xxx);
+				if (CHECK(*xxx, *id, &uno) == 1 || doiMau(*xxx, *mau, p) == 1) {
+
+					danhBaiChoMay(xxx, id, cml, mau, t);
+					//*mau = 'z';
+				}
+				
+			}
+		}
+	}
+    up_card = timUno(l, *id);
+    draw_enemyCards();
+	// kiem tra xem luot danh tiep theo thuoc ve ai
+	p = find(l, *id);
+	if (p->data.number == -1 && *id != ID) {
+		*idUser = 2;
+		mayDanh(xxx, s1, idUser, id, t, cml, mau, chonMau);
+	}
+	else {
+		*idUser = 1;
+	}
+
+}
+
+void change_on_off_icon(int mode){
+    if(mode == ENEMY){
+        printf("luot doi thu\n");
+        gtk_fixed_move(GTK_FIXED(boardWindowFixed), iconON, 40, 60);
+        gtk_fixed_move(GTK_FIXED(boardWindowFixed), iconOFF, 40, 610);
+    }else if(mode == PLAYER){
+        printf("luot player\n");
+        gtk_fixed_move(GTK_FIXED(boardWindowFixed), iconON, 40, 610);
+        gtk_fixed_move(GTK_FIXED(boardWindowFixed), iconOFF, 40, 60);
     }
 }
 
@@ -596,9 +671,10 @@ void draw_card(GtkWidget *container, UNO *card, int status, float sizeCard)
     // draw card
     gtk_box_pack_start(GTK_BOX(container), button, TRUE, FALSE, 0);
 
-    if (status == PLAYER)
+    if (status == PLAYER){
         g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(card_clicked), card);
-
+        g_signal_connect(G_OBJECT(button), "event-after", G_CALLBACK(bot_play), NULL);
+    }
     gtk_widget_show(button);
 }
 
@@ -612,22 +688,32 @@ void card_clicked(GtkWidget *card_button, gpointer card_data)
     // play the card
     if (idUser == 1)
     {
-        if(play(card)==1){
+        if (play(card) == 1)
+        {
             if (up_card.number == -1)
             {
                 idUser = 1;
             }
             else
             {
-                // WAIT(2);
                 idUser = 2;
-                int id = up_card.id;
-                mayDanh(&l2, &s1, &idUser, &id, &t, &enemy_size, &mau, &chonMau);
-                up_card = timUno(l, id);
-                draw_enemyCards();
-                check_up_card(&l1, &hand_size);
+                change_on_off_icon(ENEMY);
+
             }
         }
+    }
+}
+
+void bot_play(GtkWidget *card_button)
+{
+    if (idUser == 2)
+    {
+        int id = up_card.id;
+        mayDanh(&l2, &s1, &idUser, &id, &t, &enemy_size, &mau, &chonMau);
+        up_card = timUno(l, id);
+        draw_enemyCards();
+
+        check_up_card(&l1, &hand_size);
     }
 }
 
@@ -712,8 +798,8 @@ int play(UNO *card)
         scanf("%c%*c", &mau);
     }
     deleteNode(&l1, ID);
-    printf("\nsau khi xoa id = %d", ID);
-    show(l1);
+    // printf("\nsau khi xoa id = %d", ID);
+    // show(l1);
     hand_size -= 1;
     // // draw the new game state
     // remove_card(card, PLAYER);
@@ -821,7 +907,7 @@ void buildUIGameWindow()
     //add to box
     gtk_fixed_put(GTK_FIXED(boardWindowFixed), drawCardButton, startWidth + CARD_WIDTH * 2.5, heightControllerBox);
     g_signal_connect(drawCardButton, "clicked", G_CALLBACK(drawCardButtonClick), NULL); //when clicked, draw a card and pass the player's box
-
+    g_signal_connect(drawCardButton, "event-after", G_CALLBACK(bot_play), NULL);
     //3.add next button
     strcpy(link, "images/next.png");
     GtkWidget *nextImage = gtk_image_new_from_file(link);
@@ -834,7 +920,7 @@ void buildUIGameWindow()
     //add to box
     gtk_fixed_put(GTK_FIXED(boardWindowFixed), nextButton, startWidth + CARD_WIDTH * 5, heightControllerBox + 20);
     g_signal_connect(nextButton, "clicked", G_CALLBACK(nextButtonClick), NULL);
-
+    g_signal_connect(nextButton, "event-after", G_CALLBACK(bot_play), NULL);
     //4.add uno button
     strcpy(link, "images/uno.png");
     GtkWidget *unoImage = gtk_image_new_from_file(link);
@@ -850,7 +936,7 @@ void buildUIGameWindow()
     //****************************************************************************************
     iconON = gtk_image_new_from_icon_name("dialog-ok", GTK_ICON_SIZE_DND);
     gtk_fixed_put(GTK_FIXED(boardWindowFixed), iconON, 40, 610);
-
+    
     iconOFF = gtk_image_new_from_icon_name("dialog-close", GTK_ICON_SIZE_DND);
     gtk_fixed_put(GTK_FIXED(boardWindowFixed), iconOFF, 40, 60);
     //*****************************************************************************************
@@ -927,4 +1013,13 @@ void main_play_game_with_bot()
     //******************************************************************************************
 
     // choiVoiMay(&yyy, &l1, &l2, &s1);
+}
+
+void on_viewRankBtn_clicked()
+{
+    printf("click!\n");
+}
+void on_viewRankBtn_activate()
+{
+    printf("active\n");
 }
