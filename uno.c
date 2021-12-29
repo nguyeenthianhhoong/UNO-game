@@ -127,12 +127,23 @@ int CHECK(LIST xxx, int id, UNO* uno) {
 }
 
 // ham nap bai khi bi phat
+int countLaBai=0;
 void phat(int n, LIST* tmp, STACK* s) {
 	for (int i = 1; i <= n; i++) {
-		UNO uno = pop(s);
+		UNO uno;
+		if(!isEmpty(s)){
+			uno = pop(s);
+			printf("con -- ");
+		}else{
+			printf("het -- ");
+    		inPutStack(s, l);
+			uno = pop(s);
+		}
+		countLaBai++;
 		NODE* p = getNode(uno);
 		addTail(tmp, p);
 	}
+			printf("phat = %d\n", countLaBai);
 }
 
 void my_random(char* x) {
@@ -230,8 +241,8 @@ void soQuanBiPhat(int number, int* t) {
 // ham cho luot danh dau tien
 
 //xử lý ko phụ thuộc
-void luotDanhDau(LIST* xxx, STACK* s1, int* id, int* cml, char* mau, int* t) {
-	UNO uno;
+void luotDanhDau(LIST* xxx, int* id, int* cml, char* mau, int* t) {
+	// UNO uno;
 	NODE* p;//= find(*xxx, *id);
 	// printf("\nDANH: ");
 	// do {
@@ -241,8 +252,8 @@ void luotDanhDau(LIST* xxx, STACK* s1, int* id, int* cml, char* mau, int* t) {
 	// 	}
 	// } while (quanBaiHopLe(*xxx, *id) != 1);
 	p = find(*xxx, *id);
-	uno = p->data;
-	push2(s1, uno);
+	// uno = p->data;
+	// push2(s1, uno);
 	soQuanBiPhat(p->data.number, t);
 	if (p->data.number == -4) {
 	// 	printf("\nCHON MAU: ");
@@ -257,12 +268,12 @@ void luotDanhDau(LIST* xxx, STACK* s1, int* id, int* cml, char* mau, int* t) {
 }
 
 
-void luotDanhDauchoMay(LIST* xxx, STACK* s1, int* id, int* cml, char* mau, int* t) {
-	UNO uno;
+void luotDanhDauchoMay(LIST* xxx, int* id, int* cml, char* mau, int* t) {
+	// UNO uno;
 
 	NODE* p = xxx->pHead;
-	uno = p->data;
-	push2(s1, uno);
+	// uno = p->data;
+	// push2(s1, uno);
 	// cap nhat so quan bai bi phat
 	soQuanBiPhat(p->data.number, t);
 	if (p->data.number == -4) {
@@ -305,7 +316,7 @@ int doiMau2(LIST xxx, char mau, NODE* r);
 void danhBai(LIST* xxx, int* id, int* cml, char* mau, int* t) {
 	NODE* p;
 	NODE* r;
-	UNO uno;
+	// UNO uno;
 	//int ID;
 	//ID = *id;
 	p = find(l, *id);
@@ -339,8 +350,8 @@ void danhBai(LIST* xxx, int* id, int* cml, char* mau, int* t) {
 	}
 	//tìm uno để push vào s1
 	p = find(l, *id);
-	uno = p->data;
-	push2(&s1, uno);
+	// uno = p->data;
+	// push2(&s1, uno);
 	// cap nhat so quan bai bi phat
 	soQuanBiPhat(p->data.number, t);
 	if (p->data.number == -4 || p->data.number == -5) {
@@ -382,22 +393,19 @@ void danhBaiChoMay(LIST* xxx, int* id, int* cml, char* mau, int* t) {
 	NODE* p = NULL;
 	UNO uno;
 	if (*mau != 'z') {
-		//doiMau(*xxx, *mau, p);
 		for (p = xxx->pHead; p != NULL; p = p->pNext) {
 			if (p->data.color == *mau || p->data.color == 'k') {
+				*mau = 'z';
 				break;
 			}
 		}
-		*mau = 'z';
 	}
 	else {
 		CHECK(*xxx, *id, &uno);
-		//p = getNode(uno);
 		p = findL1(*xxx, uno.color, uno.number);
 	}
 
 	uno = p->data;
-	push2(&s1, uno);
 	// cap nhat so quan bai bi phat
 	soQuanBiPhat(p->data.number, t);
 	
@@ -484,7 +492,7 @@ void khoiPhuc0(LIST* xxx, char* result) {
 	ATOI(l, xxx, result);
 }
 
-void nguoiDanh(LIST* xxx, STACK* s1, int* idUser, int* id, int* t, int* cml, char* mau, int* chonMau) {
+void nguoiDanh(LIST* xxx, int* idUser, int* id, int* t, int* cml, char* mau, int* chonMau) {
 	NODE* p = NULL;
 	UNO uno;
 	int ID = *id;
@@ -504,7 +512,7 @@ void nguoiDanh(LIST* xxx, STACK* s1, int* idUser, int* id, int* t, int* cml, cha
 		if (*chonMau == 1) {
 			*chonMau = 0;
 		}
-		luotDanhDau(xxx, s1, id, cml, mau, t);
+		luotDanhDau(xxx, id, cml, mau, t);
 	}
 	else {
 	//*********************** kiểm tra và đánh bài
@@ -687,7 +695,7 @@ void khoiPhuc(LIST* yyy, LIST* yyy2, LIST* yyy3, LIST* yyy4, char* result1, char
 	ATOI(l, yyy4, result4);
 }
 //ham choi nay danh cho choi 4 nguoi
-void Nguoi(LIST *xxx, STACK* s1, int idUser, int* id, int* t, int* cml, char* mau, int* chonMau) {
+void Nguoi(LIST *xxx, int idUser, int* id, int* t, int* cml, char* mau, int* chonMau) {
 	NODE* p = NULL;
 	UNO uno;
 	int sapUno;
@@ -704,7 +712,7 @@ void Nguoi(LIST *xxx, STACK* s1, int idUser, int* id, int* t, int* cml, char* ma
 		//if (*chonMau == 1) {
 		//	*chonMau = 0;
 		//}
-		luotDanhDau(xxx, s1, id, cml, mau, t);
+		luotDanhDau(xxx, id, cml, mau, t);
 	}
 	else {
 		if (CHECK(*xxx, *id, &uno) == 1 || doiMau(*xxx, *mau, p) == 1) {
@@ -757,14 +765,14 @@ void Nguoi(LIST *xxx, STACK* s1, int idUser, int* id, int* t, int* cml, char* ma
 }
 
 
-void choi4Nguoi(LIST* yyy, LIST* yyy2, LIST* yyy3, LIST* yyy4, LIST* l1, LIST* l2, LIST* l3, LIST* l4, STACK* s1) {
+void choi4Nguoi(LIST* yyy, LIST* yyy2, LIST* yyy3, LIST* yyy4, LIST* l1, LIST* l2, LIST* l3, LIST* l4) {
 	chiaBai(l1, l2, l3, l4, &s, 4);
 	char result1[256] = "", result2[256] = "", result3[256] = "", result4[256] = "";
 	ITOA(*l1, result1);
 	ITOA(*l2, result2);
 	ITOA(*l3, result3);
 	ITOA(*l4, result4);
-	InitStack(s1);
+	// InitStack(s1);
 	int u = 0; // luu vi tri nguoi choi truoc do
 	int cml1, cml2, cml3, cml4, t = 0, chonMau = 0;// t luu tong so quan bai bi phat
 	char mau = 'z';// luu mau khi 1 trong hai danh con doi mau va chon mau
@@ -774,7 +782,7 @@ void choi4Nguoi(LIST* yyy, LIST* yyy2, LIST* yyy3, LIST* yyy4, LIST* l1, LIST* l
 	//dau tien thi nguoi choi 1 se duoc danh bai dau tien
 	khoiPhuc(yyy, yyy2, yyy3, yyy4, result1, result2, result3, result4);
 	printf("\ntoi luot nguoi choi 1.");
-	Nguoi(yyy, s1, idUser, &id, &t, &cml1, &mau, &chonMau);
+	Nguoi(yyy, idUser, &id, &t, &cml1, &mau, &chonMau);
 	u = idUser = 1;
 	XXX(&idUser, &chuyen, id, ID);
 	printf("\nnguoi 1 con lai %d con bai", cml1);
@@ -784,7 +792,7 @@ void choi4Nguoi(LIST* yyy, LIST* yyy2, LIST* yyy3, LIST* yyy4, LIST* l1, LIST* l
 		if (idUser == 1) {
 			printf("\ntoi luot nguoi choi 1.");
 			//show(*yyy);
-			Nguoi(yyy, s1, idUser, &id, &t, &cml1, &mau, &chonMau);
+			Nguoi(yyy, idUser, &id, &t, &cml1, &mau, &chonMau);
 			if (chonMau != 0) {
 				printf("\nnguoi choi %d chon mau: ", u);
 				scanf("%c%*c", &mau);
@@ -799,7 +807,7 @@ void choi4Nguoi(LIST* yyy, LIST* yyy2, LIST* yyy3, LIST* yyy4, LIST* l1, LIST* l
 		}
 		else if (idUser == 2) {
 			printf("\ntoi luot nguoi choi 2.");
-			Nguoi(yyy2, s1, idUser, &id, &t, &cml2, &mau, &chonMau);
+			Nguoi(yyy2, idUser, &id, &t, &cml2, &mau, &chonMau);
 			if (chonMau != 0) {
 				printf("\nnguoi choi %d chon mau: ", u);
 				scanf("%c%*c", &mau);
@@ -814,7 +822,7 @@ void choi4Nguoi(LIST* yyy, LIST* yyy2, LIST* yyy3, LIST* yyy4, LIST* l1, LIST* l
 		}
 		else if (idUser == 3) {
 			printf("\ntoi luot nguoi choi 3.");
-			Nguoi(yyy3, s1, idUser, &id, &t, &cml3, &mau, &chonMau);
+			Nguoi(yyy3, idUser, &id, &t, &cml3, &mau, &chonMau);
 			if (chonMau != 0) {
 				printf("\nnguoi choi %d chon mau: ", u);
 				scanf("%c%*c", &mau);
@@ -829,7 +837,7 @@ void choi4Nguoi(LIST* yyy, LIST* yyy2, LIST* yyy3, LIST* yyy4, LIST* l1, LIST* l
 		}
 		else {
 			printf("\ntoi luot nguoi choi 4.");
-			Nguoi(yyy4, s1, idUser, &id, &t, &cml4, &mau, &chonMau);
+			Nguoi(yyy4, idUser, &id, &t, &cml4, &mau, &chonMau);
 			if (chonMau != 0) {
 				printf("\nnguoi choi %d chon mau: ", u);
 				scanf("%c%*c", &mau);

@@ -40,7 +40,7 @@ void change_on_off_icon(int mode);
 char buff[80];
 int rcvBytes;
 int sock_app;
-void mayDanh(LIST* xxx, STACK* s1, int* idUser, int* id, int* t, int* cml, char* mau, int* chonMau);
+void mayDanh(LIST* xxx, int* idUser, int* id, int* t, int* cml, char* mau, int* chonMau);
 
 void trim(char s[])
 {
@@ -90,7 +90,6 @@ int play(UNO *);
 void draw_hand();
 void draw_card(GtkWidget *, UNO *, int, float);
 void draw_up_card(UNO *);
-void remove_card(UNO *, int);
 void clear_container(GtkWidget *);
 void buildUIGameWindow();
 
@@ -280,21 +279,12 @@ void nextButtonClick(GtkWidget *button)
     }
 }
 
-void mayDanh(LIST* xxx, STACK* s1, int* idUser, int* id, int* t, int* cml, char* mau, int* chonMau) {
+void mayDanh(LIST* xxx, int* idUser, int* id, int* t, int* cml, char* mau, int* chonMau) {
     NODE* p = find(l, *id);
 	UNO uno;
 	int ID = *id;
 	printf("\n\n=== MAY DANH ===");
 	show(*xxx);
-	if (*chonMau == 2 && t==0) {
-		if (*chonMau == 2) {
-			*chonMau = 0;
-		}
-		luotDanhDauchoMay(xxx, s1, id, cml, mau, t);
-	}
-	else {
-		//printf("\nid = %d", *id);
-		//printf("\nmau : %c", *mau);
 		if (CHECK(*xxx, *id, &uno) == 1 /*|| doiMau(*xxx, *mau, p) == 1*/) {
 			// printf("\nvao day hu");
 			danhBaiChoMay(xxx, id, cml, mau, t);
@@ -327,19 +317,17 @@ void mayDanh(LIST* xxx, STACK* s1, int* idUser, int* id, int* t, int* cml, char*
 				if (CHECK(*xxx, *id, &uno) == 1 || doiMau(*xxx, *mau, p) == 1) {
 
 					danhBaiChoMay(xxx, id, cml, mau, t);
-					//*mau = 'z';
 				}
 				
 			}
 		}
-	}
+	// }
     
     // draw_enemyCards();
 	// kiem tra xem luot danh tiep theo thuoc ve ai
 	p = find(l, *id);
 	if ((p->data.number == -1 || p->data.number == -2) && *id != ID) {
 		*idUser = 2;
-		// mayDanh(xxx, s1, idUser, id, t, cml, mau, chonMau);
 	}
 	else {
 		*idUser = 1;
@@ -398,6 +386,8 @@ int app(int argc, char **argv, int sockfd)
 
     giaiPhong(&l1); // giải phóng bộ nhớ
     giaiPhong(&l2);
+    giaiPhong(&l);
+    // giaiPhong(&s);
     return EXIT_SUCCESS;
 }
 
@@ -498,7 +488,6 @@ void on_registerSubmitBtn_clicked()
     char tmp[128];
     sprintf(tmp, "%s", gtk_entry_get_text(GTK_ENTRY(usernameRegEntry)));
     trim(tmp);
-    // printf("-%s-\n", tmp);
     if (checkSpace(tmp) == 1)
     {
         //loi
@@ -559,48 +548,10 @@ void on_mainMenuWindow_destroy()
 
 void on_startGameBtn_clicked()
 {
-    // gtk_widget_show(boardWindow);
     gtk_widget_show_all(boardWindow);
     gtk_widget_hide(mainMenuWindow);
 
     main_play_game_with_bot();
-}
-
-/**
- * Deal a random hand with the given length
- * @param length Number of cards in the hand
- */
-void deal_random_hand(int length)
-{
-    // seed prng
-    srand(time(NULL));
-
-    // create a hand of size length
-    for (int i = 0; i < length; i++)
-    {
-        // create a card with random values
-        int r = 1 + rand() % (56);
-        for (int j = 0; j < sizeof(listCard) / sizeof(UNO); j++)
-        {
-            if (listCard[j].id == r)
-                hand[i] = listCard[j];
-        }
-    }
-
-    // keep track of size of hand
-    hand_size = length;
-
-    // generate random up card
-
-    int r = 1 + rand() % (56);
-    for (int i = 0; i < sizeof(listCard) / sizeof(UNO); i++)
-    {
-        if (listCard[i].id == r)
-        {
-            up_card = listCard[i];
-        }
-    }
-    draw_hand(playerBox);
 }
 
 /**
@@ -611,7 +562,7 @@ void draw_hand(GtkWidget *container)
 {
     clear_container(container);
     float sizeCard = 1;
-    // draw the up card
+    
     if (hand_size <= 3)
     {
         gtk_widget_set_size_request(playerBox, CARD_WIDTH * 6, CARD_HEIGHT);
@@ -633,19 +584,11 @@ void draw_hand(GtkWidget *container)
         }
     }
     // draw all cards in the hand
-    // for (int i = 0; i < hand_size; i++)
-    // {
-    //     // draw the current card
-    //     draw_card(container, &hand[i], PLAYER, sizeCard);
-    // }
-
     for (NODE *p = l1.pHead; p != NULL; p = p->pNext)
     {
-        // printf("%d-%c-%d", p->data.id, p->data.color, p->data.number);
-        // printf("\n");
         draw_card(container, &(p->data), PLAYER, sizeCard);
     }
-
+    // draw the up card
     clear_container(controllerBox);
     draw_card(controllerBox, &up_card, OTHER, 2);
 }
@@ -713,7 +656,8 @@ void bot_play(GtkWidget *card_button)
     {
         int id = up_card.id;
         printf("PHAT %d !!!\n", t);
-        mayDanh(&l2, &s1, &idUser, &id, &t, &enemy_size, &mau, &chonMau);
+        mayDanh(&l2, &idUser, &id, &t, &enemy_size, &mau, &chonMau);
+        printf("mau = %c\n", mau);
         up_card = timUno(l, id);
         draw_enemyCards();
         if(enemy_size==0){
@@ -721,7 +665,6 @@ void bot_play(GtkWidget *card_button)
         }
         if(check_up_card(&l1, &hand_size)!=1){
             idUser = ENEMY;
-            // WAIT(2);
             bot_play(NULL);
         }
     }
@@ -734,24 +677,6 @@ void bot_play(GtkWidget *card_button)
  */
 int play(UNO *card)
 {
-    // // if either value or color matches, then move is valid
-    // if (card->color == up_card.color || card->color == 'k' || card->number == up_card.number)
-    // {
-    //     // change the up card
-    //     up_card = *card;
-
-    //     // // clear game so we can remove the card that was played
-    //     // clear_container(boardWindowFixed);
-
-    //     // // draw the new game state
-    //     remove_card(card, PLAYER);
-    //     draw_hand(playerBox);
-    //     return 1;
-    // }
-
-    // // illegal move
-    // return 0;
-    // void danhBai(LIST* xxx) {
     NODE *p;
     NODE *r;
     UNO uno;
@@ -759,27 +684,10 @@ int play(UNO *card)
     p = find(l, up_card.id);
 
     r = find(l, card->id);
-    //phía trước có con chọn màu
 
-    //ktra màu
-    // if (mau != 'z') {
-    //     do {
-    //         printf("\nDANH: ");
-    //         // scanf("%d%*c", id);
-    //         r = find(l, ID);
-    //         //quan bai hop le -> so có ở trong list ko ???
-    //         //doimau2 -> check thoa man
-    //         if (quanBaiHopLe(l1, *id) != 1 || doiMau2(l1, mau, r) != 1) {
-    //             printf("quan bai khong hop le, moi danh lai.");
-    //         }
-    //     } while (quanBaiHopLe(l1, *id) != 1 || doiMau2(l1, mau, r) != 1);
-    //     mau = 'z';
-    // }
-    // else {
-    // do {
     if (mau != 'z')
     {
-        if ((r->data.color != mau) && (r->data.color != 'k') && (r->data.number != up_card.number))
+        if ((r->data.color != mau) && (r->data.color != 'k') && (r->data.number = up_card.number))
         {
             mau = 'z';
             return 0;
@@ -799,7 +707,7 @@ int play(UNO *card)
     //tìm uno để push vào s1
     p = find(l, ID);
     uno = p->data;
-    push2(&s1, uno);
+    // push2(&s1, uno);
     // cap nhat so quan bai bi phat
     soQuanBiPhat(p->data.number, &t);
     if (p->data.number == -4 || p->data.number == -5)
@@ -808,27 +716,13 @@ int play(UNO *card)
         scanf("%c%*c", &mau);
     }
     deleteNode(&l1, ID);
-    // printf("\nsau khi xoa id = %d", ID);
-    // show(l1);
     hand_size -= 1;
     // // draw the new game state
-    // remove_card(card, PLAYER);
     draw_hand(playerBox);
     if(hand_size ==0 ){
         printf("player Win\n");
     }
-    //r = find(l, *id);
-    // } while (quanBaiHopLe(l1, ID) != 1 || kt(p, r) != 1);
-    // }
-
-    // cap nhat lai chuoi result sau khi danh bai
-    //ITOA(*xxx, result);
     drawCardCount = 0;
-    // p = find(l, card->id);
-    // if (p->data.number == -1 && card->id != up_card.id) {
-    // 	idUser = 1;
-    // }
-    // p = find(l, card->id);
     return 1;
 }
 
@@ -854,25 +748,6 @@ void clear_container(GtkWidget *container)
  * Remove the given card from the hand
  * @param card Card to remove 
  */
-void remove_card(UNO *card, int mode)
-{
-    int removed = 0;
-
-    // iterate over hand, looking for card
-    for (int i = 0; i < hand_size; i++)
-    {
-        // if card has already been removed, then sift element back one
-        if (removed)
-            hand[i - 1] = hand[i];
-
-        // if card matches, then begin sifting cards backward
-        if (hand[i].number == card->number && hand[i].color == card->color)
-            removed = 1;
-    }
-
-    // since we've removed a card
-    hand_size--;
-}
 
 void buildUIGameWindow()
 {
@@ -977,11 +852,7 @@ void main_play_game_with_bot()
     inPutL1(&s, &l2);
     draw_enemyCards();
 
-    InitStack(&s1);
-
     up_card = pop(&s);
-    int id = up_card.id;
-    push2(&s1, up_card);
 
     if(up_card.number == -3){
         t=2;
@@ -993,7 +864,6 @@ void main_play_game_with_bot()
     }else if (up_card.number == -1 || up_card.number == -2){
         idUser = ENEMY;
     }
-    
 
     clear_container(controllerBox);
     draw_card(controllerBox, &up_card, OTHER, 2);
@@ -1007,13 +877,4 @@ void main_play_game_with_bot()
     }
     
    
-}
-
-void on_viewRankBtn_clicked()
-{
-    printf("click!\n");
-}
-void on_viewRankBtn_activate()
-{
-    printf("active\n");
 }

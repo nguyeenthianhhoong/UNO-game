@@ -5,7 +5,7 @@ void WAIT (int Seconds);
 LIST l; // danh sach de luu 108 quan bai
 LIST l1, l2, l3, l4;// danh sach luu quan bai tren tay nguoi choi
 STACK s; // luu quan bai da dao
-STACK s1;// luu quan bai da danh
+// STACK s1;// luu quan bai da danh
 
 //doc file;
 void docFile(FILE* fileIn, LIST* l);
@@ -41,9 +41,9 @@ int quanBaiHopLe(LIST xxx, int id);
 // ham cong don quan bai de phat
 void soQuanBiPhat(int number, int* t);
 // ham cho luot danh dau tien
-void luotDanhDau(LIST* xxx, STACK* s1, int* id, int* cml, char* mau, int* t);
+void luotDanhDau(LIST* xxx, int* id, int* cml, char* mau, int* t);
 
-void luotDanhDauchoMay(LIST* xxx, STACK* s1, int* id, int* cml, char* mau, int* t);
+void luotDanhDauchoMay(LIST* xxx, int* id, int* cml, char* mau, int* t);
 
 //ham kiem tra quan bai hop le sau khi danh
 int kt(NODE* p, NODE* r);
@@ -65,14 +65,14 @@ void XXX(int* idUser, int* chuyen, int id, int ID);
 LIST yyy;
 void khoiPhuc0(LIST* xxx, char* result);
 
-void nguoiDanh(LIST* xxx, STACK* s1, int* idUser, int* id, int* t, int* cml, char* mau, int* chonMau) ;
+void nguoiDanh(LIST* xxx, int* idUser, int* id, int* t, int* cml, char* mau, int* chonMau) ;
 
-// void mayDanh(LIST* xxx, STACK* s1, int* idUser, int* id, int* t, int* cml, char* mau, int* chonMau);
-void choiVoiMay(LIST* yyy, LIST* l1, LIST* l2, STACK* s1);
+// void mayDanh(LIST* xxx, int* idUser, int* id, int* t, int* cml, char* mau, int* chonMau);
+void choiVoiMay(LIST* yyy, LIST* l1, LIST* l2);
 //=======================================================================================
 //ham khoi phuc la bai
 LIST yyy2, yyy3, yyy4;
 void khoiPhuc(LIST* yyy, LIST* yyy2, LIST* yyy3, LIST* yyy4, char* result1, char* result2, char* result3, char* result4);
 //ham choi nay danh cho choi 4 nguoi
-void Nguoi(LIST *xxx, STACK* s1, int idUser, int* id, int* t, int* cml, char* mau, int* chonMau);
-void choi4Nguoi(LIST* yyy, LIST* yyy2, LIST* yyy3, LIST* yyy4, LIST* l1, LIST* l2, LIST* l3, LIST* l4, STACK* s1) ;
+void Nguoi(LIST *xxx, int idUser, int* id, int* t, int* cml, char* mau, int* chonMau);
+void choi4Nguoi(LIST* yyy, LIST* yyy2, LIST* yyy3, LIST* yyy4, LIST* l1, LIST* l2, LIST* l3, LIST* l4) ;
