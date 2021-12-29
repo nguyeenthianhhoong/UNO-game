@@ -171,14 +171,17 @@ int check_up_card(LIST *xxx, int *cml) //check phạt ko đỡ đk thì phạt l
             //ITOA(yyy, result);
             if (p->data.number == -5)
             {
-                chonMau = 2; // tin hieu cho biet máy dc chon mau cho luot choi ke
+                mau = 'r';
+                // chonMau = 2; // tin hieu cho biet máy dc chon mau cho luot choi ke
             }
             if (p->data.number == -3)
             {
                 mau = p->data.color;
             }
+            return 0;
         }
     }
+    return 1;
 }
 
 void draw_enemyCards()
@@ -283,20 +286,22 @@ void mayDanh(LIST* xxx, STACK* s1, int* idUser, int* id, int* t, int* cml, char*
 	int ID = *id;
 	printf("\n\n=== MAY DANH ===");
 	show(*xxx);
-	if (*chonMau == 2) {
+	if (*chonMau == 2 && t==0) {
 		if (*chonMau == 2) {
 			*chonMau = 0;
 		}
-		    // WAIT(2);
 		luotDanhDauchoMay(xxx, s1, id, cml, mau, t);
 	}
 	else {
 		//printf("\nid = %d", *id);
 		//printf("\nmau : %c", *mau);
-		if (CHECK(*xxx, *id, &uno) == 1 || doiMau(*xxx, *mau, p) == 1) {
+		if (CHECK(*xxx, *id, &uno) == 1 /*|| doiMau(*xxx, *mau, p) == 1*/) {
 			// printf("\nvao day hu");
-		    // WAIT(2);
 			danhBaiChoMay(xxx, id, cml, mau, t);
+            up_card = timUno(l, *id);
+            if(up_card.number == -4){
+                *mau = 'r';
+            }
 		}
 		else {
 			if ((p->data.number == -3 || p->data.number == -5) && *t != 0) {
@@ -305,17 +310,15 @@ void mayDanh(LIST* xxx, STACK* s1, int* idUser, int* id, int* t, int* cml, char*
 				*cml += *t;
 				*t = 0;
 
-				if (p->data.number == -5) {
-					*chonMau = 1;
-				}
+				// if (p->data.number == -5) {
+				// 	// *chonMau = 1;
+				// 	*mau = 'r';
+				// }
 				if (p->data.number == -3) {
 					*mau = p->data.color;
 				}
 			}
 			else {
-    		// WAIT(2);
-            // sleep(1);
-
 				printf("\nhe thong da tu dong boc bai.");
 				phat(1, xxx, &s);
 				*cml += 1;
@@ -330,13 +333,13 @@ void mayDanh(LIST* xxx, STACK* s1, int* idUser, int* id, int* t, int* cml, char*
 			}
 		}
 	}
-    up_card = timUno(l, *id);
-    draw_enemyCards();
+    
+    // draw_enemyCards();
 	// kiem tra xem luot danh tiep theo thuoc ve ai
 	p = find(l, *id);
-	if (p->data.number == -1 && *id != ID) {
+	if ((p->data.number == -1 || p->data.number == -2) && *id != ID) {
 		*idUser = 2;
-		mayDanh(xxx, s1, idUser, id, t, cml, mau, chonMau);
+		// mayDanh(xxx, s1, idUser, id, t, cml, mau, chonMau);
 	}
 	else {
 		*idUser = 1;
@@ -690,7 +693,7 @@ void card_clicked(GtkWidget *card_button, gpointer card_data)
     {
         if (play(card) == 1)
         {
-            if (up_card.number == -1)
+            if (up_card.number == -1 || up_card.number == -2)
             {
                 idUser = 1;
             }
@@ -706,14 +709,21 @@ void card_clicked(GtkWidget *card_button, gpointer card_data)
 
 void bot_play(GtkWidget *card_button)
 {
-    if (idUser == 2)
+    while (idUser == 2)
     {
         int id = up_card.id;
+        printf("PHAT %d !!!\n", t);
         mayDanh(&l2, &s1, &idUser, &id, &t, &enemy_size, &mau, &chonMau);
         up_card = timUno(l, id);
         draw_enemyCards();
-
-        check_up_card(&l1, &hand_size);
+        if(enemy_size==0){
+            printf("bot Win\n");
+        }
+        if(check_up_card(&l1, &hand_size)!=1){
+            idUser = ENEMY;
+            // WAIT(2);
+            bot_play(NULL);
+        }
     }
 }
 
@@ -769,11 +779,11 @@ int play(UNO *card)
     // do {
     if (mau != 'z')
     {
-        if ((r->data.color != mau) && (r->data.color != 'k'))
+        if ((r->data.color != mau) && (r->data.color != 'k') && (r->data.number != up_card.number))
         {
+            mau = 'z';
             return 0;
         }
-        mau = 'z';
     }
     else
     {
@@ -804,6 +814,9 @@ int play(UNO *card)
     // // draw the new game state
     // remove_card(card, PLAYER);
     draw_hand(playerBox);
+    if(hand_size ==0 ){
+        printf("player Win\n");
+    }
     //r = find(l, *id);
     // } while (quanBaiHopLe(l1, ID) != 1 || kt(p, r) != 1);
     // }
@@ -969,50 +982,31 @@ void main_play_game_with_bot()
     up_card = pop(&s);
     int id = up_card.id;
     push2(&s1, up_card);
+
+    if(up_card.number == -3){
+        t=2;
+    }else if(up_card.number == -5){
+        t=4;
+        mau = 'r';
+    }else if(up_card.number == -4){
+        mau = 'r';
+    }else if (up_card.number == -1 || up_card.number == -2){
+        idUser = ENEMY;
+    }
+    
+
     clear_container(controllerBox);
     draw_card(controllerBox, &up_card, OTHER, 2);
 
     //******vào lượt người chơi:
 
-    // check_up_card(next_user_id);//cho người và máy
     //xử lý +2 | +4 | mất lượt | chuyển màu | xoay vòng
-    check_up_card(&l1, &hand_size);
-
-    // char result[256] = "";
-    // ITOA(l1, result);
-    // printf("\nresult = %s", result);
-
-    // khoiPhuc0(&yyy, result);
-    // show(l1);
-    // printf("\n=== NGUOI DANH ===");
-    // nguoiDanh(&l1, &s1, &idUser, &id, &t, &hand_size, &mau, &chonMau);
-
-    // while (hand_size != 0 && enemy_size != 0) {
-    // 	if (idUser == 1) {
-    // 		printf("\n=== NGUOI DANH ===");
-    // 		nguoiDanh(&l1, &s1, &idUser, &id, &t, &hand_size, &mau, &chonMau);
-    // 		printf("\nnguoi con lai %d con bai", hand_size);
-    // 	}
-    // 	else {
-    // 		mayDanh(&l2, &s1, &idUser, &id, &t, &enemy_size, &mau, &chonMau);
-    // 		printf("\nmay con lai %d con bai", enemy_size);
-    // 	}
-    // }
-    // if (hand_size == 0) {
-    // 	printf("\nnguoi thang");
-
-    // }
-    // else {
-    // 	printf("\nmay thang");
-    // }
-
-    // giaiPhong(&l1);
-    // giaiPhong(&l2);
-    // giaiPhong(&yyy);
-
-    //******************************************************************************************
-
-    // choiVoiMay(&yyy, &l1, &l2, &s1);
+    if(check_up_card(&l1, &hand_size) != 1){
+        idUser = ENEMY;
+        bot_play(NULL);
+    }
+    
+   
 }
 
 void on_viewRankBtn_clicked()
