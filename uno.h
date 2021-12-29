@@ -1,7 +1,7 @@
 //#pragma warning (disable: 4996)
 #include "test.h"
 
-// void WAIT (int Seconds);
+void WAIT (int Seconds);
 LIST l; // danh sach de luu 108 quan bai
 LIST l1, l2, l3, l4;// danh sach luu quan bai tren tay nguoi choi
 STACK s; // luu quan bai da dao
