@@ -7,8 +7,8 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 // #include "uno.h"
-#include "login.h"
-// #include "test.h"
+#include "interface.h"
+// #include "structData.h"
 #define BUFF_SIZE 80
 
 

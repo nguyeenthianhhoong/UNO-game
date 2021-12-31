@@ -1,5 +1,5 @@
 //#pragma warning (disable: 4996)
-#include "test.h"
+#include "structData.h"
 
 void WAIT (int Seconds);
 LIST l; // danh sach de luu 108 quan bai
@@ -48,7 +48,7 @@ void luotDanhDauchoMay(LIST* xxx, int* id, int* cml, char* mau, int* t);
 //ham kiem tra quan bai hop le sau khi danh
 int kt(NODE* p, NODE* r);
 
-int doiMau(LIST xxx, char mau, NODE* r);
+int doiMau(LIST xxx, char mau, NODE* r, int phat);
 int doiMau2(LIST xxx, char mau, NODE* r);
 // ham danh bai cho nguoi choi trong truong hop co quan bai hop le
 void danhBai(LIST* xxx, int* id, int* cml, char* mau, int* t);
@@ -56,7 +56,7 @@ void danhBai(LIST* xxx, int* id, int* cml, char* mau, int* t);
 // ham kiem tra quan bai sau khi danh con doi mau
 int doiMau2(LIST xxx, char mau, NODE* r);
 
-int doiMau(LIST xxx, char mau, NODE* r);
+// int doiMau(LIST xxx, char mau, NODE* r);
 
 void danhBaiChoMay(LIST* xxx, int* id, int* cml, char* mau, int* t);
 
