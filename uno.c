@@ -83,9 +83,7 @@ void inPutStack(STACK* s, LIST l) {
 
 //kiểm tra quân bài phù hợp trong list bài của mik | đánh được là 1 | 0 ko được
 int CHECK(LIST xxx, int id, UNO* uno) {
-	//printf("\nvao check chua");
 	NODE* q = find(l, id);
-	//printf("\nco tim thay p k");
 	char x;
 	int y;
 	x = q->data.color;
@@ -94,35 +92,28 @@ int CHECK(LIST xxx, int id, UNO* uno) {
 		// truong hop con bai truoc la con cam hoac dao chieu
 		if ((y == -1 || y == -2) && (p->data.color == x || p->data.number == y || p->data.color == 'k')) {
 			*uno = p->data;
-			//printf("\nvao check chua");
 			return 1;
 		}
-
 		// con truoc la con +2
 		else if (y == -3 && (p->data.number == y || p->data.number == -5)) {
 			*uno = p->data;
-			//printf("\nvao check chua");
 			return 1;
 		}
 		// con truoc la con doi mau( phan else nay da bi thua)
 		else if (y == -4 && (p->data.color == 'k')) {
 			*uno = p->data;
-			//printf("\nvao check chua");
 			return 1;
 		}
 		// con truoc la con +4
 		else if (y == -5 && (p->data.number == y)) {
 			*uno = p->data;
-			//printf("\nvao check chua");
 			return 1;
 		}// neu là con thông thường hoac truong hop y = 69
-		else if (/*y != -1 && y != -2 && y != -3 && y != -4 && y != -5*/y >= 0 && (p->data.color == x || p->data.number == y || p->data.color == 'k')) {
+		else if (y >= 0 && (p->data.color == x || p->data.number == y || p->data.color == 'k')) {
 			*uno = p->data;
-			//printf("\nvao check chua");
 			return 1;
 		}
 	}
-	//printf("\nvao check chua");
 	return 0;
 }
 
@@ -133,9 +124,7 @@ void phat(int n, LIST* tmp, STACK* s) {
 		UNO uno;
 		if(!isEmpty(s)){
 			uno = pop(s);
-			printf("con -- ");
 		}else{
-			printf("het -- ");
     		inPutStack(s, l);
 			uno = pop(s);
 		}
@@ -143,7 +132,6 @@ void phat(int n, LIST* tmp, STACK* s) {
 		NODE* p = getNode(uno);
 		addTail(tmp, p);
 	}
-			printf("phat = %d\n", countLaBai);
 }
 
 void my_random(char* x) {
@@ -310,7 +298,7 @@ int kt(NODE* p, NODE* r) {
 	return 0;
 }
 
-int doiMau(LIST xxx, char mau, NODE* r);
+// int doiMau(LIST xxx, char mau, NODE* r, int phat);
 int doiMau2(LIST xxx, char mau, NODE* r);
 // ham danh bai cho nguoi choi trong truong hop co quan bai hop le
 void danhBai(LIST* xxx, int* id, int* cml, char* mau, int* t) {
@@ -378,11 +366,11 @@ int doiMau2(LIST xxx, char mau, NODE* r) {
 	return 0;
 }
 
-int doiMau(LIST xxx, char mau, NODE* r) {
+int doiMau(LIST xxx, char mau, NODE* r, int phat) {
 	for (NODE* p = xxx.pHead; p != NULL; p = p->pNext) {
-		if ((p->data.color == mau || p->data.color == 'k') && mau != 'z') {
+		// if(p->data.number == -3){}
+		if ((p->data.color == mau || p->data.color == 'k' || p->data.color == -3) && mau != 'z' && phat == 0) {
 			r = p;
-			//printf("\nmay vao day k");
 			return 1;
 		}
 	}
@@ -409,7 +397,7 @@ void danhBaiChoMay(LIST* xxx, int* id, int* cml, char* mau, int* t) {
 	// cap nhat so quan bai bi phat
 	soQuanBiPhat(p->data.number, t);
 	
-	if (p->data.number == -4) {
+	if (p->data.number == -4 || p->data.number ==-5) {
 		my_random(mau);
 	}
 	*id = p->data.id;
@@ -517,7 +505,7 @@ void nguoiDanh(LIST* xxx, int* idUser, int* id, int* t, int* cml, char* mau, int
 	else {
 	//*********************** kiểm tra và đánh bài
 	// kiểm tra đỡ bài
-		if (CHECK(*xxx, *id, &uno) == 1 || doiMau(*xxx, *mau, p) == 1) {
+		if (CHECK(*xxx, *id, &uno) == 1 || doiMau(*xxx, *mau, p, *t) == 1) {
 			if (*mau != 'z') {
 				printf("\nmau hien tai: %c", *mau);
 			}
@@ -715,7 +703,7 @@ void Nguoi(LIST *xxx, int idUser, int* id, int* t, int* cml, char* mau, int* cho
 		luotDanhDau(xxx, id, cml, mau, t);
 	}
 	else {
-		if (CHECK(*xxx, *id, &uno) == 1 || doiMau(*xxx, *mau, p) == 1) {
+		if (CHECK(*xxx, *id, &uno) == 1 || doiMau(*xxx, *mau, p, *t) == 1) {
 			//if (*mau != 'z') {
 			//	printf("\nmau hien tai: %c", *mau);
 			//}
@@ -744,7 +732,7 @@ void Nguoi(LIST *xxx, int idUser, int* id, int* t, int* cml, char* mau, int* cho
 				// cap nhat lai chuoi result sau khi boc bai
 				//ITOA(xxx, result);
 				show(*xxx);
-				if (CHECK(*xxx, *id, &uno) == 1 || doiMau(*xxx, *mau, p) == 1) {
+				if (CHECK(*xxx, *id, &uno) == 1 || doiMau(*xxx, *mau, p, *t) == 1) {
 					danhBai(xxx, id, cml, mau, t);
 					//*mau = 'z';
 				}

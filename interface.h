@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <unistd.h>
-// #include "test.h"
 #include "uno.h"
 #define BUFF_SIZE 80
 
@@ -15,8 +14,6 @@ const float CARD_HEIGHT = 85;
 const int PLAYER = 1;
 const int ENEMY = 2;
 const int OTHER = 3;
-
-int checkk = 0, check0 = 0;
 
 GtkBuilder *builder;
 GtkWidget *beginWindow;
@@ -35,12 +32,18 @@ GtkWidget *passwordAgainRegEntry;
 GtkWidget *mainMenuWindow;
 GtkWidget *boardWindow;
 
-void change_on_off_icon(int mode);
+GtkWidget *bgColorSquare; // background
+GtkWidget *colorSquare;
 
 char buff[80];
 int rcvBytes;
 int sock_app;
-void mayDanh(LIST* xxx, int* idUser, int* id, int* t, int* cml, char* mau, int* chonMau);
+
+void draw_colorSquare();
+
+void change_on_off_icon(int mode);
+
+void mayDanh(LIST *xxx, int *idUser, int *id, int *t, int *cml, char *mau, int *chonMau);
 
 void trim(char s[])
 {
@@ -83,9 +86,12 @@ int drawCardCount = 0;
 // luu giu id nguoi danh, idUser = 1 la nguoi, idUser = 2 la may
 // id la id cua quan bai
 
+int checkChooseColor = 0;
+
+
 void deal_random_hand(int);
 void card_clicked(GtkWidget *, gpointer);
-void bot_play(GtkWidget *);
+void bot_play();
 int play(UNO *);
 void draw_hand();
 void draw_card(GtkWidget *, UNO *, int, float);
@@ -144,35 +150,31 @@ GtkWidget *playerBox;
 GtkWidget *enemyBox;
 GtkWidget *iconON;
 GtkWidget *iconOFF;
+GtkWidget *chooseColorDialog;
 
 int check_up_card(LIST *xxx, int *cml) //check phạt ko đỡ đk thì phạt luôn
 {
     change_on_off_icon(PLAYER);
-    // printf("vao check\n");
-    int ID = up_card.id;
-    // printf("id: %d %d\n", ID, up_card.id);
-    NODE *p = find(l, ID);
-    UNO uno;
-    if (CHECK(*xxx, ID, &uno) != 1 && doiMau(*xxx, mau, p) != 1)
-    {
-        // printf("check 1\n");
 
+    NODE *p = find(l, up_card.id);
+    UNO uno;
+    // printf("--%d--\n",CHECK(*xxx, up_card.id, &uno));
+    // printf("--%d--\n",doiMau(*xxx, mau, p, t));
+    if (CHECK(*xxx, up_card.id, &uno) != 1 && doiMau(*xxx, mau, p, t) != 1)
+    {
         //************** bị phat
         if ((p->data.number == -3 || p->data.number == -5) && t != 0)
         {
-            // printf("check 2\n");
-            printf("\n\nbi phat %d con bai", t);
+            printf("\n\nbi phat %d con bai\n", t);
             phat(t, xxx, &s);
             *cml += t;
             t = 0;
             draw_hand(playerBox);
-            // cap nhat lai chuoi result sau khi bi phat bai
-            //ITOA(yyy, result);
-            if (p->data.number == -5)
-            {
-                mau = 'r';
-                // chonMau = 2; // tin hieu cho biet máy dc chon mau cho luot choi ke
-            }
+
+            // if (p->data.number == -5)
+            // {
+            //     mau = 'r';
+            // }
             if (p->data.number == -3)
             {
                 mau = p->data.color;
@@ -217,11 +219,12 @@ void draw_enemyCards()
 
     clear_container(controllerBox);
     draw_card(controllerBox, &up_card, OTHER, 2);
+    draw_colorSquare();
 }
 
 void drawCardButtonClick(GtkWidget *button)
 {
-    if (drawCardCount == 0)
+    if (drawCardCount == 0 && idUser == PLAYER)
     {
         phat(1, &l1, &s);
         hand_size++;
@@ -229,13 +232,13 @@ void drawCardButtonClick(GtkWidget *button)
 
         NODE *p = find(l, up_card.id);
         UNO uno;
-        if (CHECK(l1, up_card.id, &uno) != 1 && doiMau(l1, mau, p) != 1)
+        if (CHECK(l1, up_card.id, &uno) != 1 && doiMau(l1, mau, p, t) != 1)
         {
-            idUser = 2;
+            idUser = ENEMY;
             change_on_off_icon(ENEMY);
             return;
         }
-        drawCardCount++;
+        drawCardCount = 1;
     }
 }
 
@@ -264,83 +267,85 @@ GtkWidget *resize_image(GtkWidget *image, char *link, float x)
 
 void unoButtonClick(GtkWidget *button)
 {
-    g_print("uno button click\n");
+    if(idUser == PLAYER){
+        g_print("uno button click\n");
+    }
 }
 
 void nextButtonClick(GtkWidget *button)
 {
-    g_print("next button click\n");
     if (drawCardCount == 1 && idUser == PLAYER)
     {
         //xử lý next
-        drawCardCount--;
-        idUser = 2;
+        drawCardCount = 0;
+        idUser = ENEMY;
         change_on_off_icon(ENEMY);
     }
 }
 
-void mayDanh(LIST* xxx, int* idUser, int* id, int* t, int* cml, char* mau, int* chonMau) {
-    NODE* p = find(l, *id);
-	UNO uno;
-	int ID = *id;
-	printf("\n\n=== MAY DANH ===");
-	show(*xxx);
-		if (CHECK(*xxx, *id, &uno) == 1 /*|| doiMau(*xxx, *mau, p) == 1*/) {
-			// printf("\nvao day hu");
-			danhBaiChoMay(xxx, id, cml, mau, t);
-            up_card = timUno(l, *id);
-            if(up_card.number == -4){
-                *mau = 'r';
+void mayDanh(LIST *xxx, int *idUser, int *id, int *t, int *cml, char *mau, int *chonMau)
+{
+    NODE *p = find(l, *id);
+    UNO uno;
+    int ID = *id;
+    printf("\n\n=== MAY DANH ===");
+    show(*xxx);
+    if (CHECK(*xxx, *id, &uno) == 1 || doiMau(*xxx, *mau, p, *t) == 1)
+    {
+        danhBaiChoMay(xxx, id, cml, mau, t);
+        up_card = timUno(l, *id);
+    }
+    else
+    {
+        if ((up_card.number == -3 || up_card.number == -5) && *t != 0)
+        {
+            printf("bi phat %d con bai", *t);
+            phat(*t, xxx, &s);
+            *cml += *t;
+            *t = 0;
+
+            if (up_card.number == -3)
+            {
+                *mau = up_card.color;
             }
-		}
-		else {
-			if ((p->data.number == -3 || p->data.number == -5) && *t != 0) {
-				printf("bi phat %d con bai", *t);
-				phat(*t, xxx, &s);
-				*cml += *t;
-				*t = 0;
+        }
+        else
+        {
+            printf("\nhe thong da tu dong boc bai.");
+            phat(1, xxx, &s);
+            *cml += 1;
 
-				// if (p->data.number == -5) {
-				// 	// *chonMau = 1;
-				// 	*mau = 'r';
-				// }
-				if (p->data.number == -3) {
-					*mau = p->data.color;
-				}
-			}
-			else {
-				printf("\nhe thong da tu dong boc bai.");
-				phat(1, xxx, &s);
-				*cml += 1;
+            show(*xxx);
+            if (CHECK(*xxx, *id, &uno) == 1 || doiMau(*xxx, *mau, p, *t) == 1)
+            {
 
-				show(*xxx);
-				if (CHECK(*xxx, *id, &uno) == 1 || doiMau(*xxx, *mau, p) == 1) {
+                danhBaiChoMay(xxx, id, cml, mau, t);
+                up_card = timUno(l, *id);
+            }
+        }
+    }
 
-					danhBaiChoMay(xxx, id, cml, mau, t);
-				}
-				
-			}
-		}
-	// }
-    
-    // draw_enemyCards();
-	// kiem tra xem luot danh tiep theo thuoc ve ai
-	p = find(l, *id);
-	if ((p->data.number == -1 || p->data.number == -2) && *id != ID) {
-		*idUser = 2;
-	}
-	else {
-		*idUser = 1;
-	}
-
+    // kiem tra xem luot danh tiep theo thuoc ve ai
+    if ((up_card.number == -1 || up_card.number == -2) && *id != ID)
+    {
+        *idUser = ENEMY;
+    }
+    else
+    {
+        *idUser = 1;
+    }
 }
 
-void change_on_off_icon(int mode){
-    if(mode == ENEMY){
+void change_on_off_icon(int mode)
+{
+    if (mode == ENEMY)
+    {
         printf("luot doi thu\n");
         gtk_fixed_move(GTK_FIXED(boardWindowFixed), iconON, 40, 60);
         gtk_fixed_move(GTK_FIXED(boardWindowFixed), iconOFF, 40, 610);
-    }else if(mode == PLAYER){
+    }
+    else if (mode == PLAYER)
+    {
         printf("luot player\n");
         gtk_fixed_move(GTK_FIXED(boardWindowFixed), iconON, 40, 610);
         gtk_fixed_move(GTK_FIXED(boardWindowFixed), iconOFF, 40, 60);
@@ -374,6 +379,8 @@ int app(int argc, char **argv, int sockfd)
     boardWindow = GTK_WIDGET(gtk_builder_get_object(builder, "boardWindow"));
     buildUIGameWindow();
     gtk_widget_hide(boardWindow);
+
+    chooseColorDialog = GTK_WIDGET(gtk_builder_get_object(builder, "chooseColorDialog"));
 
     g_signal_connect(beginWindow, "destroy", G_CALLBACK(gtk_main_quit), NULL);
     gtk_builder_connect_signals(builder, NULL);
@@ -562,7 +569,7 @@ void draw_hand(GtkWidget *container)
 {
     clear_container(container);
     float sizeCard = 1;
-    
+
     if (hand_size <= 3)
     {
         gtk_widget_set_size_request(playerBox, CARD_WIDTH * 6, CARD_HEIGHT);
@@ -591,6 +598,28 @@ void draw_hand(GtkWidget *container)
     // draw the up card
     clear_container(controllerBox);
     draw_card(controllerBox, &up_card, OTHER, 2);
+    draw_colorSquare();
+}
+
+void draw_colorSquare(){
+    char link[50];
+    memset(link, 0, strlen(link));
+    strcpy(link, "images/color/");
+
+    int checkNoColor = 0;
+
+    if(mau != 'z'){
+        link[strlen(link)] = mau;
+    }else{
+        link[strlen(link)] = up_card.color;
+        if(up_card.color == 'k')
+            checkNoColor = 1;
+    }
+    
+    if(checkNoColor!=1){
+        strcat(link, ".png");
+        gtk_image_set_from_file (GTK_IMAGE(colorSquare), link);
+    }
 }
 
 /**
@@ -617,7 +646,8 @@ void draw_card(GtkWidget *container, UNO *card, int status, float sizeCard)
     // draw card
     gtk_box_pack_start(GTK_BOX(container), button, TRUE, FALSE, 0);
 
-    if (status == PLAYER){
+    if (status == PLAYER)
+    {
         g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(card_clicked), card);
         g_signal_connect(G_OBJECT(button), "event-after", G_CALLBACK(bot_play), NULL);
     }
@@ -629,6 +659,7 @@ void draw_card(GtkWidget *container, UNO *card, int status, float sizeCard)
  */
 void card_clicked(GtkWidget *card_button, gpointer card_data)
 {
+    int pre_id = up_card.id;
     // cast generic gpointer to a card
     UNO *card = (UNO *)card_data;
     // play the card
@@ -636,37 +667,40 @@ void card_clicked(GtkWidget *card_button, gpointer card_data)
     {
         if (play(card) == 1)
         {
-            if (up_card.number == -1 || up_card.number == -2)
+            if ((up_card.number == -1 || up_card.number == -2) && up_card.id != pre_id)
             {
                 idUser = 1;
             }
             else
             {
-                idUser = 2;
-                change_on_off_icon(ENEMY);
-
+                idUser = ENEMY;
+                if(checkChooseColor!=1)
+                    change_on_off_icon(ENEMY);
             }
         }
     }
 }
 
-void bot_play(GtkWidget *card_button)
-{
-    while (idUser == 2)
+void bot_play()
+{   
+    if(checkChooseColor!=1){
+    if (idUser == ENEMY)
     {
         int id = up_card.id;
-        printf("PHAT %d !!!\n", t);
         mayDanh(&l2, &idUser, &id, &t, &enemy_size, &mau, &chonMau);
-        printf("mau = %c\n", mau);
+        printf("\n%c ---- %c-%d\n", mau, up_card.color, up_card.number);
         up_card = timUno(l, id);
         draw_enemyCards();
-        if(enemy_size==0){
+        if (enemy_size == 0)
+        {
             printf("bot Win\n");
         }
-        if(check_up_card(&l1, &hand_size)!=1){
+        if (check_up_card(&l1, &hand_size) != 1)
+        {
             idUser = ENEMY;
-            bot_play(NULL);
+            bot_play();
         }
+    }
     }
 }
 
@@ -687,9 +721,8 @@ int play(UNO *card)
 
     if (mau != 'z')
     {
-        if ((r->data.color != mau) && (r->data.color != 'k') && (r->data.number = up_card.number))
+        if ((r->data.color != mau) && (r->data.color != 'k'))
         {
-            mau = 'z';
             return 0;
         }
     }
@@ -697,9 +730,12 @@ int play(UNO *card)
     {
         if (kt(p, r) != 1)
         {
-            // printf("quan bai khong hop le, moi danh lai.");
             return 0;
         }
+    }
+
+    if(mau != 'z'){
+            mau = 'z';
     }
 
     //kt kiểm tra cả màu hoặc số
@@ -710,19 +746,21 @@ int play(UNO *card)
     // push2(&s1, uno);
     // cap nhat so quan bai bi phat
     soQuanBiPhat(p->data.number, &t);
-    if (p->data.number == -4 || p->data.number == -5)
-    {
-        printf("\nCHON MAU: ");
-        scanf("%c%*c", &mau);
-    }
     deleteNode(&l1, ID);
     hand_size -= 1;
     // // draw the new game state
     draw_hand(playerBox);
-    if(hand_size ==0 ){
+    if (hand_size == 0)
+    {
         printf("player Win\n");
     }
     drawCardCount = 0;
+    if (p->data.number == -4 || p->data.number == -5)
+    {
+        gtk_widget_show(chooseColorDialog);
+        gtk_window_set_accept_focus(GTK_WINDOW(boardWindow), FALSE);
+        checkChooseColor = 1;
+    }
     return 1;
 }
 
@@ -751,7 +789,6 @@ void clear_container(GtkWidget *container)
 
 void buildUIGameWindow()
 {
-
     //add widget from file glade
     // builder = gtk_builder_new_from_file("login.glade");
     boardWindow = GTK_WIDGET(gtk_builder_get_object(builder, "boardWindow"));
@@ -767,7 +804,7 @@ void buildUIGameWindow()
     GdkPixbuf *backgrndPixbuf;
     GtkWidget *backgrndImage;
     GError *error = NULL;
-    backgrndPixbuf = gdk_pixbuf_new_from_file("images/background.png", &error);
+    backgrndPixbuf = gdk_pixbuf_new_from_file("images/background/bgB.png", &error);
     backgrndPixbuf = gdk_pixbuf_scale_simple(backgrndPixbuf, 1140, 700, GDK_INTERP_BILINEAR);
     backgrndImage = gtk_image_new_from_pixbuf(backgrndPixbuf);
     gtk_container_add(GTK_CONTAINER(boardWindowFixed), backgrndImage);
@@ -782,9 +819,10 @@ void buildUIGameWindow()
     controllerBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
     gtk_fixed_put(GTK_FIXED(boardWindowFixed), controllerBox, startWidth, heightControllerBox);
     // draw_up_card(&x_card);
+
     draw_card(controllerBox, &x_card, OTHER, 2);
     //2.add draw card button
-    char link[] = "images/pile.png";
+    char link[] = "images/button/pile.png";
     GtkWidget *drawCardImage = gtk_image_new_from_file(link);
     drawCardImage = resize_image(drawCardImage, link, 2);
     // gtk_widget_set_size_request(drawCardImage, CARD_WIDTH*2, CARD_HEIGHT*2);
@@ -796,35 +834,44 @@ void buildUIGameWindow()
     gtk_fixed_put(GTK_FIXED(boardWindowFixed), drawCardButton, startWidth + CARD_WIDTH * 2.5, heightControllerBox);
     g_signal_connect(drawCardButton, "clicked", G_CALLBACK(drawCardButtonClick), NULL); //when clicked, draw a card and pass the player's box
     g_signal_connect(drawCardButton, "event-after", G_CALLBACK(bot_play), NULL);
+    //2.5 add colorSquare
+    strcpy(link, "images/color/white.png");
+    bgColorSquare = gtk_image_new_from_file(link);
+    bgColorSquare = resize_image(bgColorSquare, link, 1);
+    gtk_fixed_put(GTK_FIXED(boardWindowFixed), bgColorSquare, startWidth + CARD_WIDTH * 5, heightControllerBox + 5);
+    strcpy(link, "images/color/r.png");
+    colorSquare = gtk_image_new_from_file(link);
+    // colorSquare = resize_image(colorSquare, link, 1);
+    gtk_fixed_put(GTK_FIXED(boardWindowFixed), colorSquare, startWidth + CARD_WIDTH * 5 + 5, heightControllerBox + 10);
     //3.add next button
-    strcpy(link, "images/next.png");
+    strcpy(link, "images/button/next.png");
     GtkWidget *nextImage = gtk_image_new_from_file(link);
-    nextImage = resize_image(nextImage, link, 1);
+    nextImage = resize_image(nextImage, link, 0.8);
     // gtk_widget_set_size_request(nextImage, CARD_WIDTH, CARD_HEIGHT);
     GtkWidget *nextButton = gtk_button_new();
     //add image to button
     gtk_button_set_always_show_image(GTK_BUTTON(nextButton), TRUE);
     gtk_button_set_image(GTK_BUTTON(nextButton), nextImage);
     //add to box
-    gtk_fixed_put(GTK_FIXED(boardWindowFixed), nextButton, startWidth + CARD_WIDTH * 5, heightControllerBox + 20);
+    gtk_fixed_put(GTK_FIXED(boardWindowFixed), nextButton, startWidth + CARD_WIDTH * 5, heightControllerBox + 67); //45
     g_signal_connect(nextButton, "clicked", G_CALLBACK(nextButtonClick), NULL);
     g_signal_connect(nextButton, "event-after", G_CALLBACK(bot_play), NULL);
     //4.add uno button
-    strcpy(link, "images/uno.png");
+    strcpy(link, "images/button/uno.png");
     GtkWidget *unoImage = gtk_image_new_from_file(link);
-    unoImage = resize_image(unoImage, link, 1);
+    unoImage = resize_image(unoImage, link, 0.8);
     // gtk_widget_set_size_request(unoImage, CARD_WIDTH, CARD_HEIGHT);
     GtkWidget *unoButton = gtk_button_new();
     //add image to button
     gtk_button_set_always_show_image(GTK_BUTTON(unoButton), TRUE);
     gtk_button_set_image(GTK_BUTTON(unoButton), unoImage);
     //add to box
-    gtk_fixed_put(GTK_FIXED(boardWindowFixed), unoButton, startWidth + CARD_WIDTH * 5, heightControllerBox + 100);
+    gtk_fixed_put(GTK_FIXED(boardWindowFixed), unoButton, startWidth + CARD_WIDTH * 5, heightControllerBox + 125); //115
     g_signal_connect(unoButton, "clicked", G_CALLBACK(unoButtonClick), NULL);
     //****************************************************************************************
     iconON = gtk_image_new_from_icon_name("dialog-ok", GTK_ICON_SIZE_DND);
     gtk_fixed_put(GTK_FIXED(boardWindowFixed), iconON, 40, 610);
-    
+
     iconOFF = gtk_image_new_from_icon_name("dialog-close", GTK_ICON_SIZE_DND);
     gtk_fixed_put(GTK_FIXED(boardWindowFixed), iconOFF, 40, 60);
     //*****************************************************************************************
@@ -836,6 +883,8 @@ void buildUIGameWindow()
     playerBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
     gtk_widget_set_size_request(playerBox, CARD_WIDTH * 12, CARD_HEIGHT);
     gtk_fixed_put(GTK_FIXED(boardWindowFixed), playerBox, (WINDOW_WIDTH - CARD_WIDTH * 12) / 2, 582);
+
+
 }
 
 void main_play_game_with_bot()
@@ -854,27 +903,77 @@ void main_play_game_with_bot()
 
     up_card = pop(&s);
 
-    if(up_card.number == -3){
-        t=2;
-    }else if(up_card.number == -5){
-        t=4;
+    //******vào lượt người chơi:
+
+    //xử lý +2 | +4 | mất lượt | chuyển màu | xoay vòng
+    if (up_card.number == -3)
+    {
+        t = 2;
+    }
+    else if (up_card.number == -5)
+    {
+        t = 4;
         mau = 'r';
-    }else if(up_card.number == -4){
+    }
+    else if (up_card.number == -4)
+    {
         mau = 'r';
-    }else if (up_card.number == -1 || up_card.number == -2){
+    }
+    else if (up_card.number == -1 || up_card.number == -2)
+    {
         idUser = ENEMY;
     }
 
     clear_container(controllerBox);
     draw_card(controllerBox, &up_card, OTHER, 2);
+    draw_colorSquare();
 
-    //******vào lượt người chơi:
-
-    //xử lý +2 | +4 | mất lượt | chuyển màu | xoay vòng
-    if(check_up_card(&l1, &hand_size) != 1){
+    if (check_up_card(&l1, &hand_size) != 1)
+    {
         idUser = ENEMY;
-        bot_play(NULL);
+        bot_play();
     }
+
+}
+
+void on_chooseRedBtn_clicked()
+{
+    checkChooseColor = 0;
+    mau = 'r';
+    gtk_widget_hide(chooseColorDialog);
+    gtk_window_set_accept_focus(GTK_WINDOW(boardWindow), TRUE);
+    idUser = ENEMY;
+    change_on_off_icon(ENEMY);
+    draw_colorSquare();
     
-   
+}
+void on_chooseGreenBtn_clicked()
+{
+    checkChooseColor = 0;
+    mau = 'g';
+    gtk_widget_hide(chooseColorDialog);
+    gtk_window_set_accept_focus(GTK_WINDOW(boardWindow), TRUE);
+    idUser = ENEMY;
+    change_on_off_icon(ENEMY);
+    draw_colorSquare();
+}
+void on_chooseBlueBtn_clicked()
+{
+    checkChooseColor = 0;
+    mau = 'b';
+    gtk_widget_hide(chooseColorDialog);
+    gtk_window_set_accept_focus(GTK_WINDOW(boardWindow), TRUE);
+    idUser = ENEMY;
+    change_on_off_icon(ENEMY);
+    draw_colorSquare();
+}
+void on_chooseYellowBtn_clicked()
+{
+    checkChooseColor = 0;
+    mau = 'y';
+    gtk_widget_hide(chooseColorDialog);
+    gtk_window_set_accept_focus(GTK_WINDOW(boardWindow), TRUE);
+    idUser = ENEMY;
+    change_on_off_icon(ENEMY);
+    draw_colorSquare();
 }
