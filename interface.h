@@ -35,6 +35,9 @@ GtkWidget *boardWindow;
 GtkWidget *bgColorSquare; // background
 GtkWidget *colorSquare;
 
+GtkWidget* winDialog;
+GtkWidget* loserDialog;
+
 char buff[80];
 int rcvBytes;
 int sock_app;
@@ -68,10 +71,10 @@ int checkSpace(char s[])
     }
     return 0;
 }
-UNO listCard[] = {{1, 'r', 0}, {2, 'r', 1}, {3, 'r', 2}, {4, 'r', 3}, {5, 'r', 4}, {6, 'r', 5}, {7, 'r', 6}, {8, 'r', 7}, {9, 'r', 8}, {10, 'r', 9}, {11, 'r', -1}, {12, 'r', -2}, {13, 'r', -3}, {14, 'k', -4}, {15, 'y', 0}, {16, 'y', 1}, {17, 'y', 2}, {18, 'y', 3}, {19, 'y', 4}, {20, 'y', 5}, {21, 'y', 6}, {22, 'y', 7}, {23, 'y', 8}, {24, 'y', 9}, {25, 'y', -1}, {26, 'y', -2}, {27, 'y', -3}, {28, 'k', -4}, {29, 'g', 0}, {30, 'g', 1}, {31, 'g', 2}, {32, 'g', 3}, {33, 'g', 4}, {34, 'g', 5}, {35, 'g', 6}, {36, 'g', 7}, {37, 'g', 8}, {38, 'g', 9}, {39, 'g', -1}, {40, 'g', -2}, {41, 'g', -3}, {42, 'k', -4}, {43, 'b', 0}, {44, 'b', 1}, {45, 'b', 2}, {46, 'b', 3}, {47, 'b', 4}, {48, 'b', 5}, {49, 'b', 6}, {50, 'b', 7}, {51, 'b', 8}, {52, 'b', 9}, {53, 'b', -1}, {54, 'b', -2}, {55, 'b', -3}, {56, 'k', -4}};
+// UNO listCard[] = {{1, 'r', 0}, {2, 'r', 1}, {3, 'r', 2}, {4, 'r', 3}, {5, 'r', 4}, {6, 'r', 5}, {7, 'r', 6}, {8, 'r', 7}, {9, 'r', 8}, {10, 'r', 9}, {11, 'r', -1}, {12, 'r', -2}, {13, 'r', -3}, {14, 'k', -4}, {15, 'y', 0}, {16, 'y', 1}, {17, 'y', 2}, {18, 'y', 3}, {19, 'y', 4}, {20, 'y', 5}, {21, 'y', 6}, {22, 'y', 7}, {23, 'y', 8}, {24, 'y', 9}, {25, 'y', -1}, {26, 'y', -2}, {27, 'y', -3}, {28, 'k', -4}, {29, 'g', 0}, {30, 'g', 1}, {31, 'g', 2}, {32, 'g', 3}, {33, 'g', 4}, {34, 'g', 5}, {35, 'g', 6}, {36, 'g', 7}, {37, 'g', 8}, {38, 'g', 9}, {39, 'g', -1}, {40, 'g', -2}, {41, 'g', -3}, {42, 'k', -4}, {43, 'b', 0}, {44, 'b', 1}, {45, 'b', 2}, {46, 'b', 3}, {47, 'b', 4}, {48, 'b', 5}, {49, 'b', 6}, {50, 'b', 7}, {51, 'b', 8}, {52, 'b', 9}, {53, 'b', -1}, {54, 'b', -2}, {55, 'b', -3}, {56, 'k', -4}};
 UNO x_card = {0, 'x', -6};
-UNO add4card = {69, 'k', -5};
-UNO add2card = {13, 'r', -3};
+// UNO add4card = {69, 'k', -5};
+// UNO add2card = {13, 'r', -3};
 
 UNO up_card;
 UNO hand[52];
@@ -152,6 +155,30 @@ GtkWidget *iconON;
 GtkWidget *iconOFF;
 GtkWidget *chooseColorDialog;
 
+void reset_board_game();
+
+void check_player_win(){
+    if (hand_size == 0)
+        {
+            printf("player Win\n");
+            gtk_widget_show(winDialog);
+            gtk_window_set_accept_focus(GTK_WINDOW(boardWindow), FALSE);
+            idUser = PLAYER;
+            reset_board_game();
+        }
+}
+
+void check_bot_win(){
+    if (enemy_size == 0)
+        {
+            printf("bot Win\n");
+            gtk_widget_show(loserDialog);
+            gtk_window_set_accept_focus(GTK_WINDOW(boardWindow), FALSE);
+            idUser = ENEMY;
+            reset_board_game();
+        }
+}
+
 int check_up_card(LIST *xxx, int *cml) //check phạt ko đỡ đk thì phạt luôn
 {
     change_on_off_icon(PLAYER);
@@ -220,6 +247,8 @@ void draw_enemyCards()
     clear_container(controllerBox);
     draw_card(controllerBox, &up_card, OTHER, 2);
     draw_colorSquare();
+    check_bot_win();
+
 }
 
 void drawCardButtonClick(GtkWidget *button)
@@ -381,6 +410,9 @@ int app(int argc, char **argv, int sockfd)
     gtk_widget_hide(boardWindow);
 
     chooseColorDialog = GTK_WIDGET(gtk_builder_get_object(builder, "chooseColorDialog"));
+
+    winDialog = GTK_WIDGET(gtk_builder_get_object(builder, "winDialog"));
+    loserDialog = GTK_WIDGET(gtk_builder_get_object(builder, "loserDialog"));
 
     g_signal_connect(beginWindow, "destroy", G_CALLBACK(gtk_main_quit), NULL);
     gtk_builder_connect_signals(builder, NULL);
@@ -555,8 +587,12 @@ void on_mainMenuWindow_destroy()
 
 void on_startGameBtn_clicked()
 {
-    gtk_widget_show_all(boardWindow);
     gtk_widget_hide(mainMenuWindow);
+
+    // boardWindow = GTK_WIDGET(gtk_builder_get_object(builder, "boardWindow"));
+    // buildUIGameWindow();
+    gtk_widget_show_all(boardWindow);
+    // gtk_widget_hide(boardWindow);
 
     main_play_game_with_bot();
 }
@@ -683,7 +719,7 @@ void card_clicked(GtkWidget *card_button, gpointer card_data)
 
 void bot_play()
 {   
-    if(checkChooseColor!=1){
+    if(checkChooseColor!=1 && (hand_size != 0 && enemy_size != 0)){
     if (idUser == ENEMY)
     {
         int id = up_card.id;
@@ -691,10 +727,7 @@ void bot_play()
         printf("\n%c ---- %c-%d\n", mau, up_card.color, up_card.number);
         up_card = timUno(l, id);
         draw_enemyCards();
-        if (enemy_size == 0)
-        {
-            printf("bot Win\n");
-        }
+        
         if (check_up_card(&l1, &hand_size) != 1)
         {
             idUser = ENEMY;
@@ -750,17 +783,16 @@ int play(UNO *card)
     hand_size -= 1;
     // // draw the new game state
     draw_hand(playerBox);
-    if (hand_size == 0)
-    {
-        printf("player Win\n");
-    }
+
     drawCardCount = 0;
     if (p->data.number == -4 || p->data.number == -5)
     {
         gtk_widget_show(chooseColorDialog);
         gtk_window_set_accept_focus(GTK_WINDOW(boardWindow), FALSE);
         checkChooseColor = 1;
-    }
+    }else{
+        check_player_win();
+    }    
     return 1;
 }
 
@@ -883,8 +915,6 @@ void buildUIGameWindow()
     playerBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
     gtk_widget_set_size_request(playerBox, CARD_WIDTH * 12, CARD_HEIGHT);
     gtk_fixed_put(GTK_FIXED(boardWindowFixed), playerBox, (WINDOW_WIDTH - CARD_WIDTH * 12) / 2, 582);
-
-
 }
 
 void main_play_game_with_bot()
@@ -894,6 +924,7 @@ void main_play_game_with_bot()
     inPutStack(&s, l);
     //**********************************************************************************
     hand_size = 7;
+    idUser = PLAYER;
     inPutL1(&s, &l1);
     draw_hand(playerBox);
 
@@ -945,7 +976,7 @@ void on_chooseRedBtn_clicked()
     idUser = ENEMY;
     change_on_off_icon(ENEMY);
     draw_colorSquare();
-    
+    check_player_win();
 }
 void on_chooseGreenBtn_clicked()
 {
@@ -956,6 +987,7 @@ void on_chooseGreenBtn_clicked()
     idUser = ENEMY;
     change_on_off_icon(ENEMY);
     draw_colorSquare();
+    check_player_win();
 }
 void on_chooseBlueBtn_clicked()
 {
@@ -966,6 +998,7 @@ void on_chooseBlueBtn_clicked()
     idUser = ENEMY;
     change_on_off_icon(ENEMY);
     draw_colorSquare();
+    check_player_win();
 }
 void on_chooseYellowBtn_clicked()
 {
@@ -976,4 +1009,27 @@ void on_chooseYellowBtn_clicked()
     idUser = ENEMY;
     change_on_off_icon(ENEMY);
     draw_colorSquare();
+    check_player_win();
+}
+
+void on_backToHomeBtn_clicked(){
+    gtk_widget_show(mainMenuWindow);
+    gtk_widget_hide(winDialog);
+    gtk_widget_hide(loserDialog);
+    gtk_widget_hide(boardWindow);
+}
+
+void on_replayBtn_clicked(){
+    gtk_widget_hide(winDialog);
+    gtk_widget_hide(loserDialog);
+    main_play_game_with_bot();
+}
+
+void reset_board_game(){
+    mau = 'z';
+    hand_size = 0;
+    enemy_size = 0;
+    // giaiPhong(&s);
+    giaiPhong(&l1);
+    giaiPhong(&l2);
 }
