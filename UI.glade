@@ -368,42 +368,224 @@
       <placeholder/>
     </child>
   </object>
-  <object class="GtkImage" id="image1">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="pixbuf">images/color/r.png</property>
-  </object>
-  <object class="GtkImage" id="image2">
+  <object class="GtkImage" id="image10">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <property name="pixbuf">images/color/g.png</property>
   </object>
-  <object class="GtkImage" id="image3">
+  <object class="GtkImage" id="image11">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <property name="pixbuf">images/color/b.png</property>
   </object>
-  <object class="GtkImage" id="image4">
+  <object class="GtkImage" id="image12">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <property name="pixbuf">images/color/y.png</property>
   </object>
-  <object class="GtkWindow" id="chooseColorDialog">
+  <object class="GtkImage" id="image5">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="pixbuf">images/button/home.png</property>
+    <property name="icon_size">6</property>
+  </object>
+  <object class="GtkImage" id="image6">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="pixbuf">images/button/next-track.png</property>
+  </object>
+  <object class="GtkDialog" id="winDialog">
     <property name="can_focus">False</property>
     <property name="resizable">False</property>
-    <property name="window_position">center</property>
-    <property name="default_width">400</property>
-    <property name="default_height">250</property>
+    <property name="default_width">450</property>
+    <property name="default_height">260</property>
     <property name="destroy_with_parent">True</property>
-    <property name="decorated">False</property>
+    <property name="type_hint">dialog</property>
     <property name="deletable">False</property>
     <child type="titlebar">
       <placeholder/>
     </child>
-    <child>
-      <object class="GtkFixed">
-        <property name="visible">True</property>
+    <child internal-child="vbox">
+      <object class="GtkBox">
         <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">2</property>
+        <child internal-child="action_area">
+          <object class="GtkButtonBox">
+            <property name="can_focus">False</property>
+            <property name="layout_style">end</property>
+            <child>
+              <object class="GtkButton" id="backToHomeBtn">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="image">image5</property>
+                <property name="image_position">bottom</property>
+                <property name="always_show_image">True</property>
+                <signal name="clicked" handler="on_backToHomeBtn_clicked" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="replayBtn">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="image">image6</property>
+                <signal name="clicked" handler="on_replayBtn_clicked" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkImage">
+            <property name="width_request">50</property>
+            <property name="height_request">50</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="pixbuf">images/messages/win.png</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkImage" id="image7">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="pixbuf">images/button/home.png</property>
+  </object>
+  <object class="GtkImage" id="image8">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="pixbuf">images/button/next-track.png</property>
+  </object>
+  <object class="GtkDialog" id="loserDialog">
+    <property name="can_focus">False</property>
+    <property name="resizable">False</property>
+    <property name="default_width">450</property>
+    <property name="destroy_with_parent">True</property>
+    <property name="type_hint">dialog</property>
+    <property name="deletable">False</property>
+    <child type="titlebar">
+      <placeholder/>
+    </child>
+    <child internal-child="vbox">
+      <object class="GtkBox">
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">2</property>
+        <child internal-child="action_area">
+          <object class="GtkButtonBox">
+            <property name="can_focus">False</property>
+            <property name="layout_style">end</property>
+            <child>
+              <object class="GtkButton">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="image">image7</property>
+                <property name="always_show_image">True</property>
+                <signal name="clicked" handler="on_backToHomeBtn_clicked" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="image">image8</property>
+                <signal name="clicked" handler="on_replayBtn_clicked" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkImage">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="margin_top">30</property>
+            <property name="margin_bottom">30</property>
+            <property name="pixbuf">images/messages/loser.png</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkImage" id="image9">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="pixbuf">images/color/r.png</property>
+  </object>
+  <object class="GtkDialog" id="chooseColorDialog">
+    <property name="can_focus">False</property>
+    <property name="default_width">400</property>
+    <property name="default_height">250</property>
+    <property name="type_hint">dialog</property>
+    <property name="deletable">False</property>
+    <child type="titlebar">
+      <placeholder/>
+    </child>
+    <child internal-child="vbox">
+      <object class="GtkBox">
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">2</property>
+        <child internal-child="action_area">
+          <object class="GtkButtonBox">
+            <property name="can_focus">False</property>
+            <property name="layout_style">end</property>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
         <child>
           <object class="GtkBox">
             <property name="width_request">400</property>
@@ -414,6 +596,8 @@
               <object class="GtkLabel">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="margin_top">30</property>
+                <property name="margin_bottom">30</property>
                 <property name="label" translatable="yes">Select a color</property>
               </object>
               <packing>
@@ -424,7 +608,9 @@
             </child>
           </object>
           <packing>
-            <property name="y">30</property>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
           </packing>
         </child>
         <child>
@@ -433,13 +619,15 @@
             <property name="height_request">45</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="margin_top">20</property>
             <property name="spacing">24</property>
             <child>
               <object class="GtkButton" id="chooseRedBtn">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="image">image1</property>
+                <property name="margin_left">50</property>
+                <property name="image">image9</property>
                 <signal name="clicked" handler="on_chooseRedBtn_clicked" swapped="no"/>
                 <signal name="event-after" handler="bot_play" swapped="no"/>
               </object>
@@ -454,7 +642,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="image">image2</property>
+                <property name="image">image10</property>
                 <signal name="clicked" handler="on_chooseGreenBtn_clicked" swapped="no"/>
                 <signal name="event-after" handler="bot_play" swapped="no"/>
               </object>
@@ -469,7 +657,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="image">image3</property>
+                <property name="image">image11</property>
                 <signal name="clicked" handler="on_chooseBlueBtn_clicked" swapped="no"/>
                 <signal name="event-after" handler="bot_play" swapped="no"/>
               </object>
@@ -484,7 +672,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="image">image4</property>
+                <property name="image">image12</property>
                 <signal name="clicked" handler="on_chooseYellowBtn_clicked" swapped="no"/>
                 <signal name="event-after" handler="bot_play" swapped="no"/>
               </object>
@@ -496,8 +684,9 @@
             </child>
           </object>
           <packing>
-            <property name="x">50</property>
-            <property name="y">105</property>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
           </packing>
         </child>
       </object>
