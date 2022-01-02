@@ -37,6 +37,9 @@ GtkWidget *colorSquare;
 
 GtkWidget* winDialog;
 GtkWidget* loserDialog;
+GtkWidget* playerNotificationBox;
+GtkWidget* enemyNotificationBox;
+GtkWidget* notificationImage;
 
 char buff[80];
 int rcvBytes;
@@ -754,7 +757,7 @@ int play(UNO *card)
 
     if (mau != 'z')
     {
-        if ((r->data.color != mau) && (r->data.color != 'k'))
+        if ((r->data.color != mau) && (r->data.color != 'k') && (r->data.number != up_card.number))
         {
             return 0;
         }
@@ -907,14 +910,31 @@ void buildUIGameWindow()
     iconOFF = gtk_image_new_from_icon_name("dialog-close", GTK_ICON_SIZE_DND);
     gtk_fixed_put(GTK_FIXED(boardWindowFixed), iconOFF, 40, 60);
     //*****************************************************************************************
-    enemyBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+    enemyBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
     gtk_widget_set_size_request(enemyBox, CARD_WIDTH * 12, CARD_HEIGHT);
     gtk_fixed_put(GTK_FIXED(boardWindowFixed), enemyBox, (WINDOW_WIDTH - CARD_WIDTH * 12) / 2, 30);
 
-    // 4 box vao 4 vi tri.
-    playerBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+    playerBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
     gtk_widget_set_size_request(playerBox, CARD_WIDTH * 12, CARD_HEIGHT);
     gtk_fixed_put(GTK_FIXED(boardWindowFixed), playerBox, (WINDOW_WIDTH - CARD_WIDTH * 12) / 2, 582);
+
+//******************************************************************
+    playerNotificationBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+    gtk_widget_set_size_request(playerNotificationBox, CARD_WIDTH * 6, CARD_HEIGHT);
+    gtk_fixed_put(GTK_FIXED(boardWindowFixed), playerNotificationBox, startWidth, heightControllerBox + CARD_HEIGHT*2.5);
+
+    strcpy(link, "images/messages/1.png");
+    notificationImage = gtk_image_new_from_file(link);
+    gtk_box_pack_start(GTK_BOX(playerNotificationBox), notificationImage, TRUE, FALSE, 0);
+
+//******************************************************************
+    enemyNotificationBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+    gtk_widget_set_size_request(enemyNotificationBox, CARD_WIDTH * 6, CARD_HEIGHT);
+    gtk_fixed_put(GTK_FIXED(boardWindowFixed), enemyNotificationBox, startWidth, heightControllerBox - CARD_HEIGHT*1.25);
+
+    strcpy(link, "images/messages/1.png");
+    notificationImage = gtk_image_new_from_file(link);
+    gtk_box_pack_start(GTK_BOX(enemyNotificationBox), notificationImage, TRUE, FALSE, 0);
 }
 
 void main_play_game_with_bot()
