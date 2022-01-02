@@ -754,7 +754,7 @@ int play(UNO *card)
 
     if (mau != 'z')
     {
-        if ((r->data.color != mau) && (r->data.color != 'k'))
+        if ((r->data.color != mau) && (r->data.color != 'k') && (r->data.number != up_card.number))
         {
             return 0;
         }
