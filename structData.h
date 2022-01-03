@@ -34,7 +34,6 @@ typedef struct stack {
 }STACK;
 
 void Init(LIST* l);
-void InitStack(STACK* s);
 NODE* getNode(UNO DATA);
 void addTail(LIST* l, NODE* p);
 void xoaDau(LIST* l);
@@ -47,7 +46,7 @@ void inPutL1(STACK* s, LIST* l1);
 void deleteNode(LIST* l1, int id);
 NODE* findL1(LIST l1, char x, int y);
 
-
+void InitStack(STACK* s);
 int isEmpty(STACK* s);
 int push(STACK* s, NODE* p);
 int push2(STACK* s, UNO uno);

@@ -5,7 +5,6 @@ void WAIT (int Seconds);
 LIST l; // danh sach de luu 108 quan bai
 LIST l1, l2, l3, l4;// danh sach luu quan bai tren tay nguoi choi
 STACK s; // luu quan bai da dao
-// STACK s1;// luu quan bai da danh
 
 //doc file;
 void docFile(FILE* fileIn, LIST* l);
