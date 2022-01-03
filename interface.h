@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <unistd.h>
+#include <pthread.h>
 #include "uno.h"
 #define BUFF_SIZE 80
 
@@ -32,14 +33,16 @@ GtkWidget *passwordAgainRegEntry;
 GtkWidget *mainMenuWindow;
 GtkWidget *boardWindow;
 
+GtkWidget* playerNotificationBox;
+GtkWidget* enemyNotificationBox;
+GtkWidget* notificationImage;
+
 GtkWidget *bgColorSquare; // background
 GtkWidget *colorSquare;
 
 GtkWidget* winDialog;
 GtkWidget* loserDialog;
-GtkWidget* playerNotificationBox;
-GtkWidget* enemyNotificationBox;
-GtkWidget* notificationImage;
+pthread_t tid;
 
 char buff[80];
 int rcvBytes;
@@ -50,6 +53,8 @@ void draw_colorSquare();
 void change_on_off_icon(int mode);
 
 void mayDanh(LIST *xxx, int *idUser, int *id, int *t, int *cml, char *mau, int *chonMau);
+
+void* DisplayNotification(void*);
 
 void trim(char s[])
 {
@@ -93,7 +98,7 @@ int drawCardCount = 0;
 // id la id cua quan bai
 
 int checkChooseColor = 0;
-
+int notiCode;
 
 void deal_random_hand(int);
 void card_clicked(GtkWidget *, gpointer);
@@ -188,8 +193,6 @@ int check_up_card(LIST *xxx, int *cml) //check phạt ko đỡ đk thì phạt l
 
     NODE *p = find(l, up_card.id);
     UNO uno;
-    // printf("--%d--\n",CHECK(*xxx, up_card.id, &uno));
-    // printf("--%d--\n",doiMau(*xxx, mau, p, t));
     if (CHECK(*xxx, up_card.id, &uno) != 1 && doiMau(*xxx, mau, p, t) != 1)
     {
         //************** bị phat
@@ -201,10 +204,6 @@ int check_up_card(LIST *xxx, int *cml) //check phạt ko đỡ đk thì phạt l
             t = 0;
             draw_hand(playerBox);
 
-            // if (p->data.number == -5)
-            // {
-            //     mau = 'r';
-            // }
             if (p->data.number == -3)
             {
                 mau = p->data.color;
@@ -317,6 +316,7 @@ void nextButtonClick(GtkWidget *button)
 
 void mayDanh(LIST *xxx, int *idUser, int *id, int *t, int *cml, char *mau, int *chonMau)
 {
+    int checkPlayCard = 0;
     NODE *p = find(l, *id);
     UNO uno;
     int ID = *id;
@@ -326,6 +326,7 @@ void mayDanh(LIST *xxx, int *idUser, int *id, int *t, int *cml, char *mau, int *
     {
         danhBaiChoMay(xxx, id, cml, mau, t);
         up_card = timUno(l, *id);
+        checkPlayCard = 1;
     }
     else
     {
@@ -336,8 +337,7 @@ void mayDanh(LIST *xxx, int *idUser, int *id, int *t, int *cml, char *mau, int *
             *cml += *t;
             *t = 0;
 
-            if (up_card.number == -3)
-            {
+            if (up_card.number == -3){
                 *mau = up_card.color;
             }
         }
@@ -353,17 +353,31 @@ void mayDanh(LIST *xxx, int *idUser, int *id, int *t, int *cml, char *mau, int *
 
                 danhBaiChoMay(xxx, id, cml, mau, t);
                 up_card = timUno(l, *id);
+                checkPlayCard = 1;
             }
         }
     }
-
     // kiem tra xem luot danh tiep theo thuoc ve ai
-    if ((up_card.number == -1 || up_card.number == -2) && *id != ID)
+    if (up_card.number == -1 && *id != ID)
     {
         *idUser = ENEMY;
+        notiCode = 1*10 + PLAYER;
+        pthread_create(&tid, NULL, DisplayNotification, (void *)&notiCode);
+    }else if(up_card.number == -2 && *id != ID){
+        *idUser = ENEMY;
+        notiCode = 2*10 + PLAYER;
+        pthread_create(&tid, NULL, DisplayNotification, (void *)&notiCode);
+
     }
     else
     {
+        if(up_card.number == -5 && checkPlayCard ==1){
+            notiCode = 5*10 + PLAYER;
+            pthread_create(&tid, NULL, DisplayNotification, (void *)&notiCode);
+        }else if(up_card.number == -3 && checkPlayCard==1){
+            notiCode = 3*10 + PLAYER;
+            pthread_create(&tid, NULL, DisplayNotification, (void *)&notiCode);
+        }
         *idUser = 1;
     }
 }
@@ -410,6 +424,7 @@ int app(int argc, char **argv, int sockfd)
 
     boardWindow = GTK_WIDGET(gtk_builder_get_object(builder, "boardWindow"));
     buildUIGameWindow();
+
     gtk_widget_hide(boardWindow);
 
     chooseColorDialog = GTK_WIDGET(gtk_builder_get_object(builder, "chooseColorDialog"));
@@ -430,6 +445,8 @@ int app(int argc, char **argv, int sockfd)
     giaiPhong(&l2);
     giaiPhong(&l);
     // giaiPhong(&s);
+    pthread_exit(NULL);
+    // return 0;
     return EXIT_SUCCESS;
 }
 
@@ -592,10 +609,7 @@ void on_startGameBtn_clicked()
 {
     gtk_widget_hide(mainMenuWindow);
 
-    // boardWindow = GTK_WIDGET(gtk_builder_get_object(builder, "boardWindow"));
-    // buildUIGameWindow();
     gtk_widget_show_all(boardWindow);
-    // gtk_widget_hide(boardWindow);
 
     main_play_game_with_bot();
 }
@@ -706,9 +720,17 @@ void card_clicked(GtkWidget *card_button, gpointer card_data)
     {
         if (play(card) == 1)
         {
-            if ((up_card.number == -1 || up_card.number == -2) && up_card.id != pre_id)
+            if (up_card.number == -1  && up_card.id != pre_id)
             {
-                idUser = 1;
+                idUser = PLAYER;
+                notiCode = 1*10 + ENEMY;
+                pthread_create(&tid, NULL, DisplayNotification, (void *)&notiCode);
+
+            }else if(up_card.number == -2 && up_card.id != pre_id){
+                idUser = PLAYER;
+                notiCode = 2*10 + ENEMY;
+                pthread_create(&tid, NULL, DisplayNotification, (void *)&notiCode);
+
             }
             else
             {
@@ -793,7 +815,15 @@ int play(UNO *card)
         gtk_widget_show(chooseColorDialog);
         gtk_window_set_accept_focus(GTK_WINDOW(boardWindow), FALSE);
         checkChooseColor = 1;
+        if(p->data.number == -5){
+            notiCode = 5*10 + ENEMY;
+            pthread_create(&tid, NULL, DisplayNotification, (void *)&notiCode);
+        }
     }else{
+        if(p->data.number == -3){
+            notiCode = 3*10 + ENEMY;
+            pthread_create(&tid, NULL, DisplayNotification, (void *)&notiCode);
+        }
         check_player_win();
     }    
     return 1;
@@ -923,18 +953,10 @@ void buildUIGameWindow()
     gtk_widget_set_size_request(playerNotificationBox, CARD_WIDTH * 6, CARD_HEIGHT);
     gtk_fixed_put(GTK_FIXED(boardWindowFixed), playerNotificationBox, startWidth, heightControllerBox + CARD_HEIGHT*2.5);
 
-    strcpy(link, "images/messages/1.png");
-    notificationImage = gtk_image_new_from_file(link);
-    gtk_box_pack_start(GTK_BOX(playerNotificationBox), notificationImage, TRUE, FALSE, 0);
-
 //******************************************************************
     enemyNotificationBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
     gtk_widget_set_size_request(enemyNotificationBox, CARD_WIDTH * 6, CARD_HEIGHT);
     gtk_fixed_put(GTK_FIXED(boardWindowFixed), enemyNotificationBox, startWidth, heightControllerBox - CARD_HEIGHT*1.25);
-
-    strcpy(link, "images/messages/1.png");
-    notificationImage = gtk_image_new_from_file(link);
-    gtk_box_pack_start(GTK_BOX(enemyNotificationBox), notificationImage, TRUE, FALSE, 0);
 }
 
 void main_play_game_with_bot()
@@ -1052,4 +1074,45 @@ void reset_board_game(){
     // giaiPhong(&s);
     giaiPhong(&l1);
     giaiPhong(&l2);
+    // pthread_exit(NULL);
+}
+
+void* DisplayNotification(void* noti){ // code == mode*10 + user
+    printf("thong bao\n");
+    int mode =  notiCode/10;
+    int user =  notiCode%10;
+    char link[100];
+    switch (mode){
+    case 1:
+        strcpy(link, "images/messages/1.png");
+        break;
+    case 2:
+        if(user==PLAYER)
+            strcpy(link, "images/messages/22.png");
+        else
+            strcpy(link, "images/messages/21.png");
+        break;
+    case 3:
+        strcpy(link, "images/messages/3.png");
+        break;
+    case 5:
+        strcpy(link, "images/messages/5.png");
+        break;
+    default:
+        break;
+    }
+    // GtkWidget* notificationImage;
+    notificationImage = gtk_image_new_from_file(link);
+
+    if(user==PLAYER){
+        gtk_box_pack_start(GTK_BOX(playerNotificationBox), notificationImage, TRUE, FALSE, 0);
+        gtk_widget_show(notificationImage);
+        sleep(2);
+        gtk_container_remove(GTK_CONTAINER(playerNotificationBox), GTK_WIDGET(notificationImage));
+    }else{
+        gtk_box_pack_start(GTK_BOX(enemyNotificationBox), notificationImage, TRUE, FALSE, 0);
+        gtk_widget_show(notificationImage);
+        sleep(2);
+        gtk_container_remove(GTK_CONTAINER(enemyNotificationBox), GTK_WIDGET(notificationImage));
+    }
 }
