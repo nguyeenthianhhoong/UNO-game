@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include "uno.h"
+#include "object.h"
 #define BUFF_SIZE 80
 
 const int WINDOW_WIDTH = 1140;
@@ -47,6 +48,7 @@ pthread_t tid;
 char buff[80];
 int rcvBytes;
 int sock_app;
+Client *c ;
 
 void draw_colorSquare();
 
@@ -168,6 +170,9 @@ void reset_board_game();
 void check_player_win(){
     if (hand_size == 0)
         {
+            printf("---%d\n",c->signal);
+            c->play_with_bot.id_player = 1;
+            send(sock_app, c, sizeof(Client), 0);
             printf("player Win\n");
             gtk_widget_show(winDialog);
             gtk_window_set_accept_focus(GTK_WINDOW(boardWindow), FALSE);
@@ -179,6 +184,9 @@ void check_player_win(){
 void check_bot_win(){
     if (enemy_size == 0)
         {
+            printf("---%d\n",c->signal);
+            c->play_with_bot.id_player = 0;
+            send(sock_app, c, sizeof(Client), 0);
             printf("bot Win\n");
             gtk_widget_show(loserDialog);
             gtk_window_set_accept_focus(GTK_WINDOW(boardWindow), FALSE);
@@ -402,6 +410,7 @@ int app(int argc, char **argv, int sockfd)
 {
     gtk_init(&argc, &argv);
     sock_app = sockfd;
+    c = (Client *)malloc(sizeof(Client));
 
     builder = gtk_builder_new_from_file("UI.glade");
     beginWindow = GTK_WIDGET(gtk_builder_get_object(builder, "beginWindow"));
@@ -454,10 +463,7 @@ void on_loginBtn_clicked()
 {
     gtk_widget_show(LoginWindow);
     gtk_widget_hide(beginWindow);
-    strcpy(buff, "1");
-    send(sock_app, buff, strlen(buff), 0);
-    rcvBytes = recv(sock_app, buff, BUFF_SIZE, 0);
-    buff[rcvBytes] = '\0';
+
 }
 
 void on_LoginWindow_destroy()
@@ -471,7 +477,7 @@ void on_LoginWindow_destroy()
 
 void on_loginSubmitBtn_clicked()
 {
-
+    c->signal = LOGIN;
     char tmp[128];
     sprintf(tmp, "%s", gtk_entry_get_text(GTK_ENTRY(usernameLoginEntry)));
     trim(tmp);
@@ -482,12 +488,8 @@ void on_loginSubmitBtn_clicked()
     }
     else
     {
-
-        // printf("-%s-\n", tmp);
-        strcpy(buff, tmp);
+        strcpy(c->login.username,tmp);
         sprintf(tmp, "%s", gtk_entry_get_text(GTK_ENTRY(passwordLoginEntry)));
-        // printf("-%s-\n", tmp);
-        // trim(tmp);
         if (checkSpace(tmp) == 1)
         {
             //loi
@@ -495,9 +497,8 @@ void on_loginSubmitBtn_clicked()
         }
         else
         {
-            strcat(buff, " ");
-            strcat(buff, tmp);
-            send(sock_app, buff, strlen(buff), 0);
+            strcpy(c->login.password,tmp);
+            send(sock_app, c, sizeof(Client), 0);
             rcvBytes = recv(sock_app, buff, BUFF_SIZE, 0);
             if (rcvBytes < 0)
             {
@@ -526,10 +527,6 @@ void on_registerBtn_clicked()
 {
     gtk_widget_show(RegisterWindow);
     gtk_widget_hide(beginWindow);
-    strcpy(buff, "2");
-    send(sock_app, buff, strlen(buff), 0);
-    rcvBytes = recv(sock_app, buff, BUFF_SIZE, 0);
-    buff[rcvBytes] = '\0';
 }
 
 void on_RegisterWindow_destroy()
@@ -544,6 +541,7 @@ void on_RegisterWindow_destroy()
 
 void on_registerSubmitBtn_clicked()
 {
+    c->signal = SIGNUP;
     char tmp[128];
     sprintf(tmp, "%s", gtk_entry_get_text(GTK_ENTRY(usernameRegEntry)));
     trim(tmp);
@@ -555,8 +553,7 @@ void on_registerSubmitBtn_clicked()
     else
     {
 
-        strcpy(buff, tmp);
-        strcat(buff, " ");
+        strcpy(c->signup.username,tmp);
         sprintf(tmp, "%s", gtk_entry_get_text(GTK_ENTRY(passwordRegEntry)));
         if (checkSpace(tmp) == 1)
         {
@@ -566,9 +563,7 @@ void on_registerSubmitBtn_clicked()
         else
         {
 
-            // printf("-%s-\n", tmp);
-            strcat(buff, tmp);
-            strcat(buff, " ");
+            strcpy(c->signup.password,tmp);
             sprintf(tmp, "%s", gtk_entry_get_text(GTK_ENTRY(passwordAgainRegEntry)));
             if (checkSpace(tmp) == 1)
             {
@@ -578,10 +573,9 @@ void on_registerSubmitBtn_clicked()
             else
             {
 
-                // printf("-%s-\n", tmp);
-                strcat(buff, tmp);
-                // printf("-%s-\n", buff);
-                send(sock_app, buff, strlen(buff), 0);
+                strcpy(c->signup.confirm_password,tmp);
+
+                send(sock_app, c, sizeof(Client), 0);
                 rcvBytes = recv(sock_app, buff, BUFF_SIZE, 0);
                 if (rcvBytes < 0)
                 {
@@ -612,6 +606,17 @@ void on_startGameBtn_clicked()
     gtk_widget_show_all(boardWindow);
 
     main_play_game_with_bot();
+}
+
+void on_logoutBtn_clicked(){
+    c->signal = LOGOUT;
+    printf("%d\n",c->signal);
+    send(sock_app, c, sizeof(Client), 0);
+    rcvBytes = recv(sock_app, buff, BUFF_SIZE, 0);
+    buff[rcvBytes] = '\0';
+    printf("%s\n", buff);
+    gtk_widget_hide(mainMenuWindow);
+    gtk_widget_show(beginWindow);
 }
 
 /**
@@ -961,6 +966,7 @@ void buildUIGameWindow()
 
 void main_play_game_with_bot()
 {
+    c->signal = PLAY_WITH_BOT;
     Init(&l);
     loadTuFile(fileIn, &l); // do bai tu file vao dslk
     inPutStack(&s, l);

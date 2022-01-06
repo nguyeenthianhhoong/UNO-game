@@ -7,7 +7,9 @@
 #include <stdlib.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <pthread.h>
 #include "uno.h"
+#include "object.h"
 #define BUFF_SIZE 100
 #define BACKLOG 1 //number of pending connections in queue
 
@@ -17,6 +19,7 @@ typedef struct account
     char password[30];
     int number;
     int number_win;
+    int isLogin;
 } account;
 //
 // typedef struct user{
@@ -76,7 +79,7 @@ void readFile(FILE *f)
     account acc;
     while (!feof(f))
     {
-        fscanf(f, "%s %s %d %d\n", acc.username, acc.password, &acc.number, &acc.number_win);
+        fscanf(f, "%s %s %d %d %d\n", acc.username, acc.password, &acc.number, &acc.number_win, &acc.isLogin);
         addAccount(acc);
     }
     fclose(f);
@@ -89,7 +92,7 @@ void writeFile()
     f = fopen("account.txt", "w");
     while (tmp != NULL)
     {
-        fprintf(f, "%s %s %d %d\n", tmp->acc.username, tmp->acc.password, tmp->acc.number, tmp->acc.number_win);
+        fprintf(f, "%s %s %d %d %d\n", tmp->acc.username, tmp->acc.password, tmp->acc.number, tmp->acc.number_win, tmp->acc.isLogin);
         tmp = tmp->next;
     }
     fclose(f);
@@ -256,6 +259,143 @@ void may(STACK *s, STACK *s1, LIST* l1, LIST* l2){
 }
 */
 
+void *client_handler(void *arg)
+{
+    int clientfd;
+    int sendBytes, rcvBytes;
+    char buff[BUFF_SIZE];
+    node *tmp = (node *)malloc(sizeof(node));
+    pthread_detach(pthread_self());
+    clientfd = *((int *)arg);
+    while (1)
+    {
+        Client *c = (Client *)malloc(sizeof(Client));
+        rcvBytes = recv(clientfd, c, sizeof(Client), 0);
+        if (rcvBytes < 0)
+        {
+            perror("Error: ");
+            return 0;
+        }
+
+        switch (c->signal)
+        {
+        case LOGIN:
+            printf("------------LOGIN------------\n");
+            tmp = checkUsername(c->login.username);
+            if (tmp == NULL)
+            {
+                strcpy(buff, "Tài khoản không tồn tại");
+                printf("%s\n", buff);
+                send(clientfd, buff, strlen(buff), 0);
+                //continue;
+            }
+            else if (tmp->acc.isLogin == 1)
+            {
+                strcpy(buff, "Tài khoản đã đăng nhập");
+                printf("%s\n", buff);
+                send(clientfd, buff, strlen(buff), 0);
+                //continue;
+            }
+            else
+            {
+                
+                if (strcmp(tmp->acc.password, c->login.password) == 0)
+                {
+                    strcpy(buff, "OK");
+                    printf("%s\n", buff);
+                    tmp->acc.isLogin = 1;
+                    writeFile();
+                    send(clientfd, buff, strlen(buff), 0);
+                    // strcpy(userSignedIn, username);
+                    // is_login = 1;
+                    //break;
+                }
+                else
+                {
+                    strcpy(buff, "Mật khẩu không đúng");
+                    printf("%s\n", buff);
+                    send(clientfd, buff, strlen(buff), 0);
+                }
+            }
+            break;
+
+        case SIGNUP:
+            printf("------------SIGN UP------------\n"); 
+            //tmp = checkUsername(c->signup.username);
+            if (checkUsername(c->signup.username) != NULL)
+            {
+                strcpy(buff, "Tài khoản đã tồn tại");
+                printf("%s\n", buff);
+                send(clientfd, buff, strlen(buff), 0);
+                //continue;
+            }
+            else
+            {
+                if (strcmp(c->signup.password, c->signup.confirm_password) == 0)
+                {
+                    strcpy(buff, "OK");
+                    printf("%s\n", buff);
+                    account acc;
+                    strcpy(acc.username, c->signup.username);
+                    strcpy(acc.password, c->signup.password);
+                    acc.number = 0;
+                    acc.number_win = 0;
+                    acc.isLogin = 0;
+                    addAccount(acc);
+                    writeFile();
+                    send(clientfd, buff, strlen(buff), 0);
+                    //break;
+                }
+                else
+                {
+                    strcpy(buff, "Mật khẩu không đúng");
+                    printf("%s\n", buff);
+                    send(clientfd, buff, strlen(buff), 0);
+                }
+            }
+            break;
+
+        case PLAY_WITH_BOT:
+            printf("------------PLAY WITH BOT------------\n");
+            //printf("%s\n", tmp->acc.username);
+            tmp->acc.number++;
+            if (c->play_with_bot.id_player == 1)
+            {
+                tmp->acc.number_win++;
+            }
+            writeFile();
+            break;
+
+        case PLAY_WITH_PERSON:
+
+            break;
+
+        case VIEW_RANK:
+
+            break;
+
+        case LOGOUT:
+            printf("------------LOGOUT------------\n");
+            //tmp = checkUsername(c->login.username);
+            printf("%s\n", tmp->acc.username);
+            tmp->acc.isLogin = 0;
+            writeFile();
+            sprintf(buff, "bye %s", c->login.username);
+            printf("%s\n", buff);
+            send(clientfd, buff, strlen(buff), 0);
+            break;
+
+            free_obj(c);
+            // default:
+            //     break;
+            // }
+        }
+
+        //break;
+    }
+    close(clientfd);
+}
+
 int main(int argc, char *argv[])
 {
     if (argc != 2)
@@ -282,7 +422,7 @@ int main(int argc, char *argv[])
     //Init(l1);
     printf("hi\n");
     loadTuFile(fileIn, &l);
-    
+
     //printf("hi\n");
 
     int listen_sock, conn_sock;
@@ -329,6 +469,7 @@ int main(int argc, char *argv[])
         return 0;
     }
 
+    pthread_t tid;
     printf("Server started\n");
 
     //Step 4: Communicate with client
@@ -341,6 +482,8 @@ int main(int argc, char *argv[])
             perror("\nError: ");
         }
         printf("You got a connection from %s\n", inet_ntoa(cliaddr.sin_addr));
+        pthread_create(&tid, NULL, &client_handler, (void *)&conn_sock);
+        /*
         while (1)
         {
             rcvBytes = recv(conn_sock, buff, sizeof(buff), 0);
@@ -512,6 +655,7 @@ int main(int argc, char *argv[])
         printf("bye\n");
         close(conn_sock);
         break;
+        */
     }
     close(listen_sock);
     return 1;
