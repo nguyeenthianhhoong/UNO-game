@@ -35,7 +35,7 @@ void addTail(LIST* l, NODE* p) {
 	}
 }
 
-// xoa nude dau
+// xoa node dau
 void xoaDau(LIST* l) {
 	if (l->pHead != NULL) {
 		NODE* p = l->pHead;
@@ -65,7 +65,7 @@ void XoaCuoi(LIST* l)
 void giaiPhong(LIST* l) {
 	NODE* p;
 	while (l->pHead != NULL) {
-		p = l->pHead;// cho con tro p tro toi nude dau
+		p = l->pHead;// cho con tro p tro toi node dau
 		l->pHead = l->pHead->pNext;// pHead dc tro sang node ben canh
 		free(p);
 	}
@@ -90,15 +90,10 @@ void show(LIST l1) {
 
 // ham tim kiem 1 node trong dslk bang id
 NODE* find(LIST l, int id) {
-	//UNO uno = NULL;
 	int check = 0;
 	NODE* q = NULL;
-	//Output(l);
 	for (NODE* p = l.pHead; p != NULL; p = p->pNext) {
-		//Output(l);
-		//printf("%d \n",p->data.id);
 		if (p->data.id == id) {
-			//uno = p->data;
 			q = getNode(p->data);
 			check = 1;
 			break;
@@ -107,7 +102,7 @@ NODE* find(LIST l, int id) {
 	if (check == 0) {
 		printf("\np null");
 	}
-	//p = getNode(uno);
+	printf("find\n");
 	return q;
 }
 
@@ -152,7 +147,6 @@ NODE* findL1(LIST l1, char x, int y) {
 	NODE* p;
 	for (p = l1.pHead; p != NULL; p = p->pNext) {
 		if (p->data.color == x && p->data.number == y) {
-			//q = p;
 			break;
 		}
 	}
@@ -174,19 +168,22 @@ int push(STACK* s, NODE* p) {
 	if (p == NULL) {
 		return 0;
 	}
+	NODE* q = (NODE*)malloc(sizeof(NODE));
+	q = p;
 	//truong hop stack rong
 	if (s->top == NULL) {
-		s->top = p;
+		s->top = q;
 	}
 	else {
-		p->pNext = s->top;
-		s->top = p;
+		q->pNext = s->top;
+		s->top = q;
 	}
 	return 1;
 }
 
 int push2(STACK* s, UNO uno) {
-	NODE* p = getNode(uno);
+	NODE* p = (NODE*)malloc(sizeof(NODE));
+	p = getNode(uno);
 	if (s->top == NULL) {
 		s->top = p;
 	}
@@ -200,11 +197,13 @@ int push2(STACK* s, UNO uno) {
 UNO pop(STACK* s) //Loai bo phan tu khoi Stack
 {
     UNO x;
+	NODE* p = (NODE*)malloc(sizeof(NODE));
 	if (!isEmpty(s))
 	{
 		x = s->top->data; //luu lai gia tri
+		p = s->top;
 		s->top = s->top->pNext; //Xoa phan tu Top
-		//return x;
+		free(p);
 	}
     return x;
 }
@@ -212,9 +211,7 @@ UNO pop(STACK* s) //Loai bo phan tu khoi Stack
 // giai phong
 void outPut(STACK* s) {
 	while (isEmpty(s) == 0) {
-		//UNO uno;
-		/*uno = */pop(s);
-		//xuat(uno);
+		pop(s);
 	}
 }
 //==========================================================
