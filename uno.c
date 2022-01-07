@@ -83,12 +83,13 @@ void inPutStack(STACK* s, LIST l) {
 
 //kiểm tra quân bài phù hợp trong list bài của mik | đánh được là 1 | 0 ko được
 int CHECK(LIST xxx, int id, UNO* uno) {
-	NODE* q = find(l, id);
+	// NODE* p = (NODE*)malloc(sizeof(NODE));
+	NODE* p = find(l, id);
 	char x;
 	int y;
-	x = q->data.color;
-	y = q->data.number;
-	for (NODE* p = xxx.pHead; p != NULL; p = p->pNext) {
+	x = p->data.color;
+	y = p->data.number;
+	for (p = xxx.pHead; p != NULL; p = p->pNext) {
 		// truong hop con bai truoc la con cam hoac dao chieu
 		if ((y == -1 || y == -2) && (p->data.color == x || p->data.number == y || p->data.color == 'k')) {
 			*uno = p->data;
@@ -114,6 +115,7 @@ int CHECK(LIST xxx, int id, UNO* uno) {
 			return 1;
 		}
 	}
+	printf("CHECK\n");
 	return 0;
 }
 
@@ -357,7 +359,7 @@ void danhBai(LIST* xxx, int* id, int* cml, char* mau, int* t) {
 // ham kiem tra quan bai sau khi danh con doi mau
 int doiMau2(LIST xxx, char mau, NODE* r) {
 	for (NODE* p = xxx.pHead; p != NULL; p = p->pNext) {
-		if ((p->data.color == mau || r->data.color == 'k') && mau != 'z') {
+		if ((p->data.color == mau || r->data.color == 'k' || r->data.number == -3) && mau != 'z') {
 			r = p;
 			//printf("\nmay vao day k");
 			return 1;
@@ -368,21 +370,21 @@ int doiMau2(LIST xxx, char mau, NODE* r) {
 
 int doiMau(LIST xxx, char mau, NODE* r, int phat) {
 	for (NODE* p = xxx.pHead; p != NULL; p = p->pNext) {
-		// if(p->data.number == -3){}
-		if ((p->data.color == mau || p->data.color == 'k' || p->data.color == -3) && mau != 'z' && phat == 0) {
+		if ((p->data.color == mau || p->data.color == 'k' || p->data.number == -3) && mau != 'z' && phat == 0) {
 			r = p;
 			return 1;
 		}
 	}
+	// printf("doimau\n");
 	return 0;
 }
 
 void danhBaiChoMay(LIST* xxx, int* id, int* cml, char* mau, int* t) {
 	NODE* p = NULL;
-	UNO uno;
+	UNO uno = timUno(l, *id);
 	if (*mau != 'z') {
 		for (p = xxx->pHead; p != NULL; p = p->pNext) {
-			if (p->data.color == *mau || p->data.color == 'k') {
+			if (p->data.color == *mau || p->data.color == 'k' || p->data.number == uno.number) {
 				*mau = 'z';
 				break;
 			}
@@ -390,6 +392,7 @@ void danhBaiChoMay(LIST* xxx, int* id, int* cml, char* mau, int* t) {
 	}
 	else {
 		CHECK(*xxx, *id, &uno);
+		printf("findL1\n");
 		p = findL1(*xxx, uno.color, uno.number);
 	}
 
@@ -402,9 +405,9 @@ void danhBaiChoMay(LIST* xxx, int* id, int* cml, char* mau, int* t) {
 	}
 	*id = p->data.id;
 	
-	deleteNode(xxx, *id);
 	*cml -= 1;
-
+	deleteNode(xxx, *id);
+	printf("danhchomay\n");
 }
 
 //ham tim thu tu nguoi choi tiep theo

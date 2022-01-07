@@ -21,11 +21,7 @@ typedef struct account
     int number_win;
     int isLogin;
 } account;
-//
-// typedef struct user{
-//     account acc;
-//     LIST l;
-// }user;
+
 
 typedef account account;
 
@@ -109,155 +105,6 @@ node *checkUsername(char username[])
     }
     return NULL;
 }
-// char *my_itoa(int num, char *str)
-// {
-//         if(str == NULL)
-//         {
-//                 return NULL;
-//         }
-//         sprintf(str, "%d", num);
-//         return str;
-// }
-/*
-void may(STACK *s, STACK *s1, LIST* l1, LIST* l2){
-	char str[4], result[256] = "";
-	//InitStack(s1);
-	NODE* p;
-	UNO uno;
-	int u = 0; // luu vi tri nguoi choi truoc do
-	int t = 0; // so quan bai cong don de them cho nguoi choi neu k đỡ được bài 
-	int n, m = 2, checkk = 0, y = 1000, check0 = 0, chuyen = -1; // checkk luu thu tu nguoi choi
-	// chuyen = -1: chay theo chieu kim dong ho, chuyen = 1: chay nguoc chieu
-	char x, tmp; // x de luu mau, y luu so tren quan bai, 
-	
-	//inPutL1(s, l1);// l2 la bai cua may
-	printf("\n==========================");
-	printf("\nbai cua nguoi choi");
-	show(*l1);
-	printf("\n==========================");
-    for(NODE* p = l1->pHead; p != NULL; p = p->pNext){
-		my_itoa(p->data.id, str);
-		strcat(result, str);
-		strcat(result, " ");
-	}
-	int z = strlen(result); 
-	result[z - 1] = '\0';
-
-	//inPutL1(s, l2);// l1 la bai cua nguoi choi
-	int cml1 ,cml2;
-	cml1 = cml2 = 7;
-	while(check0 == 0){
-		if (checkk == 0) {
-		printf("\nnguoi danh: ");// gia su nguoi la 1, may la 2
-	    nguoi(l1, &x, &y, 0, &n, result);
-		printf("\nbai vua danh: %c-%d", x, y);
-		p = findL1(*l1, x, y);
-		uno = p->data;
-		push2(s1, uno);
-		    if (y == -2) {
-			    chuyen *= -1;
-			}
-			if(chuyen == 1){ // nguoc kim dong ho
-                checkk = m;
-			}else{
-                if (y == -1) {
-					checkk = 1;
-				}else{
-					checkk = 2;
-				}
-				
-			}
-			if (y == -5) {
-				t += 4;
-			}
-			if (y == -3) {
-				t += 2;
-			}    
-
-			//printf("\nden day chua, tai sao k xoa");
-			//printf("\nid = %d",p->data.id );
-			deleteNode(l1, p->data.id);
-
-			strcpy(result, "");
-			for(NODE* p = l1->pHead; p != NULL; p = p->pNext){
-		    my_itoa(p->data.id, str);
-		    strcat(result, str);
-		    strcat(result, " ");
-	        }
-	        int z = strlen(result); 
-	        result[z - 1] = '\0';
-
-			cml1 -= 1;
-		}else if (checkk == 1){
-			trungGian22(l1, s, s1, checkk, &x, &y, &t, u, &check0, &cml1,result );
-			if(check0 == 1){
-				break;
-			}
-
-			u = checkk;
-			if (y == -2) {
-				chuyen *= -1;
-			}
-			if(chuyen == 1){
-				if (y == -1) {
-				checkk = 1;
-			    }
-			    else {
-				checkk = m;
-			    }
-			}else{
-                if (y == -1) {
-				checkk = 1;
-			    }
-			    else {
-				checkk = 2;
-			    }
-			}
-			if( y == 67){
-				y -= 69;
-			}
-		}
-	
-
-	if (checkk == 2) {
-			trungGian22(l2, s, s1, checkk, &x, &y, &t, u, &check0, &cml2, result);
-			if(check0 == 1){
-				break;
-			}
-			
-			u = checkk;
-			if (y == -2) {
-				chuyen *= -1;
-			}
-			if(chuyen == 1){
-				if (y == -1) {
-					checkk = m;
-				}
-				else {
-					checkk = 1;
-				}
-			}
-			else {
-				if (y == -1 && m == 2) {
-					checkk = 2;
-				}
-				else {
-					checkk = 1;
-				}
-				
-			}
-			if( y == 67){
-				y -= 69;
-			}
-			
-	}
-  }
-
-	giaiPhong(l1);
-	giaiPhong(l2);
-           
-}
-*/
 
 void *client_handler(void *arg)
 {
@@ -493,7 +340,6 @@ int main(int argc, char *argv[])
                 return 0;
             }
             buff[rcvBytes] = '\0';
-           
 
             if (is_login == 0)
             {
@@ -599,48 +445,8 @@ int main(int argc, char *argv[])
             if (is_login == 1) // signed in
             {
                 if (strcmp(buff, "1") == 0)
-                { // chơi game
-                    // inPutStack(&s, l);
-                    // InitStack(&s1);
-                    // inPutL1(&s, &l1);
-                    // inPutL1(&s, &l2);
-                    
-                   
-                    //show(l1);
-                    //show(l2);
-                    // char buff1[10];
-                    // NODE *p;
-                    // memset(buff,0,strlen(buff));
-                    // for (p = l1.pHead; p != NULL; p = p->pNext)
-                    // {
-                    //     //itoa(p->data.id,buff1,10);
-                    //     strcat(buff,my_itoa(p->data.id,buff1));
-                    //     strcat(buff, " ");
-                    // }
-                    // strcat(buff,"\n");
-                    // for (p = l2.pHead; p != NULL; p = p->pNext)
-                    // {
-                    //     strcat(buff,my_itoa(p->data.id,buff1));
-                    //     strcat(buff, " ");
-                    // }
-                    // strcat(buff,"\n");
-                    // p = s.top;
-                    // while(p != NULL){
-                    //     //printf("%d\n",p->data.id);
-                    //     strcat(buff,my_itoa(p->data.id,buff1));
-                    //     strcat(buff, " ");
-                    //     p = p->pNext;
-                    // }
-                    // buff[strlen(buff)-1]= '\0';
-                    // strcat(buff,"\n");
-                    // p = s1.top;
-                    // while(p != NULL){
-                    //     strcat(buff,my_itoa(p->data.id,buff1));
-                    //     strcat(buff, " ");
-                    //     p = p->pNext;
-                    // }
-
-                    strcpy(buff,"Let's play!!!!!\n");
+                {
+                    strcpy(buff, "Let's play!!!!!\n");
                     send(conn_sock, buff, strlen(buff), 0); //send bài người chơi
                     //show(l1);
                 }

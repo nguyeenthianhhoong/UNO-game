@@ -36,10 +36,10 @@ typedef struct stack {
 void Init(LIST* l);
 NODE* getNode(UNO DATA);
 void addTail(LIST* l, NODE* p);
-void xoaDau(LIST* l);
-void XoaCuoi(LIST* l);
+// void xoaDau(LIST* l);
+// void XoaCuoi(LIST* l);
 void giaiPhong(LIST* l);
-void Output(LIST l);
+// void Output(LIST l);
 void show(LIST l1);
 NODE* find(LIST l, int id);
 void inPutL1(STACK* s, LIST* l1);
