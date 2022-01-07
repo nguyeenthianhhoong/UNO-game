@@ -75,7 +75,7 @@ void readFile(FILE *f)
     account acc;
     while (!feof(f))
     {
-        fscanf(f, "%s %s %d %d %d\n", acc.username, acc.password, &acc.number, &acc.number_win, &acc.isLogin);
+        fscanf(f, "%s %s %d %d %d\n", acc.username, acc.password, &acc.number_win, &acc.number, &acc.isLogin);
         addAccount(acc);
     }
     fclose(f);
@@ -88,7 +88,7 @@ void writeFile()
     f = fopen("account.txt", "w");
     while (tmp != NULL)
     {
-        fprintf(f, "%s %s %d %d %d\n", tmp->acc.username, tmp->acc.password, tmp->acc.number, tmp->acc.number_win, tmp->acc.isLogin);
+        fprintf(f, "%s %s %d %d %d\n", tmp->acc.username, tmp->acc.password, tmp->acc.number_win, tmp->acc.number, tmp->acc.isLogin);
         tmp = tmp->next;
     }
     fclose(f);
