@@ -46,6 +46,8 @@ GtkWidget *iconON;
 GtkWidget *iconOFF;
 GtkWidget *chooseColorDialog;
 pthread_t tid;
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER; //khai báo mutex
+pthread_cond_t cond = PTHREAD_COND_INITIALIZER;    // khai bao bien dieu kien
 
 char buff[80];
 int rcvBytes;
@@ -248,7 +250,6 @@ void on_registerSubmitBtn_clicked()
 
 void on_mainMenuWindow_destroy()
 {
-    // pthread_exit(NULL);
     gtk_main_quit();
 }
 
@@ -268,10 +269,16 @@ void after_chooseColor()
     checkChooseColor = 0;
     gtk_widget_hide(chooseColorDialog);
     gtk_window_set_accept_focus(GTK_WINDOW(boardWindow), TRUE);
-    idUser = ENEMY;
     change_on_off_icon(ENEMY);
     draw_colorSquare();
-    check_player_win();
+    if (check_player_win() == 1)
+    {
+        idUser = OTHER;
+    }
+    else
+    {
+        idUser = ENEMY;
+    }
 }
 void on_chooseRedBtn_clicked()
 {
@@ -622,7 +629,6 @@ void draw_enemyCards()
     clear_container(controllerBox);
     draw_card(controllerBox, &up_card, OTHER, 2);
     draw_colorSquare();
-    check_bot_win();
 }
 
 GtkWidget *resize_image(GtkWidget *image, char *link, float x)
@@ -656,32 +662,34 @@ void reset_board_game()
     outPut(&s);
     giaiPhong(&l1);
     giaiPhong(&l2);
-    // pthread_cancel(tid);
-    // pthread_exit(NULL);
 }
 
-void check_player_win()
+int check_player_win()
 {
     if (hand_size == 0)
     {
         printf("player Win\n");
         gtk_widget_show(winDialog);
         gtk_window_set_accept_focus(GTK_WINDOW(boardWindow), FALSE);
-        idUser = PLAYER;
+        idUser = OTHER;
         reset_board_game();
+        return 1;
     }
+    return 0;
 }
 
-void check_bot_win()
+int check_bot_win()
 {
     if (enemy_size == 0)
     {
         printf("bot Win\n");
         gtk_widget_show(loserDialog);
         gtk_window_set_accept_focus(GTK_WINDOW(boardWindow), FALSE);
-        idUser = ENEMY;
+        idUser = OTHER;
         reset_board_game();
+        return 1;
     }
+    return 0;
 }
 
 int check_up_card(LIST *xxx, int *cml) //check phạt ko đỡ đk thì phạt luôn
@@ -718,7 +726,6 @@ void mayDanh(LIST *xxx, int *idUser, int *id, int *t, int *cml, char *mau, int *
     int checkPlayCard = 0;
     NODE *p = find(l, *id);
     UNO uno;
-    int ID = *id;
     printf("\n\n=== MAY DANH ===");
     show(*xxx);
     if (CHECK(*xxx, *id, &uno) == 1 || doiMau(*xxx, *mau, p, *t) == 1)
@@ -726,6 +733,7 @@ void mayDanh(LIST *xxx, int *idUser, int *id, int *t, int *cml, char *mau, int *
         printf("-danhbai1-\n");
         danhBaiChoMay(xxx, id, cml, mau, t);
         up_card = timUno(l, *id);
+        draw_enemyCards();
         checkPlayCard = 1;
     }
     else
@@ -741,46 +749,55 @@ void mayDanh(LIST *xxx, int *idUser, int *id, int *t, int *cml, char *mau, int *
             {
                 *mau = up_card.color;
             }
+            draw_enemyCards();
         }
         else
         {
             printf("\nhe thong da tu dong boc bai.");
             phat(1, xxx, &s);
             *cml += 1;
-
+            draw_enemyCards();
             show(*xxx);
             if (CHECK(*xxx, *id, &uno) == 1 || doiMau(*xxx, *mau, p, *t) == 1)
             {
                 printf("-danhbai2-\n");
                 danhBaiChoMay(xxx, id, cml, mau, t);
                 up_card = timUno(l, *id);
+                draw_enemyCards();
                 checkPlayCard = 1;
             }
         }
     }
     printf("done\n");
     // kiem tra xem luot danh tiep theo thuoc ve ai
-    if (up_card.number == -1 && *id != ID)
+    if (check_bot_win() == 1)
     {
-        *idUser = ENEMY;
-        // notificationThread(1, PLAYER);
-    }
-    else if (up_card.number == -2 && *id != ID)
-    {
-        *idUser = ENEMY;
-        // notificationThread(2, PLAYER);
+        *idUser = OTHER;
     }
     else
     {
-        if (up_card.number == -5 && checkPlayCard == 1)
+        if (up_card.number == -1 && checkPlayCard == 1)
         {
-            // notificationThread(5, PLAYER);
+            *idUser = ENEMY;
+            // notificationThread(1, PLAYER);
         }
-        else if (up_card.number == -3 && checkPlayCard == 1)
+        else if (up_card.number == -2 && checkPlayCard == 1)
         {
-            // notificationThread(3, PLAYER);
+            *idUser = ENEMY;
+            // notificationThread(2, PLAYER);
         }
-        *idUser = 1;
+        else
+        {
+            if (up_card.number == -5 && checkPlayCard == 1)
+            {
+                // notificationThread(5, PLAYER);
+            }
+            else if (up_card.number == -3 && checkPlayCard == 1)
+            {
+                // notificationThread(3, PLAYER);
+            }
+            *idUser = 1;
+        }
     }
     free(p);
 }
@@ -832,8 +849,6 @@ int app(int argc, char **argv, int sockfd)
     giaiPhong(&l2);
     giaiPhong(&l);
     outPut(&s);
-    // pthread_exit(NULL);
-    // return 0;
     return EXIT_SUCCESS;
 }
 
@@ -846,7 +861,7 @@ void card_clicked(GtkWidget *card_button, gpointer card_data)
     // cast generic gpointer to a card
     UNO *card = (UNO *)card_data;
     // play the card
-    if (idUser == 1)
+    if (idUser == PLAYER)
     {
         if (play(card) == 1)
         {
@@ -865,6 +880,15 @@ void card_clicked(GtkWidget *card_button, gpointer card_data)
                 idUser = ENEMY;
                 if (checkChooseColor != 1)
                     change_on_off_icon(ENEMY);
+
+                if (up_card.number == -5)
+                {
+                    // notificationThread(5, ENEMY);
+                }
+                else if (up_card.number == -3)
+                {
+                    // notificationThread(3, ENEMY);
+                }
             }
         }
     }
@@ -879,9 +903,6 @@ void bot_play()
             int id = up_card.id;
             mayDanh(&l2, &idUser, &id, &t, &enemy_size, &mau, &chonMau); //xxxsss
             printf("\n%c ---- %c-%d\n", mau, up_card.color, up_card.number);
-            up_card = timUno(l, id);
-            draw_enemyCards();
-
             if (check_up_card(&l1, &hand_size) != 1)
             {
                 idUser = ENEMY;
@@ -898,28 +919,18 @@ void bot_play()
  */
 int play(UNO *card)
 {
-    NODE *p;
-    NODE *r;
-    int ID = card->id;
-    p = find(l, up_card.id);
-
-    r = find(l, card->id);
-
+    UNO clicked_card = *card;
     if (mau != 'z')
     {
-        if ((r->data.color != mau) && (r->data.color != 'k') && (r->data.number != up_card.number))
+        if ((clicked_card.color != mau) && (clicked_card.color != 'k') && (clicked_card.number != up_card.number))
         {
-            free(p);
-            free(r);
             return 0;
         }
     }
     else
     {
-        if (kt(p, r) != 1)
+        if (kt(up_card, clicked_card) != 1)
         {
-            free(p);
-            free(r);
             return 0;
         }
     }
@@ -929,38 +940,25 @@ int play(UNO *card)
         mau = 'z';
     }
 
-    //kt kiểm tra cả màu hoặc số
-    up_card = *card;
-    //tìm uno để push vào s1
-    p = find(l, ID);
     // cap nhat so quan bai bi phat
-    soQuanBiPhat(p->data.number, &t);
-    deleteNode(&l1, ID);
+    soQuanBiPhat(clicked_card.number, &t);
+    deleteNode(&l1, clicked_card.id);
     hand_size -= 1;
     // draw the new game state
+    up_card = clicked_card;
     draw_hand(playerBox);
 
     drawCardCount = 0;
-    if (p->data.number == -4 || p->data.number == -5)
+    if (up_card.number == -4 || up_card.number == -5)
     {
         gtk_widget_show(chooseColorDialog);
         gtk_window_set_accept_focus(GTK_WINDOW(boardWindow), FALSE);
         checkChooseColor = 1;
-        if (p->data.number == -5)
-        {
-            // notificationThread(5, ENEMY);
-        }
     }
     else
     {
-        if (p->data.number == -3)
-        {
-            // notificationThread(3, ENEMY);
-        }
         check_player_win();
     }
-    free(p);
-    free(r);
     return 1;
 }
 
@@ -1041,7 +1039,7 @@ void change_on_off_icon(int mode)
 
 void *DisplayNotification(void *noti)
 { // code == mode*10 + user
-    printf("thong bao\n");
+    printf("thong bao --");
     int mode = notiCode / 10;
     int user = notiCode % 10;
     char link[100];
@@ -1065,30 +1063,47 @@ void *DisplayNotification(void *noti)
     default:
         break;
     }
+    printf("thong bao2 --");
     GtkWidget *notificationImage;
     notificationImage = gtk_image_new_from_file(link);
+    gtk_widget_show(notificationImage);
+    GtkWidget* container;
+    printf("thong bao3 --");
 
     if (user == PLAYER)
     {
-        gtk_box_pack_start(GTK_BOX(playerNotificationBox), notificationImage, TRUE, FALSE, 0);
-        gtk_widget_show(notificationImage);
-        sleep(2);
-        gtk_container_remove(GTK_CONTAINER(playerNotificationBox), GTK_WIDGET(notificationImage));
+        container = playerNotificationBox;
     }
     else
     {
-        gtk_box_pack_start(GTK_BOX(enemyNotificationBox), notificationImage, TRUE, FALSE, 0);
-        gtk_widget_show(notificationImage);
-        sleep(2);
-        gtk_container_remove(GTK_CONTAINER(enemyNotificationBox), GTK_WIDGET(notificationImage));
+        container = enemyNotificationBox;
     }
+    printf("thong bao4 --");
+    gtk_box_pack_start(GTK_BOX(container), notificationImage, FALSE, FALSE, 20);
+    
+    sleep(2);
+    gtk_container_remove(GTK_CONTAINER(container), GTK_WIDGET(notificationImage));
+    // gtk_widget_destroy(GTK_WIDGET(notificationImage));
+    pthread_exit(NULL);
     return NULL;
 }
 
 void notificationThread(int mode, int user)
 {
     notiCode = mode * 10 + user;
-    pthread_create(&tid, NULL, DisplayNotification, (void *)&notiCode);
+    int ret = pthread_create(&tid, NULL, DisplayNotification, (void *)&notiCode);
+    if (ret)
+    {
+        printf("pthread_create() fail ret: %d\n", ret);
+        perror("Fail reason:");
+    }
+    if (pthread_detach(tid))
+    {
+        printf("pthread_detach error\n");
+    }
+    printf("thong bao6 --\n");
+    usleep(50);
+    printf("thong bao7 \n\n");
 }
 
 /**
@@ -1102,8 +1117,8 @@ void clear_container(GtkWidget *container)
 
     // iterate over children of container
     for (GList *i = children; i != NULL; i = g_list_next(i))
-        gtk_widget_destroy(GTK_WIDGET(i->data));
-    // gtk_container_remove(GTK_CONTAINER(container), GTK_WIDGET(i->data));
+        // gtk_widget_destroy(GTK_WIDGET(i->data));
+        gtk_container_remove(GTK_CONTAINER(container), GTK_WIDGET(i->data));
 
     // free list
     g_list_free(children);

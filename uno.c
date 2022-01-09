@@ -231,31 +231,31 @@ void soQuanBiPhat(int number, int* t) {
 // ham cho luot danh dau tien
 
 //xử lý ko phụ thuộc
-void luotDanhDau(LIST* xxx, int* id, int* cml, char* mau, int* t) {
-	// UNO uno;
-	NODE* p;//= find(*xxx, *id);
-	// printf("\nDANH: ");
-	// do {
-	// 	scanf("%d%*c", id);
-	// 	if (quanBaiHopLe(*xxx, *id) != 1) {
-	// 		printf("\nquan bai khong hop le, moi danh lai.");
-	// 	}
-	// } while (quanBaiHopLe(*xxx, *id) != 1);
-	p = find(*xxx, *id);
-	// uno = p->data;
-	// push2(s1, uno);
-	soQuanBiPhat(p->data.number, t);
-	if (p->data.number == -4) {
-	// 	printf("\nCHON MAU: ");
-	// 	scanf("%c%*c", mau);
-	}
-	deleteNode(xxx, *id);
-	// printf("\nsau khi xoa id = %d", *id);
-	// show(*xxx);
-	// cap nhat lai chuoi result sau khi danh bai
-	//ITOA(*xxx, result);
-	*cml -= 1;
-}
+// void luotDanhDau(LIST* xxx, int* id, int* cml, char* mau, int* t) {
+// 	// UNO uno;
+// 	NODE* p;//= find(*xxx, *id);
+// 	// printf("\nDANH: ");
+// 	// do {
+// 	// 	scanf("%d%*c", id);
+// 	// 	if (quanBaiHopLe(*xxx, *id) != 1) {
+// 	// 		printf("\nquan bai khong hop le, moi danh lai.");
+// 	// 	}
+// 	// } while (quanBaiHopLe(*xxx, *id) != 1);
+// 	p = find(*xxx, *id);
+// 	// uno = p->data;
+// 	// push2(s1, uno);
+// 	soQuanBiPhat(p->data.number, t);
+// 	if (p->data.number == -4) {
+// 	// 	printf("\nCHON MAU: ");
+// 	// 	scanf("%c%*c", mau);
+// 	}
+// 	deleteNode(xxx, *id);
+// 	// printf("\nsau khi xoa id = %d", *id);
+// 	// show(*xxx);
+// 	// cap nhat lai chuoi result sau khi danh bai
+// 	//ITOA(*xxx, result);
+// 	*cml -= 1;
+// }
 
 
 void luotDanhDauchoMay(LIST* xxx, int* id, int* cml, char* mau, int* t) {
@@ -276,24 +276,48 @@ void luotDanhDauchoMay(LIST* xxx, int* id, int* cml, char* mau, int* t) {
 }
 
 //ham kiem tra quan bai hop le sau khi danh
-int kt(NODE* p, NODE* r) {
-	if (p->data.number == -5) {
-		if (r->data.number == -5) {
+// int kt(NODE* p, NODE* r) {
+// 	if (p->data.number == -5) {
+// 		if (r->data.number == -5) {
+// 			return 1;
+// 		}
+// 	}
+// 	else if (p->data.number == -4) {
+// 		if (r->data.color == 'k') {
+// 			return 1;
+// 		}
+// 	}
+// 	else if (p->data.number == -3) {
+// 		if (r->data.number == -5 || r->data.number == -3) {
+// 			return 1;
+// 		}
+// 	}
+// 	else {
+// 		if (r->data.color == p->data.color || r->data.number == p->data.number || r->data.color == 'k') {
+// 			return 1;
+// 		}
+// 	}
+// 	return 0;
+// }
+
+int kt(UNO p, UNO r) {
+	if (p.number == -5) {
+		if (r.number == -5) {
 			return 1;
 		}
 	}
-	else if (p->data.number == -4) {
-		if (r->data.color == 'k') {
+	else if (p.number == -4) {
+		if (r.color == 'k') {
 			return 1;
 		}
 	}
-	else if (p->data.number == -3) {
-		if (r->data.number == -5 || r->data.number == -3) {
+	else if (p.number == -3) {
+		if (r.number == -5 || r.number == -3) {
 			return 1;
 		}
 	}
 	else {
-		if (r->data.color == p->data.color || r->data.number == p->data.number || r->data.color == 'k') {
+		if (r.color == p.color || r.number == p.number || r.color == 'k') {
 			return 1;
 		}
 	}
@@ -303,79 +327,79 @@ int kt(NODE* p, NODE* r) {
 // int doiMau(LIST xxx, char mau, NODE* r, int phat);
 int doiMau2(LIST xxx, char mau, NODE* r);
 // ham danh bai cho nguoi choi trong truong hop co quan bai hop le
-void danhBai(LIST* xxx, int* id, int* cml, char* mau, int* t) {
-	NODE* p;
-	NODE* r;
-	// UNO uno;
-	//int ID;
-	//ID = *id;
-	p = find(l, *id);
-	//phía trước có con chọn màu
+// void danhBai(LIST* xxx, int* id, int* cml, char* mau, int* t) {
+// 	NODE* p;
+// 	NODE* r;
+// 	// UNO uno;
+// 	//int ID;
+// 	//ID = *id;
+// 	p = find(l, *id);
+// 	//phía trước có con chọn màu
 
-	//ktra màu
-	if (*mau != 'z') {
-		do {
-			printf("\nDANH: ");
-			scanf("%d%*c", id);
-			r = find(l, *id);
-			//quan bai hop le -> so có ở trong list ko ???
-			//doimau2 -> check thoa man
-			if (quanBaiHopLe(*xxx, *id) != 1 || doiMau2(*xxx, *mau, r) != 1) {
-				printf("quan bai khong hop le, moi danh lai.");
-			}
-		} while (quanBaiHopLe(*xxx, *id) != 1 || doiMau2(*xxx, *mau, r) != 1);
-		*mau = 'z';
-	}
-	else {
-		do {
-			printf("\nDANH: ");
-			scanf("%d%*c", id);
-			r = find(l, *id);
-			//kt kiểm tra cả màu hoặc số
-			if (quanBaiHopLe(*xxx, *id) != 1 || kt(p, r) != 1) {
-				printf("quan bai khong hop le, moi danh lai.");
-			}
-			//r = find(l, *id);
-		} while (quanBaiHopLe(*xxx, *id) != 1 || kt(p, r) != 1);
-	}
-	//tìm uno để push vào s1
-	p = find(l, *id);
-	// uno = p->data;
-	// push2(&s1, uno);
-	// cap nhat so quan bai bi phat
-	soQuanBiPhat(p->data.number, t);
-	if (p->data.number == -4 || p->data.number == -5) {
-		printf("\nCHON MAU: ");
-		scanf("%c%*c", mau);
-	}
-	deleteNode(xxx, *id);
-	printf("\nsau khi xoa id = %d", *id);
-	// show(*xxx);
-	*cml -= 1;
-	// cap nhat lai chuoi result sau khi danh bai
-	//ITOA(*xxx, result);
-}
+// 	//ktra màu
+// 	if (*mau != 'z') {
+// 		do {
+// 			printf("\nDANH: ");
+// 			scanf("%d%*c", id);
+// 			r = find(l, *id);
+// 			//quan bai hop le -> so có ở trong list ko ???
+// 			//doimau2 -> check thoa man
+// 			if (quanBaiHopLe(*xxx, *id) != 1 || doiMau2(*xxx, *mau, r) != 1) {
+// 				printf("quan bai khong hop le, moi danh lai.");
+// 			}
+// 		} while (quanBaiHopLe(*xxx, *id) != 1 || doiMau2(*xxx, *mau, r) != 1);
+// 		*mau = 'z';
+// 	}
+// 	else {
+// 		do {
+// 			printf("\nDANH: ");
+// 			scanf("%d%*c", id);
+// 			r = find(l, *id);
+// 			//kt kiểm tra cả màu hoặc số
+// 			if (quanBaiHopLe(*xxx, *id) != 1 || kt(p, r) != 1) {
+// 				printf("quan bai khong hop le, moi danh lai.");
+// 			}
+// 			//r = find(l, *id);
+// 		} while (quanBaiHopLe(*xxx, *id) != 1 || kt(p, r) != 1);
+// 	}
+// 	//tìm uno để push vào s1
+// 	p = find(l, *id);
+// 	// uno = p->data;
+// 	// push2(&s1, uno);
+// 	// cap nhat so quan bai bi phat
+// 	soQuanBiPhat(p->data.number, t);
+// 	if (p->data.number == -4 || p->data.number == -5) {
+// 		printf("\nCHON MAU: ");
+// 		scanf("%c%*c", mau);
+// 	}
+// 	deleteNode(xxx, *id);
+// 	printf("\nsau khi xoa id = %d", *id);
+// 	// show(*xxx);
+// 	*cml -= 1;
+// 	// cap nhat lai chuoi result sau khi danh bai
+// 	//ITOA(*xxx, result);
+// }
 
 // ham kiem tra quan bai sau khi danh con doi mau
-int doiMau2(LIST xxx, char mau, NODE* r) {
-	for (NODE* p = xxx.pHead; p != NULL; p = p->pNext) {
-		if ((p->data.color == mau || r->data.color == 'k' || r->data.number == -3) && mau != 'z') {
-			r = p;
-			//printf("\nmay vao day k");
-			return 1;
-		}
-	}
-	return 0;
-}
+// int doiMau2(LIST xxx, char mau, NODE* r) {
+// 	for (NODE* p = xxx.pHead; p != NULL; p = p->pNext) {
+// 		if ((p->data.color == mau || r->data.color == 'k' || r->data.number == -3) && mau != 'z') {
+// 			r = p;
+// 			//printf("\nmay vao day k");
+// 			return 1;
+// 		}
+// 	}
+// 	return 0;
+// }
 
 int doiMau(LIST xxx, char mau, NODE* r, int phat) {
 	for (NODE* p = xxx.pHead; p != NULL; p = p->pNext) {
-		if ((p->data.color == mau || p->data.color == 'k' || p->data.number == -3) && mau != 'z' && phat == 0) {
+		if ((p->data.color == mau || p->data.color == 'k' || p->data.number == r->data.number) && mau != 'z' && phat == 0) {
 			r = p;
 			return 1;
 		}
 	}
-	// printf("doimau\n");
+	printf("doimau\n");
 	return 0;
 }
 
@@ -411,165 +435,165 @@ void danhBaiChoMay(LIST* xxx, int* id, int* cml, char* mau, int* t) {
 }
 
 //ham tim thu tu nguoi choi tiep theo
-void XXX(int* idUser, int* chuyen, int id, int ID) {
-	NODE* p = find(l, id);
-	if (p->data.number == -2 && id != ID) {
-		*chuyen *= -1;
-	}
+// void XXX(int* idUser, int* chuyen, int id, int ID) {
+// 	NODE* p = find(l, id);
+// 	if (p->data.number == -2 && id != ID) {
+// 		*chuyen *= -1;
+// 	}
 
-	if (*chuyen == 1) {
-		if (p->data.number == -1 && id != ID) {
-			if (*idUser == 1) {
-				*idUser = 3;
-			}
-			else if (*idUser == 2) {
-				*idUser = 4;
-			}
-			else if (*idUser == 3) {
-				*idUser = 1;
-			}
-			else if (*idUser == 4) {
-				*idUser = 2;
-			}
-		}
-		else {
-			if (*idUser == 1) {
-				*idUser = 4;
-			}
-			else if (*idUser == 2) {
-				*idUser = 1;
-			}
-			else if (*idUser == 3) {
-				*idUser = 2;
-			}
-			else if (*idUser == 4) {
-				*idUser = 3;
-			}
-		}
-	}
-	else {
-		if (p->data.number == -1 && id != ID) {
-			if (*idUser == 1) {
-				*idUser = 3;
-			}
-			else if (*idUser == 2) {
-				*idUser = 4;
-			}
-			else if (*idUser == 3) {
-				*idUser = 1;
-			}
-			else if (*idUser == 4) {
-				*idUser = 2;
-			}
-		}
-		else {
-			if (*idUser == 1) {
-				*idUser = 2;
-			}
-			else if (*idUser == 2) {
-				*idUser = 3;
-			}
-			else if (*idUser == 3) {
-				*idUser = 4;
-			}
-			else if (*idUser == 4) {
-				*idUser = 1;
-			}
-		}
-	}
-}
+// 	if (*chuyen == 1) {
+// 		if (p->data.number == -1 && id != ID) {
+// 			if (*idUser == 1) {
+// 				*idUser = 3;
+// 			}
+// 			else if (*idUser == 2) {
+// 				*idUser = 4;
+// 			}
+// 			else if (*idUser == 3) {
+// 				*idUser = 1;
+// 			}
+// 			else if (*idUser == 4) {
+// 				*idUser = 2;
+// 			}
+// 		}
+// 		else {
+// 			if (*idUser == 1) {
+// 				*idUser = 4;
+// 			}
+// 			else if (*idUser == 2) {
+// 				*idUser = 1;
+// 			}
+// 			else if (*idUser == 3) {
+// 				*idUser = 2;
+// 			}
+// 			else if (*idUser == 4) {
+// 				*idUser = 3;
+// 			}
+// 		}
+// 	}
+// 	else {
+// 		if (p->data.number == -1 && id != ID) {
+// 			if (*idUser == 1) {
+// 				*idUser = 3;
+// 			}
+// 			else if (*idUser == 2) {
+// 				*idUser = 4;
+// 			}
+// 			else if (*idUser == 3) {
+// 				*idUser = 1;
+// 			}
+// 			else if (*idUser == 4) {
+// 				*idUser = 2;
+// 			}
+// 		}
+// 		else {
+// 			if (*idUser == 1) {
+// 				*idUser = 2;
+// 			}
+// 			else if (*idUser == 2) {
+// 				*idUser = 3;
+// 			}
+// 			else if (*idUser == 3) {
+// 				*idUser = 4;
+// 			}
+// 			else if (*idUser == 4) {
+// 				*idUser = 1;
+// 			}
+// 		}
+// 	}
+// }
 
 void khoiPhuc0(LIST* xxx, char* result) {
 	ATOI(l, xxx, result);
 }
 
-void nguoiDanh(LIST* xxx, int* idUser, int* id, int* t, int* cml, char* mau, int* chonMau) {
-	NODE* p = NULL;
-	UNO uno;
-	int ID = *id;
+// void nguoiDanh(LIST* xxx, int* idUser, int* id, int* t, int* cml, char* mau, int* chonMau) {
+// 	NODE* p = NULL;
+// 	UNO uno;
+// 	int ID = *id;
 
-	show(*xxx);
-	// if (*idUser != 0) {
-		p = find(l, *id);
-		printf("\nBAI VUA DANH: %d. %c-%d", p->data.id, p->data.color, p->data.number);
-		if (*mau != 'z') {
-			printf("\nmau hien tai: %c", *mau);
-		}
-	// }
+// 	show(*xxx);
+// 	// if (*idUser != 0) {
+// 		p = find(l, *id);
+// 		printf("\nBAI VUA DANH: %d. %c-%d", p->data.id, p->data.color, p->data.number);
+// 		if (*mau != 'z') {
+// 			printf("\nmau hien tai: %c", *mau);
+// 		}
+// 	// }
 
-//**************************************************************************
+// //**************************************************************************
 
-	if (*idUser == 0 || *chonMau == 1) {
-		if (*chonMau == 1) {
-			*chonMau = 0;
-		}
-		luotDanhDau(xxx, id, cml, mau, t);
-	}
-	else {
-	//*********************** kiểm tra và đánh bài
-	// kiểm tra đỡ bài
-		if (CHECK(*xxx, *id, &uno) == 1 || doiMau(*xxx, *mau, p, *t) == 1) {
-			if (*mau != 'z') {
-				printf("\nmau hien tai: %c", *mau);
-			}
-			danhBai(xxx, id, cml, mau, t);
-		}
-		else {
-			//nếu bị phạt -> phạt
-	//************** bị phat
-			if ((p->data.number == -3 || p->data.number == -5) && *t != 0) {
-				printf("\n\nbi phat %d con bai", *t);
-				phat(*t, xxx, &s);
-				*cml += *t;
-				*t = 0;
-				// cap nhat lai chuoi result sau khi bi phat bai
-				//ITOA(yyy, result);
-				if (p->data.number == -5) {
-					*chonMau = 2; // tin hieu cho biet may dc chon mau cho luot choi ke
-				}
-				if (p->data.number == -3) {
-					*mau = p->data.color;
-				}
-			}
-			//nếu ko có bài -> bốc
-//******************************** ko co bai
-		// 	else {
-		// 		printf("\nnhan '1' de boc bai.");
-		// 		scanf("%d", idUser);
-		// 		phat(1, xxx, &s);
-		// 		*cml += 1;
-		// 		// cap nhat lai chuoi result sau khi boc bai
-		// 		//ITOA(yyy, result);
-		// 		show(*xxx);
-		// //***********cần xử lý thêm next 
-		// 		if (CHECK(*xxx, *id, &uno) == 1 || doiMau(*xxx, *mau, p) == 1) {
-		// 			danhBai(xxx, id, cml, mau, t);
-		// 			//*mau = 'z';
-		// 		}
-		// 	}
-		}
-	}
+// 	if (*idUser == 0 || *chonMau == 1) {
+// 		if (*chonMau == 1) {
+// 			*chonMau = 0;
+// 		}
+// 		luotDanhDau(xxx, id, cml, mau, t);
+// 	}
+// 	else {
+// 	//*********************** kiểm tra và đánh bài
+// 	// kiểm tra đỡ bài
+// 		if (CHECK(*xxx, *id, &uno) == 1 || doiMau(*xxx, *mau, p, *t) == 1) {
+// 			if (*mau != 'z') {
+// 				printf("\nmau hien tai: %c", *mau);
+// 			}
+// 			danhBai(xxx, id, cml, mau, t);
+// 		}
+// 		else {
+// 			//nếu bị phạt -> phạt
+// 	//************** bị phat
+// 			if ((p->data.number == -3 || p->data.number == -5) && *t != 0) {
+// 				printf("\n\nbi phat %d con bai", *t);
+// 				phat(*t, xxx, &s);
+// 				*cml += *t;
+// 				*t = 0;
+// 				// cap nhat lai chuoi result sau khi bi phat bai
+// 				//ITOA(yyy, result);
+// 				if (p->data.number == -5) {
+// 					*chonMau = 2; // tin hieu cho biet may dc chon mau cho luot choi ke
+// 				}
+// 				if (p->data.number == -3) {
+// 					*mau = p->data.color;
+// 				}
+// 			}
+// 			//nếu ko có bài -> bốc
+// //******************************** ko co bai
+// 		// 	else {
+// 		// 		printf("\nnhan '1' de boc bai.");
+// 		// 		scanf("%d", idUser);
+// 		// 		phat(1, xxx, &s);
+// 		// 		*cml += 1;
+// 		// 		// cap nhat lai chuoi result sau khi boc bai
+// 		// 		//ITOA(yyy, result);
+// 		// 		show(*xxx);
+// 		// //***********cần xử lý thêm next 
+// 		// 		if (CHECK(*xxx, *id, &uno) == 1 || doiMau(*xxx, *mau, p) == 1) {
+// 		// 			danhBai(xxx, id, cml, mau, t);
+// 		// 			//*mau = 'z';
+// 		// 		}
+// 		// 	}
+// 		}
+// 	}
 
-//**********************************	// kiem tra xem luot danh tiep theo thuoc ve ai
-	p = find(l, *id);
-	if (p->data.number == -1 && *id != ID) {
-		*idUser = 1;
-	}
-	else {
-		*idUser = 2;
-	}
+// //**********************************	// kiem tra xem luot danh tiep theo thuoc ve ai
+// 	p = find(l, *id);
+// 	if (p->data.number == -1 && *id != ID) {
+// 		*idUser = 1;
+// 	}
+// 	else {
+// 		*idUser = 2;
+// 	}
 
-//*******************************	//xu ly uno
-	if (*cml == 1) {
-		printf("\nsap UNO, nhan 1 de xac nhan: ");
-		scanf("%d", &ID);
-		if (ID != 1) {
-			printf("\nnhan sai hoac k nhan nen bi phat them 2 con.");
-			phat(2, &yyy, &s);
-			*cml += 2;
-		}
-	}
-}
+// //*******************************	//xu ly uno
+// 	if (*cml == 1) {
+// 		printf("\nsap UNO, nhan 1 de xac nhan: ");
+// 		scanf("%d", &ID);
+// 		if (ID != 1) {
+// 			printf("\nnhan sai hoac k nhan nen bi phat them 2 con.");
+// 			phat(2, &yyy, &s);
+// 			*cml += 2;
+// 		}
+// 	}
+// }
 
 // void mayDanh(LIST* xxx, STACK* s1, int* idUser, int* id, int* t, int* cml, char* mau, int* chonMau) {
 // 	NODE* p = find(l, *id);
@@ -686,183 +710,183 @@ void khoiPhuc(LIST* yyy, LIST* yyy2, LIST* yyy3, LIST* yyy4, char* result1, char
 	ATOI(l, yyy4, result4);
 }
 //ham choi nay danh cho choi 4 nguoi
-void Nguoi(LIST *xxx, int idUser, int* id, int* t, int* cml, char* mau, int* chonMau) {
-	NODE* p = NULL;
-	UNO uno;
-	int sapUno;
-	int ID = *id;
-	show(*xxx);
-	if (idUser != 0) {
-		p = find(l, *id);
-		printf("\nBAI VUA DANH: %d. %c-%d", p->data.id, p->data.color, p->data.number);
-		if (*mau != 'z') {
-			printf("\nmau hien tai: %c", *mau);
-		}
-	}
-	if (idUser == 0 /* || *chonMau == 1*/) {
-		//if (*chonMau == 1) {
-		//	*chonMau = 0;
-		//}
-		luotDanhDau(xxx, id, cml, mau, t);
-	}
-	else {
-		if (CHECK(*xxx, *id, &uno) == 1 || doiMau(*xxx, *mau, p, *t) == 1) {
-			//if (*mau != 'z') {
-			//	printf("\nmau hien tai: %c", *mau);
-			//}
-			danhBai(xxx, id, cml, mau, t);
-		}
-		else {
-			if ((p->data.number == -3 || p->data.number == -5) && *t != 0) {
-				printf("\n\nbi phat %d con bai", *t);
-				phat(*t, xxx, &s);
-				*cml += *t;
-				*t = 0;
-				// cap nhat lai chuoi result sau khi bi phat bai
-				//ITOA(xxx, result);
-				if (p->data.number == -5) {
-					*chonMau = idUser; // tin hieu cho biet ai dc chon mau cho luot choi ke
-				}
-				if (p->data.number == -3) {
-					*mau = p->data.color;
-				}
-			}
-			else {
-				printf("\nnhan '1' de boc bai: ");
-				scanf("%d", &sapUno);
-				phat(1, xxx, &s);
-				*cml += 1;
-				// cap nhat lai chuoi result sau khi boc bai
-				//ITOA(xxx, result);
-				show(*xxx);
-				if (CHECK(*xxx, *id, &uno) == 1 || doiMau(*xxx, *mau, p, *t) == 1) {
-					danhBai(xxx, id, cml, mau, t);
-					//*mau = 'z';
-				}
-			}
-		}
-	}
+// void Nguoi(LIST *xxx, int idUser, int* id, int* t, int* cml, char* mau, int* chonMau) {
+// 	NODE* p = NULL;
+// 	UNO uno;
+// 	int sapUno;
+// 	int ID = *id;
+// 	show(*xxx);
+// 	if (idUser != 0) {
+// 		p = find(l, *id);
+// 		printf("\nBAI VUA DANH: %d. %c-%d", p->data.id, p->data.color, p->data.number);
+// 		if (*mau != 'z') {
+// 			printf("\nmau hien tai: %c", *mau);
+// 		}
+// 	}
+// 	if (idUser == 0 /* || *chonMau == 1*/) {
+// 		//if (*chonMau == 1) {
+// 		//	*chonMau = 0;
+// 		//}
+// 		luotDanhDau(xxx, id, cml, mau, t);
+// 	}
+// 	else {
+// 		if (CHECK(*xxx, *id, &uno) == 1 || doiMau(*xxx, *mau, p, *t) == 1) {
+// 			//if (*mau != 'z') {
+// 			//	printf("\nmau hien tai: %c", *mau);
+// 			//}
+// 			danhBai(xxx, id, cml, mau, t);
+// 		}
+// 		else {
+// 			if ((p->data.number == -3 || p->data.number == -5) && *t != 0) {
+// 				printf("\n\nbi phat %d con bai", *t);
+// 				phat(*t, xxx, &s);
+// 				*cml += *t;
+// 				*t = 0;
+// 				// cap nhat lai chuoi result sau khi bi phat bai
+// 				//ITOA(xxx, result);
+// 				if (p->data.number == -5) {
+// 					*chonMau = idUser; // tin hieu cho biet ai dc chon mau cho luot choi ke
+// 				}
+// 				if (p->data.number == -3) {
+// 					*mau = p->data.color;
+// 				}
+// 			}
+// 			else {
+// 				printf("\nnhan '1' de boc bai: ");
+// 				scanf("%d", &sapUno);
+// 				phat(1, xxx, &s);
+// 				*cml += 1;
+// 				// cap nhat lai chuoi result sau khi boc bai
+// 				//ITOA(xxx, result);
+// 				show(*xxx);
+// 				if (CHECK(*xxx, *id, &uno) == 1 || doiMau(*xxx, *mau, p, *t) == 1) {
+// 					danhBai(xxx, id, cml, mau, t);
+// 					//*mau = 'z';
+// 				}
+// 			}
+// 		}
+// 	}
 
 	
-	if (*cml == 1) {
-		printf("\nsap UNO, nhan 1 de xac nhan: ");
-		scanf("%d", &ID);
-		if (ID != 1) {
-			printf("\nnhan sai hoac k nhan nen bi phat them 2 con.");
-			phat(2, xxx, &s);
-			*cml += 2;
-		}
-	}
-}
+// 	if (*cml == 1) {
+// 		printf("\nsap UNO, nhan 1 de xac nhan: ");
+// 		scanf("%d", &ID);
+// 		if (ID != 1) {
+// 			printf("\nnhan sai hoac k nhan nen bi phat them 2 con.");
+// 			phat(2, xxx, &s);
+// 			*cml += 2;
+// 		}
+// 	}
+// }
 
 
-void choi4Nguoi(LIST* yyy, LIST* yyy2, LIST* yyy3, LIST* yyy4, LIST* l1, LIST* l2, LIST* l3, LIST* l4) {
-	chiaBai(l1, l2, l3, l4, &s, 4);
-	char result1[256] = "", result2[256] = "", result3[256] = "", result4[256] = "";
-	ITOA(*l1, result1);
-	ITOA(*l2, result2);
-	ITOA(*l3, result3);
-	ITOA(*l4, result4);
-	// InitStack(s1);
-	int u = 0; // luu vi tri nguoi choi truoc do
-	int cml1, cml2, cml3, cml4, t = 0, chonMau = 0;// t luu tong so quan bai bi phat
-	char mau = 'z';// luu mau khi 1 trong hai danh con doi mau va chon mau
-	cml1 = cml2 = cml3 = cml4 = 7;
-	int idUser = 0, id = 0, chuyen = -1, ID = 0; // luu giu thu tu nguoi danh
-	//chuyen = -1 thi chay theo chieu kim dong ho, chuyen = 1 danh nguoc kim dong ho
-	//dau tien thi nguoi choi 1 se duoc danh bai dau tien
-	khoiPhuc(yyy, yyy2, yyy3, yyy4, result1, result2, result3, result4);
-	printf("\ntoi luot nguoi choi 1.");
-	Nguoi(yyy, idUser, &id, &t, &cml1, &mau, &chonMau);
-	u = idUser = 1;
-	XXX(&idUser, &chuyen, id, ID);
-	printf("\nnguoi 1 con lai %d con bai", cml1);
-	ID = id;
+// void choi4Nguoi(LIST* yyy, LIST* yyy2, LIST* yyy3, LIST* yyy4, LIST* l1, LIST* l2, LIST* l3, LIST* l4) {
+// 	chiaBai(l1, l2, l3, l4, &s, 4);
+// 	char result1[256] = "", result2[256] = "", result3[256] = "", result4[256] = "";
+// 	ITOA(*l1, result1);
+// 	ITOA(*l2, result2);
+// 	ITOA(*l3, result3);
+// 	ITOA(*l4, result4);
+// 	// InitStack(s1);
+// 	int u = 0; // luu vi tri nguoi choi truoc do
+// 	int cml1, cml2, cml3, cml4, t = 0, chonMau = 0;// t luu tong so quan bai bi phat
+// 	char mau = 'z';// luu mau khi 1 trong hai danh con doi mau va chon mau
+// 	cml1 = cml2 = cml3 = cml4 = 7;
+// 	int idUser = 0, id = 0, chuyen = -1, ID = 0; // luu giu thu tu nguoi danh
+// 	//chuyen = -1 thi chay theo chieu kim dong ho, chuyen = 1 danh nguoc kim dong ho
+// 	//dau tien thi nguoi choi 1 se duoc danh bai dau tien
+// 	khoiPhuc(yyy, yyy2, yyy3, yyy4, result1, result2, result3, result4);
+// 	printf("\ntoi luot nguoi choi 1.");
+// 	Nguoi(yyy, idUser, &id, &t, &cml1, &mau, &chonMau);
+// 	u = idUser = 1;
+// 	XXX(&idUser, &chuyen, id, ID);
+// 	printf("\nnguoi 1 con lai %d con bai", cml1);
+// 	ID = id;
 
-	while (cml1 != 0 && cml2 != 0 && cml3 != 0 && cml4 != 0) {
-		if (idUser == 1) {
-			printf("\ntoi luot nguoi choi 1.");
-			//show(*yyy);
-			Nguoi(yyy, idUser, &id, &t, &cml1, &mau, &chonMau);
-			if (chonMau != 0) {
-				printf("\nnguoi choi %d chon mau: ", u);
-				scanf("%c%*c", &mau);
-				chonMau = 0;
-			}
-			//cap nhat u
-			u = idUser;
-			// kiem tra xem luot danh tiep theo thuoc ve ai
-			XXX(&idUser, &chuyen, id, ID);
-			printf("\nnguoi 1 con lai %d con bai", cml1);
-			ID = id;
-		}
-		else if (idUser == 2) {
-			printf("\ntoi luot nguoi choi 2.");
-			Nguoi(yyy2, idUser, &id, &t, &cml2, &mau, &chonMau);
-			if (chonMau != 0) {
-				printf("\nnguoi choi %d chon mau: ", u);
-				scanf("%c%*c", &mau);
-				chonMau = 0;
-			}
-			//cap nhat u
-			u = idUser;
-			// kiem tra xem luot danh tiep theo thuoc ve ai
-			XXX(&idUser, &chuyen, id, ID);
-			printf("\nnguoi 2 con lai %d con bai", cml2);
-			ID = id;
-		}
-		else if (idUser == 3) {
-			printf("\ntoi luot nguoi choi 3.");
-			Nguoi(yyy3, idUser, &id, &t, &cml3, &mau, &chonMau);
-			if (chonMau != 0) {
-				printf("\nnguoi choi %d chon mau: ", u);
-				scanf("%c%*c", &mau);
-				chonMau = 0;
-			}
-			//cap nhat u
-			u = idUser;
-			// kiem tra xem luot danh tiep theo thuoc ve ai
-			XXX(&idUser, &chuyen, id, ID);
-			printf("\nnguoi 3 con lai %d con bai", cml3);
-			ID = id;
-		}
-		else {
-			printf("\ntoi luot nguoi choi 4.");
-			Nguoi(yyy4, idUser, &id, &t, &cml4, &mau, &chonMau);
-			if (chonMau != 0) {
-				printf("\nnguoi choi %d chon mau: ", u);
-				scanf("%c%*c", &mau);
-				chonMau = 0;
-			}
-			//cap nhat u
-			u = idUser;
-			// kiem tra xem luot danh tiep theo thuoc ve ai
-			XXX(&idUser, &chuyen, id, ID);
-			printf("\nnguoi 4 con lai %d con bai", cml4);
-			ID = id;
-		}
-	}
+// 	while (cml1 != 0 && cml2 != 0 && cml3 != 0 && cml4 != 0) {
+// 		if (idUser == 1) {
+// 			printf("\ntoi luot nguoi choi 1.");
+// 			//show(*yyy);
+// 			Nguoi(yyy, idUser, &id, &t, &cml1, &mau, &chonMau);
+// 			if (chonMau != 0) {
+// 				printf("\nnguoi choi %d chon mau: ", u);
+// 				scanf("%c%*c", &mau);
+// 				chonMau = 0;
+// 			}
+// 			//cap nhat u
+// 			u = idUser;
+// 			// kiem tra xem luot danh tiep theo thuoc ve ai
+// 			XXX(&idUser, &chuyen, id, ID);
+// 			printf("\nnguoi 1 con lai %d con bai", cml1);
+// 			ID = id;
+// 		}
+// 		else if (idUser == 2) {
+// 			printf("\ntoi luot nguoi choi 2.");
+// 			Nguoi(yyy2, idUser, &id, &t, &cml2, &mau, &chonMau);
+// 			if (chonMau != 0) {
+// 				printf("\nnguoi choi %d chon mau: ", u);
+// 				scanf("%c%*c", &mau);
+// 				chonMau = 0;
+// 			}
+// 			//cap nhat u
+// 			u = idUser;
+// 			// kiem tra xem luot danh tiep theo thuoc ve ai
+// 			XXX(&idUser, &chuyen, id, ID);
+// 			printf("\nnguoi 2 con lai %d con bai", cml2);
+// 			ID = id;
+// 		}
+// 		else if (idUser == 3) {
+// 			printf("\ntoi luot nguoi choi 3.");
+// 			Nguoi(yyy3, idUser, &id, &t, &cml3, &mau, &chonMau);
+// 			if (chonMau != 0) {
+// 				printf("\nnguoi choi %d chon mau: ", u);
+// 				scanf("%c%*c", &mau);
+// 				chonMau = 0;
+// 			}
+// 			//cap nhat u
+// 			u = idUser;
+// 			// kiem tra xem luot danh tiep theo thuoc ve ai
+// 			XXX(&idUser, &chuyen, id, ID);
+// 			printf("\nnguoi 3 con lai %d con bai", cml3);
+// 			ID = id;
+// 		}
+// 		else {
+// 			printf("\ntoi luot nguoi choi 4.");
+// 			Nguoi(yyy4, idUser, &id, &t, &cml4, &mau, &chonMau);
+// 			if (chonMau != 0) {
+// 				printf("\nnguoi choi %d chon mau: ", u);
+// 				scanf("%c%*c", &mau);
+// 				chonMau = 0;
+// 			}
+// 			//cap nhat u
+// 			u = idUser;
+// 			// kiem tra xem luot danh tiep theo thuoc ve ai
+// 			XXX(&idUser, &chuyen, id, ID);
+// 			printf("\nnguoi 4 con lai %d con bai", cml4);
+// 			ID = id;
+// 		}
+// 	}
 
-	if (cml1 == 0) {
-		printf("\nnguoi choi 1 thang.");
-	}
-	else if (cml2 == 0) {
-		printf("\nnguoi choi 2 thang.");
-	}
-	else if (cml3 == 0) {
-		printf("\nnguoi choi 3 thang.");
-	}
-	else {
-		printf("\nnguoi choi 4 thang.");
-	}
+// 	if (cml1 == 0) {
+// 		printf("\nnguoi choi 1 thang.");
+// 	}
+// 	else if (cml2 == 0) {
+// 		printf("\nnguoi choi 2 thang.");
+// 	}
+// 	else if (cml3 == 0) {
+// 		printf("\nnguoi choi 3 thang.");
+// 	}
+// 	else {
+// 		printf("\nnguoi choi 4 thang.");
+// 	}
 
-	giaiPhong(l1);
-	giaiPhong(l2);
-	giaiPhong(l3);
-	giaiPhong(l4);
+// 	giaiPhong(l1);
+// 	giaiPhong(l2);
+// 	giaiPhong(l3);
+// 	giaiPhong(l4);
 
-	giaiPhong(yyy);
-	giaiPhong(yyy2);
-	giaiPhong(yyy3);
-	giaiPhong(yyy4);
-}
+// 	giaiPhong(yyy);
+// 	giaiPhong(yyy2);
+// 	giaiPhong(yyy3);
+// 	giaiPhong(yyy4);
+// }

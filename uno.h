@@ -44,7 +44,7 @@ void soQuanBiPhat(int number, int* t);
 // void luotDanhDauchoMay(LIST* xxx, int* id, int* cml, char* mau, int* t);
 
 //ham kiem tra quan bai hop le sau khi danh
-int kt(NODE* p, NODE* r);
+int kt(UNO p, UNO r);
 
 int doiMau(LIST xxx, char mau, NODE* r, int phat);
 int doiMau2(LIST xxx, char mau, NODE* r);

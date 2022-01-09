@@ -8,6 +8,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <glib.h>
 #include "uno.h"
 
 
@@ -40,8 +41,8 @@ void drawCardButtonClick(GtkWidget *button);
 void main_play_game_with_bot();
 char *get_link_fileImage(int id, char *link);
 void reset_board_game();
-void check_player_win();
-void check_bot_win();
+int check_player_win();
+int check_bot_win();
 int check_up_card(LIST *xxx, int *cml); //check phạt ko đỡ đk thì phạt luôn
 void mayDanh(LIST *xxx, int *idUser, int *id, int *t, int *cml, char *mau, int *chonMau);
 int app(int argc, char **argv, int sockfd);
