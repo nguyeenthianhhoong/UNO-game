@@ -263,14 +263,9 @@ int main(int argc, char *argv[])
     LIST l, l1, l2;
     STACK s, s1;
 
-    // đọc file, xáo bài
-    //printf("hi\n");
     Init(&l);
-    //Init(l1);
     printf("hi\n");
     loadTuFile(fileIn, &l);
-
-    //printf("hi\n");
 
     int listen_sock, conn_sock;
     int rcvBytes, sendBytes;

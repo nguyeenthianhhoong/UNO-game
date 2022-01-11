@@ -267,11 +267,18 @@ void after_chooseColor()
     checkChooseColor = 0;
     gtk_widget_hide(chooseColorDialog);
     gtk_window_set_accept_focus(GTK_WINDOW(boardWindow), TRUE);
-    idUser = ENEMY;
     change_on_off_icon(ENEMY);
     draw_colorSquare();
-    check_player_win();
+    if (check_player_win() == 1)
+    {
+        idUser = OTHER;
+    }
+    else
+    {
+        idUser = ENEMY;
+    }
 }
+
 void on_chooseRedBtn_clicked()
 {
     mau = 'r';
@@ -660,32 +667,32 @@ void reset_board_game()
     // pthread_exit(NULL);
 }
 
-void check_player_win()
+int check_player_win()
 {
     if (hand_size == 0)
     {
-        c->play_with_bot.id_player = 1;
-        send(sock_app, c, sizeof(Client), 0);
         printf("player Win\n");
         gtk_widget_show(winDialog);
         gtk_window_set_accept_focus(GTK_WINDOW(boardWindow), FALSE);
-        idUser = PLAYER;
+        idUser = OTHER;
         reset_board_game();
+        return 1;
     }
+    return 0;
 }
 
-void check_bot_win()
+int check_bot_win()
 {
     if (enemy_size == 0)
     {
-        c->play_with_bot.id_player = 0;
-        send(sock_app, c, sizeof(Client), 0);
         printf("bot Win\n");
         gtk_widget_show(loserDialog);
         gtk_window_set_accept_focus(GTK_WINDOW(boardWindow), FALSE);
-        idUser = ENEMY;
+        idUser = OTHER;
         reset_board_game();
+        return 1;
     }
+    return 0;
 }
 
 int check_up_card(LIST *xxx, int *cml) //check phạt ko đỡ đk thì phạt luôn
@@ -903,28 +910,18 @@ void bot_play()
  */
 int play(UNO *card)
 {
-    NODE *p;
-    NODE *r;
-    int ID = card->id;
-    p = find(l, up_card.id);
-
-    r = find(l, card->id);
-
+    UNO clicked_card = *card;
     if (mau != 'z')
     {
-        if ((r->data.color != mau) && (r->data.color != 'k') && (r->data.number != up_card.number))
+        if ((clicked_card.color != mau) && (clicked_card.color != 'k') && (clicked_card.number != up_card.number))
         {
-            free(p);
-            free(r);
             return 0;
         }
     }
     else
     {
-        if (kt(p, r) != 1)
+        if (kt(up_card, clicked_card) != 1)
         {
-            free(p);
-            free(r);
             return 0;
         }
     }
@@ -934,40 +931,28 @@ int play(UNO *card)
         mau = 'z';
     }
 
-    //kt kiểm tra cả màu hoặc số
-    up_card = *card;
-    //tìm uno để push vào s1
-    p = find(l, ID);
     // cap nhat so quan bai bi phat
-    soQuanBiPhat(p->data.number, &t);
-    deleteNode(&l1, ID);
+    soQuanBiPhat(clicked_card.number, &t);
+    deleteNode(&l1, clicked_card.id);
     hand_size -= 1;
     // draw the new game state
+    up_card = clicked_card;
     draw_hand(playerBox);
 
     drawCardCount = 0;
-    if (p->data.number == -4 || p->data.number == -5)
+    if (up_card.number == -4 || up_card.number == -5)
     {
         gtk_widget_show(chooseColorDialog);
         gtk_window_set_accept_focus(GTK_WINDOW(boardWindow), FALSE);
         checkChooseColor = 1;
-        if (p->data.number == -5)
-        {
-            // notificationThread(5, ENEMY);
-        }
     }
     else
     {
-        if (p->data.number == -3)
-        {
-            // notificationThread(3, ENEMY);
-        }
         check_player_win();
     }
-    free(p);
-    free(r);
     return 1;
 }
+
 
 /**
  * Draw a single card

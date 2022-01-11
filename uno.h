@@ -5,6 +5,7 @@ LIST l; // danh sach de luu 108 quan bai
 LIST l1, l2, l3, l4;// danh sach luu quan bai tren tay nguoi choi
 STACK s; // luu quan bai da dao
 
+void WAIT (int Seconds);
 //doc file;
 void docFile(FILE* fileIn, LIST* l);
 
@@ -44,7 +45,7 @@ void soQuanBiPhat(int number, int* t);
 // void luotDanhDauchoMay(LIST* xxx, int* id, int* cml, char* mau, int* t);
 
 //ham kiem tra quan bai hop le sau khi danh
-int kt(NODE* p, NODE* r);
+int kt(UNO p, UNO r);
 
 int doiMau(LIST xxx, char mau, NODE* r, int phat);
 int doiMau2(LIST xxx, char mau, NODE* r);
