@@ -251,13 +251,14 @@ void on_startGameBtn_clicked()
 
 void on_logoutBtn_clicked(){
     c->signal = LOGOUT;
-    printf("%d\n",c->signal);
+    //printf("%d\n",c->signal);
     send(sock_app, c, sizeof(Client), 0);
     rcvBytes = recv(sock_app, buff, BUFF_SIZE, 0);
     buff[rcvBytes] = '\0';
     printf("%s\n", buff);
-    gtk_widget_hide(mainMenuWindow);
     gtk_widget_show(beginWindow);
+    gtk_widget_hide(mainMenuWindow);
+    
 }
 
 //GAME BUTTON
@@ -671,6 +672,8 @@ int check_player_win()
 {
     if (hand_size == 0)
     {
+        c->play_with_bot.id_player = 1;
+        send(sock_app, c, sizeof(Client), 0);
         printf("player Win\n");
         gtk_widget_show(winDialog);
         gtk_window_set_accept_focus(GTK_WINDOW(boardWindow), FALSE);
@@ -685,6 +688,8 @@ int check_bot_win()
 {
     if (enemy_size == 0)
     {
+        c->play_with_bot.id_player = 0;
+        send(sock_app, c, sizeof(Client), 0);
         printf("bot Win\n");
         gtk_widget_show(loserDialog);
         gtk_window_set_accept_focus(GTK_WINDOW(boardWindow), FALSE);
