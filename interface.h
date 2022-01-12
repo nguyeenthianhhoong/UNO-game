@@ -26,6 +26,7 @@ void on_RegisterWindow_destroy();
 void on_registerSubmitBtn_clicked();
 void on_mainMenuWindow_destroy();
 void on_startGameBtn_clicked();
+void on_logoutBtn_clicked();
 
 //GAME BUTTON
 void on_chooseRedBtn_clicked();

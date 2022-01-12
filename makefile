@@ -4,7 +4,7 @@ CC = gcc
 all: run
 
 run: uno.o structData.o interface.o server.c client.c
-	$(CC) uno.o structData.o server.c -lpthread -o server
+	$(CC) uno.o structData.o server.c  -o server
 	$(CC) uno.o structData.o interface.o client.c -o client `pkg-config --cflags gtk+-3.0` `pkg-config --libs gtk+-3.0` -export-dynamic -lpthread
 
 interface.o : interface.c

@@ -1,4 +1,4 @@
-hongnta 123 0 0 0
-hientran 111 0 0 1
-hi 111 0 0 0
-hong 111 0 0 0
+hongnta 123 1 2 0
+hientran 111 0 0 0
+hi 111 2 6 0
+hong 111 1 2 0
