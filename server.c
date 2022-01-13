@@ -93,6 +93,51 @@ void writeFile()
     fclose(f);
 }
 
+void writeFileRank()
+{
+    FILE *f;
+    f = fopen("rank.txt", "w");
+
+    int i=0;
+    int preScore;
+    int rankcount=i+1;
+    printf("rank\n");
+    for (node *pTmp = root; pTmp != NULL; pTmp = pTmp->next, i++)
+    {
+        int score = pTmp->acc.number_win*3 - pTmp->acc.number*1;
+        //nếu bằng điểm thì cùng hạng | tổng ván ít hơn thì xếp cao hơn
+        if (i==0){
+            preScore = score;
+        }else if(score!=preScore){
+            rankcount = i+1;
+        }
+        fprintf(f, "%d %s %d %d %d\n", rankcount, pTmp->acc.username, score, pTmp->acc.number_win, pTmp->acc.number);
+    }
+
+    fclose(f);
+}
+
+void sortRank(){
+    for (node *pTmp = root; pTmp != NULL; pTmp = pTmp->next)
+    {
+        //for loop thứ hai
+        for (node *pTmp2 = pTmp->next; pTmp2 != NULL; pTmp2 = pTmp2->next)
+        {
+            int preScore = pTmp->acc.number_win*3 - pTmp->acc.number*1;
+            int score = pTmp2->acc.number_win*3 - pTmp2->acc.number*1;
+            if (preScore <= score){
+                if(preScore==score && score != 0 && pTmp->acc.number < pTmp2->acc.number){
+                    continue;
+                }
+                account tmp = pTmp->acc;
+                pTmp->acc = pTmp2->acc;
+                pTmp2->acc = tmp;
+            }
+        }
+    }
+    writeFileRank();
+}
+
 node *checkUsername(char username[])
 {
     node *tmp = root;
@@ -474,7 +519,11 @@ int main(int argc, char *argv[])
                     break;
 
                 case VIEW_RANK:
-
+                    printf("------------VIEW_RANK------------\n");
+                    sortRank();
+                    sprintf(buff, "OK");
+                    printf("%s\n", buff);
+                    send(conn_sock, buff, strlen(buff), 0);
                     break;
 
                 case LOGOUT:

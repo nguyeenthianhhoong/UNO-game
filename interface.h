@@ -26,6 +26,7 @@ void on_RegisterWindow_destroy();
 void on_registerSubmitBtn_clicked();
 void on_mainMenuWindow_destroy();
 void on_startGameBtn_clicked();
+void on_viewRankBtn_clicked();
 void on_logoutBtn_clicked();
 
 //GAME BUTTON
@@ -63,3 +64,5 @@ void change_on_off_icon(int mode);
 void* DisplayNotification(void*);
 void notificationThread(int mode, int user);
 void clear_container(GtkWidget *container);
+
+void build_rankWindow();

@@ -27,6 +27,7 @@ GtkWidget *passwordRegEntry;
 GtkWidget *passwordAgainRegEntry;
 
 GtkWidget *mainMenuWindow;
+GtkWidget *username_mainMenuLabel; 
 GtkWidget *boardWindow;
 
 GtkWidget *playerNotificationBox;
@@ -37,6 +38,7 @@ GtkWidget *colorSquare;
 
 GtkWidget *winDialog;
 GtkWidget *loserDialog;
+GtkWidget *confirmDialog;
 
 GtkWidget *boardWindow;
 GtkWidget *boardWindowFixed;
@@ -46,12 +48,18 @@ GtkWidget *enemyBox;
 GtkWidget *iconON;
 GtkWidget *iconOFF;
 GtkWidget *chooseColorDialog;
+
+GtkWidget *rankWindow;
+GtkWidget *rankBox;
+GtkWidget *rankGrid;
+
 pthread_t tid;
 
 char buff[80];
 int rcvBytes;
 int sock_app;
-Client *c ;
+Client *c;
+char usernameLogin[30];
 
 UNO x_card = {0, 'x', -6};
 
@@ -102,7 +110,6 @@ void on_loginBtn_clicked()
 {
     gtk_widget_show(LoginWindow);
     gtk_widget_hide(beginWindow);
-
 }
 
 void on_LoginWindow_destroy()
@@ -117,9 +124,10 @@ void on_LoginWindow_destroy()
 void on_loginSubmitBtn_clicked()
 {
     c->signal = LOGIN;
-    char tmp[128];
+    char tmp[128], username[128];
     sprintf(tmp, "%s", gtk_entry_get_text(GTK_ENTRY(usernameLoginEntry)));
     trim(tmp);
+    strcpy(username, tmp);
     if (checkSpace(tmp) == 1)
     {
         //loi
@@ -127,7 +135,7 @@ void on_loginSubmitBtn_clicked()
     }
     else
     {
-        strcpy(c->login.username,tmp);
+        strcpy(c->login.username, tmp);
         sprintf(tmp, "%s", gtk_entry_get_text(GTK_ENTRY(passwordLoginEntry)));
         if (checkSpace(tmp) == 1)
         {
@@ -136,7 +144,7 @@ void on_loginSubmitBtn_clicked()
         }
         else
         {
-            strcpy(c->login.password,tmp);
+            strcpy(c->login.password, tmp);
             send(sock_app, c, sizeof(Client), 0);
             rcvBytes = recv(sock_app, buff, BUFF_SIZE, 0);
             if (rcvBytes < 0)
@@ -147,6 +155,9 @@ void on_loginSubmitBtn_clicked()
             buff[rcvBytes] = '\0';
             if (strcmp(buff, "OK") == 0)
             {
+                memset(usernameLogin, 0, strlen(usernameLogin));
+                strcpy(usernameLogin, username);
+                gtk_label_set_text(GTK_LABEL(username_mainMenuLabel), usernameLogin);
                 printf("\n-------------Let's play-------------\n");
                 on_LoginWindow_destroy();
                 //cua so main game
@@ -166,7 +177,6 @@ void on_registerBtn_clicked()
 {
     gtk_widget_show(RegisterWindow);
     gtk_widget_hide(beginWindow);
-
 }
 
 void on_RegisterWindow_destroy()
@@ -193,7 +203,7 @@ void on_registerSubmitBtn_clicked()
     else
     {
 
-        strcpy(c->signup.username,tmp);
+        strcpy(c->signup.username, tmp);
         sprintf(tmp, "%s", gtk_entry_get_text(GTK_ENTRY(passwordRegEntry)));
         if (checkSpace(tmp) == 1)
         {
@@ -203,7 +213,7 @@ void on_registerSubmitBtn_clicked()
         else
         {
 
-            strcpy(c->signup.password,tmp);
+            strcpy(c->signup.password, tmp);
             sprintf(tmp, "%s", gtk_entry_get_text(GTK_ENTRY(passwordAgainRegEntry)));
             if (checkSpace(tmp) == 1)
             {
@@ -213,7 +223,7 @@ void on_registerSubmitBtn_clicked()
             else
             {
 
-                strcpy(c->signup.confirm_password,tmp);
+                strcpy(c->signup.confirm_password, tmp);
 
                 send(sock_app, c, sizeof(Client), 0);
                 rcvBytes = recv(sock_app, buff, BUFF_SIZE, 0);
@@ -236,8 +246,7 @@ void on_registerSubmitBtn_clicked()
 
 void on_mainMenuWindow_destroy()
 {
-    // pthread_exit(NULL);
-    gtk_main_quit();
+    gtk_widget_show_all(confirmDialog);
 }
 
 void on_startGameBtn_clicked()
@@ -249,16 +258,51 @@ void on_startGameBtn_clicked()
     main_play_game_with_bot();
 }
 
-void on_logoutBtn_clicked(){
+void on_viewRankBtn_clicked()
+{
+    c->signal = VIEW_RANK;
+    //printf("%d\n",c->signal);
+    send(sock_app, c, sizeof(Client), 0);
+    rcvBytes = recv(sock_app, buff, BUFF_SIZE, 0);
+    buff[rcvBytes] = '\0';
+    printf("%s\n", buff);
+
+    gtk_widget_hide(mainMenuWindow);
+    build_rankWindow();
+    gtk_widget_show_all(rankWindow);
+}
+
+void on_logoutBtn_clicked()
+{
     c->signal = LOGOUT;
     //printf("%d\n",c->signal);
     send(sock_app, c, sizeof(Client), 0);
     rcvBytes = recv(sock_app, buff, BUFF_SIZE, 0);
     buff[rcvBytes] = '\0';
     printf("%s\n", buff);
+    memset(usernameLogin, 0, strlen(usernameLogin));
     gtk_widget_show(beginWindow);
     gtk_widget_hide(mainMenuWindow);
-    
+}
+
+void on_cancelExitBtn_clicked(){
+    gtk_widget_hide(confirmDialog);
+}
+
+void on_exitBtn_clicked(){
+    if(c->signal == PLAY_WITH_BOT && c->play_with_bot.id_player==-1){
+        c->play_with_bot.id_player = 0;
+        send(sock_app, c, sizeof(Client), 0);
+    }
+    if(strlen(usernameLogin)!=0){
+        c->signal = LOGOUT;
+        send(sock_app, c, sizeof(Client), 0);
+        rcvBytes = recv(sock_app, buff, BUFF_SIZE, 0);
+        buff[rcvBytes] = '\0';
+        printf("%s\n", buff);
+        memset(usernameLogin, 0, strlen(usernameLogin));
+    }
+    gtk_main_quit();
 }
 
 //GAME BUTTON
@@ -358,6 +402,7 @@ void drawCardButtonClick(GtkWidget *button)
 void main_play_game_with_bot()
 {
     c->signal = PLAY_WITH_BOT;
+    c->play_with_bot.id_player = -1;
     Init(&l);
     loadTuFile(fileIn, &l); // do bai tu file vao dslk
     inPutStack(&s, l);
@@ -450,9 +495,6 @@ char *get_link_fileImage(int id, char *link)
 void buildUIGameWindow()
 {
     boardWindow = GTK_WIDGET(gtk_builder_get_object(builder, "boardWindow"));
-
-    g_signal_connect(boardWindow, "destroy", G_CALLBACK(gtk_main_quit), NULL);
-    // gtk_builder_connect_signals(builder, NULL);
 
     //add container
     boardWindowFixed = gtk_fixed_new();
@@ -825,6 +867,7 @@ int app(int argc, char **argv, int sockfd)
     errorRegisLabel = GTK_WIDGET(gtk_builder_get_object(builder, "errorRegisLabel"));
 
     mainMenuWindow = GTK_WIDGET(gtk_builder_get_object(builder, "mainMenuWindow"));
+    username_mainMenuLabel = GTK_WIDGET(gtk_builder_get_object(builder, "username_mainMenuLabel"));
 
     boardWindow = GTK_WIDGET(gtk_builder_get_object(builder, "boardWindow"));
     buildUIGameWindow();
@@ -835,6 +878,15 @@ int app(int argc, char **argv, int sockfd)
 
     winDialog = GTK_WIDGET(gtk_builder_get_object(builder, "winDialog"));
     loserDialog = GTK_WIDGET(gtk_builder_get_object(builder, "loserDialog"));
+    confirmDialog = GTK_WIDGET(gtk_builder_get_object(builder, "confirmDialog"));
+
+    rankWindow = GTK_WIDGET(gtk_builder_get_object(builder, "rankWindow"));
+    rankBox = GTK_WIDGET(gtk_builder_get_object(builder, "rankBox"));
+    rankGrid = gtk_grid_new();
+    gtk_grid_set_row_spacing(GTK_GRID(rankGrid), 20);
+    gtk_grid_set_column_spacing(GTK_GRID(rankGrid), 40);
+    gtk_widget_set_size_request(rankGrid, -1, 540);
+    gtk_container_add(GTK_CONTAINER(rankBox), rankGrid);
 
     g_signal_connect(beginWindow, "destroy", G_CALLBACK(gtk_main_quit), NULL);
     gtk_builder_connect_signals(builder, NULL);
@@ -957,7 +1009,6 @@ int play(UNO *card)
     }
     return 1;
 }
-
 
 /**
  * Draw a single card
@@ -1098,10 +1149,74 @@ void clear_container(GtkWidget *container)
     // iterate over children of container
     for (GList *i = children; i != NULL; i = g_list_next(i))
         gtk_widget_destroy(GTK_WIDGET(i->data));
-    // gtk_container_remove(GTK_CONTAINER(container), GTK_WIDGET(i->data));
 
     // free list
     g_list_free(children);
 }
 
 //***********
+void build_rankWindow()
+{
+
+    PangoAttrList *attrlist = pango_attr_list_new();
+    PangoFontDescription *font_desc = pango_font_description_new();
+    pango_font_description_set_size(font_desc, 14 * PANGO_SCALE);
+    pango_font_description_set_weight(font_desc, PANGO_WEIGHT_BOLD);
+    PangoAttribute *attr = pango_attr_font_desc_new(font_desc);
+    pango_attr_list_insert(attrlist, attr);
+
+    FILE *f;
+    f = fopen("rank.txt", "r");
+
+    for (int i = 0;!feof(f); i++)
+    {
+        int row = i + 1;
+        gtk_grid_insert_row(GTK_GRID(rankGrid), row);
+        GtkWidget *rank = gtk_label_new("");
+        GtkWidget *username = gtk_label_new("");
+        GtkWidget *winNumber = gtk_label_new("");
+        GtkWidget *allNumber = gtk_label_new("");
+        GtkWidget *score = gtk_label_new("");
+
+        if (i == 0)
+        {
+            gtk_label_set_text(GTK_LABEL(rank), "Xếp hạng");
+            gtk_label_set_text(GTK_LABEL(username), "Tên");
+            gtk_label_set_text(GTK_LABEL(score), "Điểm");
+            gtk_label_set_text(GTK_LABEL(winNumber), "Số trận thắng");
+            gtk_label_set_text(GTK_LABEL(allNumber), "Tổng số trận");
+        }
+        else
+        {
+            char rankcount[10], name[30], scr[10], number_win[10], number[10];
+            fscanf(f, "%s %s %s %s %s\n", rankcount, name, scr, number_win, number);
+
+            gtk_label_set_text(GTK_LABEL(rank), rankcount);
+            gtk_label_set_text(GTK_LABEL(username), name);
+            gtk_label_set_text(GTK_LABEL(score), scr);
+            gtk_label_set_text(GTK_LABEL(winNumber), number_win);
+            gtk_label_set_text(GTK_LABEL(allNumber), number);
+            if(strcmp(name, usernameLogin)==0){
+                gtk_label_set_attributes(GTK_LABEL(rank), attrlist);
+                gtk_label_set_attributes(GTK_LABEL(username), attrlist);
+                gtk_label_set_attributes(GTK_LABEL(score), attrlist);
+                gtk_label_set_attributes(GTK_LABEL(winNumber), attrlist);
+                gtk_label_set_attributes(GTK_LABEL(allNumber), attrlist);
+
+            }
+        }
+        gtk_grid_attach(GTK_GRID(rankGrid), rank, 0, row, 1, 1);
+        gtk_grid_attach(GTK_GRID(rankGrid), username, 1, row, 1, 1);
+        gtk_grid_attach(GTK_GRID(rankGrid), score, 2, row, 1, 1);
+        gtk_grid_attach(GTK_GRID(rankGrid), winNumber, 3, row, 1, 1);
+        gtk_grid_attach(GTK_GRID(rankGrid), allNumber, 4, row, 1, 1);
+    }
+    fclose(f);
+}
+
+void on_rankWindow_destroy()
+{
+    gtk_widget_show_all(mainMenuWindow);
+    clear_container(rankGrid);
+    gtk_widget_hide(rankWindow);
+}
