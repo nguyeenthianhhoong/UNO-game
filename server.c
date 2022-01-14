@@ -13,6 +13,74 @@
 #define BUFF_SIZE 100
 #define BACKLOG 10 //number of pending connections in queue
 
+// typedef struct{
+//     int sockfd;
+//     char name[30];
+// }Client;
+
+typedef struct room
+{
+    int id;
+    //int arr_sockfd[2];
+    int sockfd1;
+    int sockfd2;
+} room;
+
+typedef room room;
+
+typedef struct node_room
+{
+    room room;
+    struct node_room *next;
+} node_room;
+
+typedef struct node_room node_room;
+node_room *root_r, *cur_r;
+
+node_room *makeNewNode_room(room r)
+{
+    node_room *new = (node_room *)malloc(sizeof(node_room));
+    new->room = r;
+    new->next = NULL;
+    return new;
+}
+
+void addRoom(room r)
+{ //at end
+    node_room *new = makeNewNode_room(r);
+    if (root_r == NULL)
+    {
+        root_r = new;
+    }
+    else
+    {
+        cur_r = root_r;
+        while (cur_r->next != NULL)
+        {
+            cur_r = cur_r->next;
+        }
+        cur_r->next = new;
+    }
+}
+
+node_room *check_full_room()
+{
+    printf("111\n");
+    node_room *tmp = root_r;
+    while (tmp != NULL)
+    {
+        if (tmp->room.sockfd1 != -1 && tmp->room.sockfd2 == -1)
+        {
+            return tmp;
+        }
+        tmp = tmp->next;
+    }
+    //node_room *new = (node_room *)malloc(sizeof(node_room));
+    return NULL;
+}
+
+///////////////////////////////////////////////////////
+
 typedef struct account
 {
     char username[30];
@@ -34,14 +102,6 @@ typedef struct node node;
 node *root, *cur;
 
 char userSignedIn[30];
-
-// //
-// user *newUser(account acc){
-//     user *new = (node *)malloc(sizeof(user));
-//     new->acc = acc;
-//     Init(&new->l);
-//     return new;
-// }
 
 node *makeNewNode(account acc)
 {
@@ -98,18 +158,21 @@ void writeFileRank()
     FILE *f;
     f = fopen("rank.txt", "w");
 
-    int i=0;
+    int i = 0;
     int preScore;
-    int rankcount=i+1;
+    int rankcount = i + 1;
     printf("rank\n");
     for (node *pTmp = root; pTmp != NULL; pTmp = pTmp->next, i++)
     {
-        int score = pTmp->acc.number_win*3 - pTmp->acc.number*1;
+        int score = pTmp->acc.number_win * 3 - pTmp->acc.number * 1;
         //nếu bằng điểm thì cùng hạng | tổng ván ít hơn thì xếp cao hơn
-        if (i==0){
+        if (i == 0)
+        {
             preScore = score;
-        }else if(score!=preScore){
-            rankcount = i+1;
+        }
+        else if (score != preScore)
+        {
+            rankcount = i + 1;
         }
         fprintf(f, "%d %s %d %d %d\n", rankcount, pTmp->acc.username, score, pTmp->acc.number_win, pTmp->acc.number);
     }
@@ -117,16 +180,19 @@ void writeFileRank()
     fclose(f);
 }
 
-void sortRank(){
+void sortRank()
+{
     for (node *pTmp = root; pTmp != NULL; pTmp = pTmp->next)
     {
         //for loop thứ hai
         for (node *pTmp2 = pTmp->next; pTmp2 != NULL; pTmp2 = pTmp2->next)
         {
-            int preScore = pTmp->acc.number_win*3 - pTmp->acc.number*1;
-            int score = pTmp2->acc.number_win*3 - pTmp2->acc.number*1;
-            if (preScore <= score){
-                if(preScore==score && score != 0 && pTmp->acc.number < pTmp2->acc.number){
+            int preScore = pTmp->acc.number_win * 3 - pTmp->acc.number * 1;
+            int score = pTmp2->acc.number_win * 3 - pTmp2->acc.number * 1;
+            if (preScore <= score)
+            {
+                if (preScore == score && score != 0 && pTmp->acc.number < pTmp2->acc.number)
+                {
                     continue;
                 }
                 account tmp = pTmp->acc;
@@ -323,7 +389,10 @@ int main(int argc, char *argv[])
     ssize_t ret;
     fd_set readfds, allset;
 
+    int room_id = 1;
+
     node *tmp = (node *)malloc(sizeof(node));
+    node_room *tmp1 = (node_room *)malloc(sizeof(node_room));
 
     if (atoi(argv[1]) < 0 && atoi(argv[1]) > 65535)
     {
@@ -358,16 +427,15 @@ int main(int argc, char *argv[])
 
     //pthread_t tid;
 
-    maxfd = listen_sock;
     maxfd = listen_sock; /* initialize */
     maxi = -1;           /* index into client[] array */
     for (i = 0; i < FD_SETSIZE; i++)
         client[i] = -1; /* -1 indicates available entry */
-    
+
     FD_ZERO(&allset);
     FD_ZERO(&readfds);
     FD_SET(listen_sock, &allset);
-    
+
     printf("Server started\n");
 
     //Step 4: Communicate with client
@@ -387,7 +455,7 @@ int main(int argc, char *argv[])
                 perror("\nError: ");
             else
             {
-                printf("You got a connection from %s\n", inet_ntoa(cliaddr.sin_addr)); /* prints client's IP */
+                printf("You got a connection from %d\n", conn_sock); /* prints client's IP */
                 for (i = 0; i < FD_SETSIZE; i++)
                     if (client[i] < 0)
                     {
@@ -416,7 +484,7 @@ int main(int argc, char *argv[])
             if (FD_ISSET(conn_sock, &readfds))
             {
                 Client *c = (Client *)malloc(sizeof(Client));
-                
+
                 rcvBytes = recv(conn_sock, c, sizeof(Client), 0);
                 if (rcvBytes < 0)
                 {
@@ -515,7 +583,32 @@ int main(int argc, char *argv[])
                     break;
 
                 case PLAY_WITH_PERSON:
+                    printf("------------PLAY WITH PERSON------------\n");
 
+                    tmp1 = check_full_room();
+                    if (tmp1 == NULL)
+                    {
+                        room r;
+                        r.id = room_id;
+                        r.sockfd1 = conn_sock;
+                        r.sockfd2 = -1;                      
+                        addRoom(r);
+                        sprintf(buff, "Room %d. Please wait another person", r.id);
+                        printf("%s\n", buff);
+                        send(conn_sock, buff, strlen(buff), 0);
+                    }
+                    else
+                    {
+                        tmp1->room.sockfd2 = conn_sock;
+                        sprintf(buff, "OK..Room %d. You(%d) will play with %d", tmp1->room.id, tmp1->room.sockfd1, tmp1->room.sockfd2);
+                        printf("%s\n", buff);
+                        send(conn_sock, buff, strlen(buff), 0);
+
+                        sprintf(buff, "OK..Room %d. You(%d) will play with %d", tmp1->room.id, tmp1->room.sockfd2, tmp1->room.sockfd1);
+                        printf("%s\n", buff);
+                        send(tmp1->room.sockfd1, buff, strlen(buff),0);
+                        room_id++;
+                    }
                     break;
 
                 case VIEW_RANK:
@@ -536,11 +629,8 @@ int main(int argc, char *argv[])
                     printf("%s\n", buff);
                     send(conn_sock, buff, strlen(buff), 0);
                     break;
-
                 }
                 free_obj(c);
-
-
             }
 
             // len = sizeof(cliaddr);

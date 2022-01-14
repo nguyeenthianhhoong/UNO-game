@@ -27,7 +27,7 @@ GtkWidget *passwordRegEntry;
 GtkWidget *passwordAgainRegEntry;
 
 GtkWidget *mainMenuWindow;
-GtkWidget *username_mainMenuLabel; 
+GtkWidget *username_mainMenuLabel;
 GtkWidget *boardWindow;
 
 GtkWidget *playerNotificationBox;
@@ -274,27 +274,43 @@ void on_viewRankBtn_clicked()
 
 void on_logoutBtn_clicked()
 {
-    c->signal = LOGOUT;
+    //c->signal = LOGOUT;
+    c->signal = PLAY_WITH_PERSON;
     //printf("%d\n",c->signal);
     send(sock_app, c, sizeof(Client), 0);
-    rcvBytes = recv(sock_app, buff, BUFF_SIZE, 0);
-    buff[rcvBytes] = '\0';
-    printf("%s\n", buff);
-    memset(usernameLogin, 0, strlen(usernameLogin));
-    gtk_widget_show(beginWindow);
-    gtk_widget_hide(mainMenuWindow);
+    while (1)
+    {
+        rcvBytes = recv(sock_app, buff, BUFF_SIZE, 0);
+        buff[rcvBytes] = '\0';
+        printf("%s\n", buff);
+        if (strstr(buff, "OK") == NULL)
+        {
+            send(sock_app, "wait", 10, 0);
+        }
+        else
+        {
+            memset(usernameLogin, 0, strlen(usernameLogin));
+            gtk_widget_show(beginWindow);
+            gtk_widget_hide(mainMenuWindow);
+            break;
+        }
+    }
 }
 
-void on_cancelExitBtn_clicked(){
+void on_cancelExitBtn_clicked()
+{
     gtk_widget_hide(confirmDialog);
 }
 
-void on_exitBtn_clicked(){
-    if(c->signal == PLAY_WITH_BOT && c->play_with_bot.id_player==-1){
+void on_exitBtn_clicked()
+{
+    if (c->signal == PLAY_WITH_BOT && c->play_with_bot.id_player == -1)
+    {
         c->play_with_bot.id_player = 0;
         send(sock_app, c, sizeof(Client), 0);
     }
-    if(strlen(usernameLogin)!=0){
+    if (strlen(usernameLogin) != 0)
+    {
         c->signal = LOGOUT;
         send(sock_app, c, sizeof(Client), 0);
         rcvBytes = recv(sock_app, buff, BUFF_SIZE, 0);
@@ -1168,7 +1184,7 @@ void build_rankWindow()
     FILE *f;
     f = fopen("rank.txt", "r");
 
-    for (int i = 0;!feof(f); i++)
+    for (int i = 0; !feof(f); i++)
     {
         int row = i + 1;
         gtk_grid_insert_row(GTK_GRID(rankGrid), row);
@@ -1196,13 +1212,13 @@ void build_rankWindow()
             gtk_label_set_text(GTK_LABEL(score), scr);
             gtk_label_set_text(GTK_LABEL(winNumber), number_win);
             gtk_label_set_text(GTK_LABEL(allNumber), number);
-            if(strcmp(name, usernameLogin)==0){
+            if (strcmp(name, usernameLogin) == 0)
+            {
                 gtk_label_set_attributes(GTK_LABEL(rank), attrlist);
                 gtk_label_set_attributes(GTK_LABEL(username), attrlist);
                 gtk_label_set_attributes(GTK_LABEL(score), attrlist);
                 gtk_label_set_attributes(GTK_LABEL(winNumber), attrlist);
                 gtk_label_set_attributes(GTK_LABEL(allNumber), attrlist);
-
             }
         }
         gtk_grid_attach(GTK_GRID(rankGrid), rank, 0, row, 1, 1);
