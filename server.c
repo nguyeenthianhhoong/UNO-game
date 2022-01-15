@@ -582,7 +582,7 @@ int main(int argc, char *argv[])
                     writeFile();
                     break;
 
-                case PLAY_WITH_PERSON:
+                case ADD_ROOM:
                     printf("------------PLAY WITH PERSON------------\n");
 
                     tmp1 = check_full_room();
@@ -608,9 +608,15 @@ int main(int argc, char *argv[])
                         printf("%s\n", buff);
                         send(tmp1->room.sockfd1, buff, strlen(buff),0);
                         room_id++;
+
+                        // recv(conn_sock, buff, BUFF_SIZE, 0);
+                        // send(tmp1->room.sockfd1, buff, strlen(buff), 0);
                     }
                     break;
 
+                case PLAY_WITH_PERSON:
+
+                    break;
                 case VIEW_RANK:
                     printf("------------VIEW_RANK------------\n");
                     sortRank();

@@ -295,6 +295,9 @@ void on_logoutBtn_clicked()
             break;
         }
     }
+    // printf("Message: ");
+    // fgets(buff, sizeof(buff), stdin);
+    // send(sock_app, buff, strlen(buff), 0);
 }
 
 void on_cancelExitBtn_clicked()

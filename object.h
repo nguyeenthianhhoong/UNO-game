@@ -7,6 +7,7 @@ typedef enum{
     LOGIN,
     SIGNUP,
     PLAY_WITH_BOT,
+    ADD_ROOM,
     PLAY_WITH_PERSON,
     VIEW_RANK,
     LOGOUT
