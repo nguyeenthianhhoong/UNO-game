@@ -50,8 +50,16 @@ int check_up_card(LIST *xxx, int *cml); //check phạt ko đỡ đk thì phạt 
 void mayDanh(LIST *xxx, int *idUser, int *id, int *t, int *cml, char *mau, int *chonMau);
 int app(int argc, char **argv, int sockfd);
 void card_clicked(GtkWidget *card_button, gpointer card_data);
+void getNextPlayer();
 void bot_play();
 int play(UNO *card);
+static gboolean serial_data(gpointer user_data);
+static void checkTimeOutUnoButton(gpointer user_data);
+
+void main_play_with_player();
+int connect_with_another_player();
+void build_board_game_with_player();
+void on_backfromWaitPlayer_clicked();
 
 //draw game
 void buildUIGameWindow();
