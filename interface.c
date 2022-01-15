@@ -66,6 +66,7 @@ int rcvBytes;
 int sock_app;
 Client *c;
 char usernameLogin[30];
+char playModeStatus[50];
 
 UNO x_card = {0, 'x', -6};
 
@@ -389,7 +390,7 @@ void on_replayBtn_clicked()
 //while playing games
 void unoButtonClick(GtkWidget *button)
 {
-    if (idUser == PLAYER && hand_size == 1)
+    if (idUser == PLAYER && hand_size == 1 && c->signal == PLAY_WITH_BOT)
     {
         g_print("uno button click\n");
         int fal = 0;
@@ -398,18 +399,40 @@ void unoButtonClick(GtkWidget *button)
 }
 void nextButtonClick(GtkWidget *button)
 {
-    if (drawCardCount == 1 && idUser == PLAYER)
+    if (drawCardCount == 1 && idUser == PLAYER && c->signal == PLAY_WITH_BOT)
     {
         drawCardCount = 0;
         idUser = ENEMY;
         change_on_off_icon(ENEMY);
+    }else if(drawCardCount == 1 && idUser == PLAYER && c->signal == PLAY_WITH_PERSON){
+        drawCardCount = 0;
+        idUser = ENEMY;
+        change_on_off_icon(ENEMY);
+        //TODO 
+        //chuyển lượt chơi sang cho người kia
     }
 }
 void drawCardButtonClick(GtkWidget *button)
 {
-    if (drawCardCount == 0 && idUser == PLAYER)
+    if (drawCardCount == 0 && idUser == PLAYER && c->signal == PLAY_WITH_BOT)
     {
         phat(1, &l1, &s);
+        hand_size++;
+        draw_hand(playerBox);
+
+        NODE *p = find(l, up_card.id);
+        UNO uno;
+        if (CHECK(l1, up_card.id, &uno) != 1 && doiMau(l1, mau, p, t) != 1)
+        {
+            idUser = ENEMY;
+            change_on_off_icon(ENEMY);
+            return;
+        }
+        drawCardCount = 1;
+    }else(drawCardCount == 0 && idUser == PLAYER && c->signal == PLAY_WITH_PERSON)
+    {
+        //TO DO
+        // Lấy 1 lá bài từ server .... và bổ sung vào l1
         hand_size++;
         draw_hand(playerBox);
 
@@ -1050,7 +1073,7 @@ void getNextPlayer()
 
 void bot_play()
 {
-    if (checkChooseColor != 1 && (hand_size != 0 && enemy_size != 0))
+    if (checkChooseColor != 1 && (hand_size != 0 && enemy_size != 0) && c->signal == PLAY_WITH_BOT)
     {
         if (idUser == ENEMY)
         {
@@ -1166,46 +1189,79 @@ void main_play_with_player()
     //build wait screen
     gtk_widget_hide(playModeDialog);
     gtk_widget_show_all(waitAnotherPlayerDialog);
-    if(connect_with_another_player()==1){
+
+    // if(connect_with_another_player()==1){
+
+    //     gtk_widget_hide(waitAnotherPlayerDialog);
+    //     build_board_game_with_player();
+    //     gtk_widget_show_all(boardWindow);
+    // }
+
+    //build boardgame();
+    c->signal = PLAY_WITH_PERSON;
+    send(sock_app, c, sizeof(Client), 0);
+    connect_with_another_player(1);
+}
+
+int connect_with_another_player(int status)
+{
+    if (status == 1)
+    {
+        timer = g_timeout_add(1000, check_connect_other_player, &status);
+    }
+    else if (status == 0 && timer != 0)
+    {
+        g_source_remove(timer);
+        timer = 0;
         gtk_widget_hide(waitAnotherPlayerDialog);
         build_board_game_with_player();
         gtk_widget_show_all(boardWindow);
     }
-
-    //build boardgame();
-}
-
-int connect_with_another_player()
-{
-    c->signal = PLAY_WITH_PERSON;
-    send(sock_app, c, sizeof(Client), 0);
-    while (1)
+    else if(timer != 0)
     {
-        rcvBytes = recv(sock_app, buff, BUFF_SIZE, 0);
-        buff[rcvBytes] = '\0';
-        printf("%s\n", buff);
-        if (strstr(buff, "OK") == NULL)
-        {
-            send(sock_app, "wait", 10, 0);
-        }
-        else
-        {
-            return 1;
-            break;
-        }
+        g_source_remove(timer);
+        timer = 0;
+        gtk_widget_hide(waitAnotherPlayerDialog);
+        gtk_widget_show_all(mainMenuWindow);
     }
-    return 0;
+    return 1;
+}
+static gint check_connect_other_player(gpointer status)
+{
+    rcvBytes = recv(sock_app, buff, BUFF_SIZE, 0);
+    buff[rcvBytes] = '\0';
+    printf("%s\n", buff);
+    if (strstr(buff, "OK") == NULL)
+    {
+        send(sock_app, "wait", 10, 0);
+    }
+    else
+    {
+        connect_with_another_player(0);
+    }
+    return 1;
 }
 
-
-void build_board_game_with_player(){
+void build_board_game_with_player()
+{
     gtk_button_set_label(GTK_BUTTON(usernameLabelBtn), usernameLogin);
     gtk_label_set_text(GTK_LABEL(playerNameLabel), usernameLogin);
     gtk_label_set_text(GTK_LABEL(enemyNameLabel), "Bot");
+
+    //**********************************************************************************
+    //khởi tạo: 7 bài được phát || -> || id người đánh tiếp theo | con bài đầu tiên, mau = 'z', phat = 0;
+
+    //sau mỗi lần đánh card_click:
+    //gửi đến room: id người đánh kế tiếp | quân bài vừa đánh (up_Card) | màu | phạt
+    //khi client yêu cầu draw card: lấy về id của card đk phát |
+    //khi client yêu cầu next lượt: người đánh là người còn lại
+    
 }
 
-void on_backfromWaitPlayer_clicked(){
-
+void on_backfromWaitPlayer_clicked()
+{
+    printf("-1\n");
+    connect_with_another_player(-1);
 }
 
 /**
@@ -1278,8 +1334,8 @@ void change_on_off_icon(int mode)
     else if (mode == PLAYER)
     {
         printf("luot player\n");
-        gtk_fixed_move(GTK_FIXED(boardWindowFixed), iconON, 60, 110);
-        gtk_fixed_move(GTK_FIXED(boardWindowFixed), iconOFF, 60, 660);
+        gtk_fixed_move(GTK_FIXED(boardWindowFixed), iconON, 60, 660);
+        gtk_fixed_move(GTK_FIXED(boardWindowFixed), iconOFF, 60, 110);
     }
 }
 
