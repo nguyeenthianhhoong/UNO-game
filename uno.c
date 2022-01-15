@@ -154,7 +154,7 @@ char* my_itoa(int num, char* str)
 
 void ITOA(LIST xxx, char* result) {
 	char str[4];
-	//strcpy(result, "");
+	strcpy(result, "");
 	for (NODE* p = xxx.pHead; p != NULL; p = p->pNext) {
 		my_itoa(p->data.id, str);
 		strcat(result, str);
@@ -188,6 +188,7 @@ void chiaBai(LIST* l1, LIST* l2, LIST* l3, LIST* l4, STACK* s, int m) {
 
 void ATOI(LIST l, LIST* xxx, char* str) {
 	Init(xxx);
+	printf("1\n");
 	int m;
 	char* str2;
 	int n = strlen(str);
@@ -208,6 +209,7 @@ void ATOI(LIST l, LIST* xxx, char* str) {
 			addTail(xxx, p);
 		}
 	}
+	printf("1\n");
 }
 
 // ham kiem tra con bai co trong bo bai cua nguoi choi hay k

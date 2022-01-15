@@ -29,10 +29,12 @@ typedef struct {
 }Play_With_Bot;
 
 typedef struct {
-    int id_player;
+    int id_room;
+    int id_player; // 0:me  1:you
     int id_bai;
     char color;
     int bai_phat;
+    int so_luong_bai;
 }Play_With_Person;
 
 typedef struct {
@@ -42,6 +44,33 @@ typedef struct {
     Play_With_Bot play_with_bot;
     Play_With_Person play_with_person;
 }Client;
+
+typedef struct {
+    int id_room;
+    char messages[100];
+    char list[50];
+} send_room;
+
+typedef struct {
+    int id_room;
+    int id_player; // 0:me  1:you
+    int id_bai;
+    char color;
+    int bai_phat;
+    int so_luong_bai;
+} SendB;
+
+SendB *copyClient(Play_With_Person *p){
+    SendB *new = (SendB *)malloc(sizeof(SendB));
+    new->id_room = p->id_room;
+    new->id_player = p->id_player;
+    new->id_bai = p->id_bai;
+    //strcpy(new->color,p->color);
+    new->color = p->color;
+    new->bai_phat = p->bai_phat;
+    new->so_luong_bai = p->so_luong_bai;
+    return new;
+}
 
 void free_obj(Client *c){
 	free(c);

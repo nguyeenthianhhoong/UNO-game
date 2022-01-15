@@ -28,12 +28,12 @@ void my_random(char* x);
 
 char* my_itoa(int num, char* str);
 
-// void ITOA(LIST xxx, char* result);
+void ITOA(LIST xxx, char* result);
 
 //ham chia bai cho nguoi choi
 void chiaBai(LIST* l1, LIST* l2, LIST* l3, LIST* l4, STACK* s, int m);
 
-// void ATOI(LIST l, LIST* xxx, char* str);
+void ATOI(LIST l, LIST* xxx, char* str);
 
 // ham kiem tra con bai co trong bo bai cua nguoi choi hay k
 int quanBaiHopLe(LIST xxx, int id);

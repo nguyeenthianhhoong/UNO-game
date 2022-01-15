@@ -8,20 +8,14 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 //#include <pthread.h>
-//#include "uno.h"
+#include "uno.h"
 #include "object.h"
 #define BUFF_SIZE 100
 #define BACKLOG 10 //number of pending connections in queue
 
-// typedef struct{
-//     int sockfd;
-//     char name[30];
-// }Client;
-
 typedef struct room
 {
     int id;
-    //int arr_sockfd[2];
     int sockfd1;
     int sockfd2;
 } room;
@@ -65,7 +59,6 @@ void addRoom(room r)
 
 node_room *check_full_room()
 {
-    printf("111\n");
     node_room *tmp = root_r;
     while (tmp != NULL)
     {
@@ -75,10 +68,20 @@ node_room *check_full_room()
         }
         tmp = tmp->next;
     }
-    //node_room *new = (node_room *)malloc(sizeof(node_room));
     return NULL;
 }
 
+node_room *checkRoomID(int id)
+{
+    node_room *tmp = root_r;
+    while (tmp != NULL)
+    {
+        if (tmp->room.id == id)
+            return tmp;
+        tmp = tmp->next;
+    }
+    return NULL;
+}
 ///////////////////////////////////////////////////////
 
 typedef struct account
@@ -215,6 +218,7 @@ node *checkUsername(char username[])
     }
     return NULL;
 }
+
 /*
 void *client_handler(void *arg)
 {
@@ -389,10 +393,15 @@ int main(int argc, char *argv[])
     ssize_t ret;
     fd_set readfds, allset;
 
-    int room_id = 1;
+    int room_id = 1, first_player = -1;
 
     node *tmp = (node *)malloc(sizeof(node));
     node_room *tmp1 = (node_room *)malloc(sizeof(node_room));
+    SendB *sb = (SendB *)malloc(sizeof(SendB));
+
+    ////
+    Init(&l);
+    loadTuFile(fileIn, &l); // do bai tu file vao dslk
 
     if (atoi(argv[1]) < 0 && atoi(argv[1]) > 65535)
     {
@@ -583,15 +592,14 @@ int main(int argc, char *argv[])
                     break;
 
                 case ADD_ROOM:
-                    printf("------------PLAY WITH PERSON------------\n");
-
+                    printf("------------ADD ROOM------------\n");
                     tmp1 = check_full_room();
                     if (tmp1 == NULL)
                     {
                         room r;
                         r.id = room_id;
                         r.sockfd1 = conn_sock;
-                        r.sockfd2 = -1;                      
+                        r.sockfd2 = -1;
                         addRoom(r);
                         sprintf(buff, "Room %d. Please wait another person", r.id);
                         printf("%s\n", buff);
@@ -599,22 +607,45 @@ int main(int argc, char *argv[])
                     }
                     else
                     {
+                        send_room *send_r = (send_room *)malloc(sizeof(send_room));
                         tmp1->room.sockfd2 = conn_sock;
-                        sprintf(buff, "OK..Room %d. You(%d) will play with %d", tmp1->room.id, tmp1->room.sockfd1, tmp1->room.sockfd2);
-                        printf("%s\n", buff);
-                        send(conn_sock, buff, strlen(buff), 0);
+                        send_r->id_room = room_id;
+                        inPutStack(&s, l);
+                        inPutL1(&s, &l1);
+                        sprintf(send_r->messages, "OK..Room %d. You(%d) will play with %d", tmp1->room.id, tmp1->room.sockfd1, tmp1->room.sockfd2);
+                        ITOA(l1, send_r->list);
+                        printf("%s\n%s\n", send_r->messages, send_r->list);
+                        send(conn_sock, send_r, sizeof(send_room), 0);
 
-                        sprintf(buff, "OK..Room %d. You(%d) will play with %d", tmp1->room.id, tmp1->room.sockfd2, tmp1->room.sockfd1);
-                        printf("%s\n", buff);
-                        send(tmp1->room.sockfd1, buff, strlen(buff),0);
+                        inPutL1(&s, &l2);
+                        sprintf(send_r->messages, "OK..Room %d. You(%d) will play with %d", tmp1->room.id, tmp1->room.sockfd2, tmp1->room.sockfd1);
+                        ITOA(l2, send_r->list);
+                        printf("%s\n%s\n", send_r->messages, send_r->list);
+                        send(tmp1->room.sockfd1, send_r, sizeof(send_room), 0);
+                        first_player = tmp1->room.sockfd1;
                         room_id++;
-
-                        // recv(conn_sock, buff, BUFF_SIZE, 0);
-                        // send(tmp1->room.sockfd1, buff, strlen(buff), 0);
                     }
                     break;
 
                 case PLAY_WITH_PERSON:
+                    printf("------------PLAY WITH PERSON------------\n");
+                    tmp1 = checkRoomID(c->play_with_person.id_room);
+                    if (conn_sock == first_player)
+                    {
+                        sb = copyClient(&c->play_with_person);
+                        if(conn_sock == tmp1->room.sockfd1){                          
+                            send(tmp1->room.sockfd2, sb, sizeof(SendB), 0);
+                            first_player = tmp1->room.sockfd2;
+                        }else{
+                            send(tmp1->room.sockfd1, sb, sizeof(SendB), 0);
+                            first_player = tmp1->room.sockfd1;
+                        }
+                        
+                    }
+                    else
+                    {
+                        //send(tmp1->room.sockfd2, sb, sizeof(SendB), 0);
+                    }
 
                     break;
                 case VIEW_RANK:
@@ -634,6 +665,10 @@ int main(int argc, char *argv[])
                     sprintf(buff, "bye %s", c->login.username);
                     printf("%s\n", buff);
                     send(conn_sock, buff, strlen(buff), 0);
+                    break;
+
+                case NONE:
+
                     break;
                 }
                 free_obj(c);
