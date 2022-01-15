@@ -1,4 +1,0 @@
-1 hong 3 2 3
-2 hientran 1 1 2
-3 hongnta 1 1 2
-4 hi 0 2 6

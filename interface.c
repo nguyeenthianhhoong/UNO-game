@@ -3,8 +3,8 @@
 
 #define BUFF_SIZE 80
 
-const int WINDOW_WIDTH = 1140;
-const int WINDOW_HEIGHT = 700;
+const int WINDOW_WIDTH = 1250; //1250 1140
+const int WINDOW_HEIGHT = 800; //800 700
 const float CARD_WIDTH = 55;
 const float CARD_HEIGHT = 85;
 
@@ -39,6 +39,9 @@ GtkWidget *colorSquare;
 GtkWidget *winDialog;
 GtkWidget *loserDialog;
 GtkWidget *confirmDialog;
+GtkWidget *confirm2Dialog;
+GtkWidget *playModeDialog;
+GtkWidget *waitAnotherPlayerDialog;
 
 GtkWidget *boardWindow;
 GtkWidget *boardWindowFixed;
@@ -46,12 +49,15 @@ GtkWidget *controllerBox;
 GtkWidget *playerBox;
 GtkWidget *enemyBox;
 GtkWidget *iconON;
+GtkWidget *playerNameLabel;
 GtkWidget *iconOFF;
+GtkWidget *enemyNameLabel;
 GtkWidget *chooseColorDialog;
 
 GtkWidget *rankWindow;
 GtkWidget *rankBox;
 GtkWidget *rankGrid;
+GtkWidget *usernameLabelBtn;
 
 pthread_t tid;
 
@@ -60,6 +66,7 @@ int rcvBytes;
 int sock_app;
 Client *c;
 char usernameLogin[30];
+char playModeStatus[50];
 
 UNO x_card = {0, 'x', -6};
 
@@ -67,6 +74,9 @@ UNO up_card;
 UNO hand[52];
 int hand_size = 7;
 int enemy_size = 7;
+
+guint timer = 0;
+guint serial_counter = 0;
 
 int t = 0;      // t luu tong so quan bai bi phat
 char mau = 'z'; // luu mau khi 1 trong hai danh con doi mau va chon mau
@@ -158,6 +168,7 @@ void on_loginSubmitBtn_clicked()
                 memset(usernameLogin, 0, strlen(usernameLogin));
                 strcpy(usernameLogin, username);
                 gtk_label_set_text(GTK_LABEL(username_mainMenuLabel), usernameLogin);
+
                 printf("\n-------------Let's play-------------\n");
                 on_LoginWindow_destroy();
                 //cua so main game
@@ -251,10 +262,21 @@ void on_mainMenuWindow_destroy()
 
 void on_startGameBtn_clicked()
 {
+    gtk_widget_show_all(playModeDialog);
     gtk_widget_hide(mainMenuWindow);
+}
 
+void on_playerModeBtn_clicked()
+{
+    gtk_widget_hide(playModeDialog);
+    main_play_with_player();
+    // printf("player game with player!\n");
+}
+
+void on_botModeBtn_clicked()
+{
+    gtk_widget_hide(playModeDialog);
     gtk_widget_show_all(boardWindow);
-
     main_play_game_with_bot();
 }
 
@@ -274,32 +296,21 @@ void on_viewRankBtn_clicked()
 
 void on_logoutBtn_clicked()
 {
-    //c->signal = LOGOUT;
-    c->signal = PLAY_WITH_PERSON;
+    c->signal = LOGOUT;
     //printf("%d\n",c->signal);
     send(sock_app, c, sizeof(Client), 0);
-    while (1)
-    {
-        rcvBytes = recv(sock_app, buff, BUFF_SIZE, 0);
-        buff[rcvBytes] = '\0';
-        printf("%s\n", buff);
-        if (strstr(buff, "OK") == NULL)
-        {
-            send(sock_app, "wait", 10, 0);
-        }
-        else
-        {
-            memset(usernameLogin, 0, strlen(usernameLogin));
-            gtk_widget_show(beginWindow);
-            gtk_widget_hide(mainMenuWindow);
-            break;
-        }
-    }
+    rcvBytes = recv(sock_app, buff, BUFF_SIZE, 0);
+    buff[rcvBytes] = '\0';
+    printf("%s\n", buff);
+    memset(usernameLogin, 0, strlen(usernameLogin));
+    gtk_widget_show(beginWindow);
+    gtk_widget_hide(mainMenuWindow);
 }
 
 void on_cancelExitBtn_clicked()
 {
     gtk_widget_hide(confirmDialog);
+    gtk_widget_hide(confirm2Dialog);
 }
 
 void on_exitBtn_clicked()
@@ -379,23 +390,31 @@ void on_replayBtn_clicked()
 //while playing games
 void unoButtonClick(GtkWidget *button)
 {
-    if (idUser == PLAYER)
+    if (idUser == PLAYER && hand_size == 1 && c->signal == PLAY_WITH_BOT)
     {
         g_print("uno button click\n");
+        int fal = 0;
+        checkTimeOutUnoButton(&fal);
     }
 }
 void nextButtonClick(GtkWidget *button)
 {
-    if (drawCardCount == 1 && idUser == PLAYER)
+    if (drawCardCount == 1 && idUser == PLAYER && c->signal == PLAY_WITH_BOT)
     {
         drawCardCount = 0;
         idUser = ENEMY;
         change_on_off_icon(ENEMY);
+    }else if(drawCardCount == 1 && idUser == PLAYER && c->signal == PLAY_WITH_PERSON){
+        drawCardCount = 0;
+        idUser = ENEMY;
+        change_on_off_icon(ENEMY);
+        //TODO 
+        //chuyển lượt chơi sang cho người kia
     }
 }
 void drawCardButtonClick(GtkWidget *button)
 {
-    if (drawCardCount == 0 && idUser == PLAYER)
+    if (drawCardCount == 0 && idUser == PLAYER && c->signal == PLAY_WITH_BOT)
     {
         phat(1, &l1, &s);
         hand_size++;
@@ -410,7 +429,42 @@ void drawCardButtonClick(GtkWidget *button)
             return;
         }
         drawCardCount = 1;
+    }else(drawCardCount == 0 && idUser == PLAYER && c->signal == PLAY_WITH_PERSON)
+    {
+        //TO DO
+        // Lấy 1 lá bài từ server .... và bổ sung vào l1
+        hand_size++;
+        draw_hand(playerBox);
+
+        NODE *p = find(l, up_card.id);
+        UNO uno;
+        if (CHECK(l1, up_card.id, &uno) != 1 && doiMau(l1, mau, p, t) != 1)
+        {
+            idUser = ENEMY;
+            change_on_off_icon(ENEMY);
+            return;
+        }
+        drawCardCount = 1;
     }
+}
+
+void on_usernameLabelBtn_clicked()
+{
+    gtk_widget_show_all(confirm2Dialog);
+}
+
+void on_backMainMenuBtn_clicked()
+{
+    gtk_widget_show_all(mainMenuWindow);
+    gtk_widget_hide(boardWindow);
+    if (c->signal == PLAY_WITH_BOT && c->play_with_bot.id_player == -1)
+    {
+        c->play_with_bot.id_player = 0;
+        send(sock_app, c, sizeof(Client), 0);
+    }
+    gtk_widget_hide(confirm2Dialog);
+    idUser = OTHER;
+    reset_board_game();
 }
 
 //handle game
@@ -455,6 +509,9 @@ void main_play_game_with_bot()
         idUser = ENEMY;
     }
 
+    gtk_button_set_label(GTK_BUTTON(usernameLabelBtn), usernameLogin);
+    gtk_label_set_text(GTK_LABEL(playerNameLabel), usernameLogin);
+    gtk_label_set_text(GTK_LABEL(enemyNameLabel), "Bot");
     clear_container(controllerBox);
     draw_card(controllerBox, &up_card, OTHER, 2);
     draw_colorSquare();
@@ -521,14 +578,14 @@ void buildUIGameWindow()
     GtkWidget *backgrndImage;
     GError *error = NULL;
     backgrndPixbuf = gdk_pixbuf_new_from_file("images/background/bgB.png", &error);
-    backgrndPixbuf = gdk_pixbuf_scale_simple(backgrndPixbuf, 1140, 700, GDK_INTERP_BILINEAR);
+    backgrndPixbuf = gdk_pixbuf_scale_simple(backgrndPixbuf, WINDOW_WIDTH, WINDOW_HEIGHT, GDK_INTERP_BILINEAR);
     backgrndImage = gtk_image_new_from_pixbuf(backgrndPixbuf);
     gtk_container_add(GTK_CONTAINER(boardWindowFixed), backgrndImage);
 
     //*****************************************************************************************************
     //ADD CONTROLLER: up card | draw button | next button | uno button
     int startWidth = (WINDOW_WIDTH - CARD_WIDTH * 8) / 2 + 50;
-    int heightControllerBox = (WINDOW_HEIGHT - CARD_HEIGHT * 2) / 2 - 15;
+    int heightControllerBox = (WINDOW_HEIGHT - CARD_HEIGHT * 2) / 2;
     //1.. up card
     controllerBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
     gtk_fixed_put(GTK_FIXED(boardWindowFixed), controllerBox, startWidth, heightControllerBox);
@@ -584,23 +641,36 @@ void buildUIGameWindow()
     gtk_fixed_put(GTK_FIXED(boardWindowFixed), unoButton, startWidth + CARD_WIDTH * 5, heightControllerBox + 125); //115
     g_signal_connect(unoButton, "clicked", G_CALLBACK(unoButtonClick), NULL);
     //****************************************************************************************
-    // iconON = gtk_image_new_from_icon_name("dialog-ok", GTK_ICON_SIZE_DND);
     strcpy(link, "images/messages/isPlay.png");
     iconON = gtk_image_new_from_file(link);
-    gtk_fixed_put(GTK_FIXED(boardWindowFixed), iconON, 40, 610);
+    gtk_fixed_put(GTK_FIXED(boardWindowFixed), iconON, 60, 660);
 
-    // iconOFF = gtk_image_new_from_icon_name("dialog-close", GTK_ICON_SIZE_DND);
+    GtkWidget *playerNameLabelBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+    gtk_widget_set_size_request(playerNameLabelBox, 155, 30);
+    gtk_fixed_put(GTK_FIXED(boardWindowFixed), playerNameLabelBox, 0, 690);
+    gchar *text = "<b><span foreground='#ffffff'>player</span></b>";
+    playerNameLabel = gtk_label_new(text);
+    gtk_label_set_use_markup(GTK_LABEL(playerNameLabel), TRUE);
+    gtk_box_pack_start(GTK_BOX(playerNameLabelBox), playerNameLabel, TRUE, FALSE, 0);
+
     strcpy(link, "images/messages/isPause.png");
     iconOFF = gtk_image_new_from_file(link);
-    gtk_fixed_put(GTK_FIXED(boardWindowFixed), iconOFF, 40, 60);
+    gtk_fixed_put(GTK_FIXED(boardWindowFixed), iconOFF, 60, 110);
+
+    GtkWidget *enemyNameLabelBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+    gtk_widget_set_size_request(enemyNameLabelBox, 155, 30);
+    gtk_fixed_put(GTK_FIXED(boardWindowFixed), enemyNameLabelBox, 0, 140);
+    enemyNameLabel = gtk_label_new(text);
+    gtk_label_set_use_markup(GTK_LABEL(enemyNameLabel), TRUE);
+    gtk_box_pack_start(GTK_BOX(enemyNameLabelBox), enemyNameLabel, TRUE, FALSE, 0);
     //*****************************************************************************************
     enemyBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
     gtk_widget_set_size_request(enemyBox, CARD_WIDTH * 12, CARD_HEIGHT);
-    gtk_fixed_put(GTK_FIXED(boardWindowFixed), enemyBox, (WINDOW_WIDTH - CARD_WIDTH * 12) / 2, 30);
+    gtk_fixed_put(GTK_FIXED(boardWindowFixed), enemyBox, (WINDOW_WIDTH - CARD_WIDTH * 12) / 2, 80);
 
     playerBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
     gtk_widget_set_size_request(playerBox, CARD_WIDTH * 12, CARD_HEIGHT);
-    gtk_fixed_put(GTK_FIXED(boardWindowFixed), playerBox, (WINDOW_WIDTH - CARD_WIDTH * 12) / 2, 582);
+    gtk_fixed_put(GTK_FIXED(boardWindowFixed), playerBox, (WINDOW_WIDTH - CARD_WIDTH * 12) / 2, 632);
 
     //******************************************************************
     playerNotificationBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
@@ -611,6 +681,36 @@ void buildUIGameWindow()
     enemyNotificationBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
     gtk_widget_set_size_request(enemyNotificationBox, CARD_WIDTH * 6, CARD_HEIGHT);
     gtk_fixed_put(GTK_FIXED(boardWindowFixed), enemyNotificationBox, startWidth, heightControllerBox - CARD_HEIGHT * 1.25);
+
+    //***************************8
+
+    GtkWidget *menuBoardGrid = gtk_grid_new();
+    gtk_grid_set_row_spacing(GTK_GRID(menuBoardGrid), 5);
+    gtk_grid_set_column_spacing(GTK_GRID(menuBoardGrid), 5);
+    gtk_fixed_put(GTK_FIXED(boardWindowFixed), menuBoardGrid, 1050, 15);
+
+    usernameLabelBtn = gtk_button_new_with_label(usernameLogin);
+    strcpy(link, "images/button/homeS.png");
+    GtkWidget *backMainMenuimage = gtk_image_new_from_file(link);
+    gtk_button_set_always_show_image(GTK_BUTTON(usernameLabelBtn), TRUE);
+    gtk_button_set_image(GTK_BUTTON(usernameLabelBtn), backMainMenuimage);
+    gtk_button_set_image_position(GTK_BUTTON(usernameLabelBtn), GTK_POS_RIGHT);
+    gtk_grid_attach(GTK_GRID(menuBoardGrid), usernameLabelBtn, 0, 0, 1, 1);
+    g_signal_connect(usernameLabelBtn, "clicked", G_CALLBACK(on_usernameLabelBtn_clicked), NULL);
+
+    // strcpy(link, "images/button/homeS.png");
+    // GtkWidget *backMainMenuimage = gtk_image_new_from_file(link);
+    // GtkWidget* backMainMenuBtn = gtk_button_new();
+    // gtk_button_set_always_show_image(GTK_BUTTON(backMainMenuBtn), TRUE);
+    // gtk_button_set_image(GTK_BUTTON(backMainMenuBtn), backMainMenuimage);
+    // gtk_grid_attach(GTK_GRID(menuBoardGrid), backMainMenuBtn, 0, 1, 1, 1);
+
+    // strcpy(link, "images/button/rankingS.png");
+    // GtkWidget *rankfromBoardimage = gtk_image_new_from_file(link);
+    // GtkWidget* rankfromBoardBtn = gtk_button_new();
+    // gtk_button_set_always_show_image(GTK_BUTTON(rankfromBoardBtn), TRUE);
+    // gtk_button_set_image(GTK_BUTTON(rankfromBoardBtn), rankfromBoardimage);
+    // gtk_grid_attach(GTK_GRID(menuBoardGrid), rankfromBoardBtn, 1, 0, 1, 1);
 }
 
 /**
@@ -625,17 +725,17 @@ void draw_hand(GtkWidget *container)
     if (hand_size <= 3)
     {
         gtk_widget_set_size_request(playerBox, CARD_WIDTH * 6, CARD_HEIGHT);
-        gtk_fixed_move(GTK_FIXED(boardWindowFixed), playerBox, (WINDOW_WIDTH - CARD_WIDTH * 6) / 2, 582);
+        gtk_fixed_move(GTK_FIXED(boardWindowFixed), playerBox, (WINDOW_WIDTH - CARD_WIDTH * 6) / 2, 632);
     }
     else if (hand_size > 3 && hand_size < 9)
     {
         gtk_widget_set_size_request(playerBox, CARD_WIDTH * 12, CARD_HEIGHT);
-        gtk_fixed_move(GTK_FIXED(boardWindowFixed), playerBox, (WINDOW_WIDTH - CARD_WIDTH * 12) / 2, 582);
+        gtk_fixed_move(GTK_FIXED(boardWindowFixed), playerBox, (WINDOW_WIDTH - CARD_WIDTH * 12) / 2, 632);
     }
     else
     {
         gtk_widget_set_size_request(playerBox, CARD_WIDTH * 17, CARD_HEIGHT);
-        gtk_fixed_move(GTK_FIXED(boardWindowFixed), playerBox, 100, 582);
+        gtk_fixed_move(GTK_FIXED(boardWindowFixed), playerBox, (WINDOW_WIDTH - CARD_WIDTH * 17) / 2, 632);
         if (hand_size > 12)
         {
             sizeCard = 0.6;
@@ -661,17 +761,17 @@ void draw_enemyCards()
     if (enemy_size <= 3)
     {
         gtk_widget_set_size_request(enemyBox, CARD_WIDTH * 6, CARD_HEIGHT);
-        gtk_fixed_move(GTK_FIXED(boardWindowFixed), enemyBox, (WINDOW_WIDTH - CARD_WIDTH * 6) / 2, 30);
+        gtk_fixed_move(GTK_FIXED(boardWindowFixed), enemyBox, (WINDOW_WIDTH - CARD_WIDTH * 6) / 2, 80);
     }
     else if (enemy_size > 3 && enemy_size < 9)
     {
         gtk_widget_set_size_request(enemyBox, CARD_WIDTH * 12, CARD_HEIGHT);
-        gtk_fixed_move(GTK_FIXED(boardWindowFixed), enemyBox, (WINDOW_WIDTH - CARD_WIDTH * 12) / 2, 30);
+        gtk_fixed_move(GTK_FIXED(boardWindowFixed), enemyBox, (WINDOW_WIDTH - CARD_WIDTH * 12) / 2, 80);
     }
     else
     {
         gtk_widget_set_size_request(enemyBox, CARD_WIDTH * 17, CARD_HEIGHT);
-        gtk_fixed_move(GTK_FIXED(boardWindowFixed), enemyBox, (WINDOW_WIDTH - CARD_WIDTH * 17) / 2, 30);
+        gtk_fixed_move(GTK_FIXED(boardWindowFixed), enemyBox, (WINDOW_WIDTH - CARD_WIDTH * 17) / 2, 80);
         if (enemy_size > 12)
         {
             sizeCard = 0.6;
@@ -895,6 +995,9 @@ int app(int argc, char **argv, int sockfd)
     winDialog = GTK_WIDGET(gtk_builder_get_object(builder, "winDialog"));
     loserDialog = GTK_WIDGET(gtk_builder_get_object(builder, "loserDialog"));
     confirmDialog = GTK_WIDGET(gtk_builder_get_object(builder, "confirmDialog"));
+    confirm2Dialog = GTK_WIDGET(gtk_builder_get_object(builder, "confirm2Dialog"));
+    playModeDialog = GTK_WIDGET(gtk_builder_get_object(builder, "playModeDialog"));
+    waitAnotherPlayerDialog = GTK_WIDGET(gtk_builder_get_object(builder, "waitAnotherPlayerDialog"));
 
     rankWindow = GTK_WIDGET(gtk_builder_get_object(builder, "rankWindow"));
     rankBox = GTK_WIDGET(gtk_builder_get_object(builder, "rankBox"));
@@ -927,7 +1030,6 @@ int app(int argc, char **argv, int sockfd)
  */
 void card_clicked(GtkWidget *card_button, gpointer card_data)
 {
-    int pre_id = up_card.id;
     // cast generic gpointer to a card
     UNO *card = (UNO *)card_data;
     // play the card
@@ -935,29 +1037,43 @@ void card_clicked(GtkWidget *card_button, gpointer card_data)
     {
         if (play(card) == 1)
         {
-            if (up_card.number == -1 && up_card.id != pre_id)
+            if (hand_size == 1)
             {
-                idUser = PLAYER;
-                // notificationThread(1, ENEMY);
-            }
-            else if (up_card.number == -2 && up_card.id != pre_id)
-            {
-                idUser = PLAYER;
-                // notificationThread(2, ENEMY);
+
+                int tr = 1;
+                checkTimeOutUnoButton(&tr);
             }
             else
             {
-                idUser = ENEMY;
-                if (checkChooseColor != 1)
-                    change_on_off_icon(ENEMY);
+                getNextPlayer();
             }
         }
     }
 }
 
+void getNextPlayer()
+{
+    if (up_card.number == -1)
+    {
+        idUser = PLAYER;
+        // notificationThread(1, ENEMY);
+    }
+    else if (up_card.number == -2)
+    {
+        idUser = PLAYER;
+        // notificationThread(2, ENEMY);
+    }
+    else
+    {
+        idUser = ENEMY;
+        if (checkChooseColor != 1)
+            change_on_off_icon(ENEMY);
+    }
+}
+
 void bot_play()
 {
-    if (checkChooseColor != 1 && (hand_size != 0 && enemy_size != 0))
+    if (checkChooseColor != 1 && (hand_size != 0 && enemy_size != 0) && c->signal == PLAY_WITH_BOT)
     {
         if (idUser == ENEMY)
         {
@@ -1026,6 +1142,128 @@ int play(UNO *card)
     return 1;
 }
 
+static gboolean serial_data(gpointer user_data)
+{
+    printf("counter: %d\n", serial_counter);
+    serial_counter++;
+    if (serial_counter > 2)
+    {
+        int fal = 0;
+        checkTimeOutUnoButton(&fal);
+        return FALSE;
+    }
+    return TRUE;
+}
+
+static void checkTimeOutUnoButton(gpointer user_data)
+{
+    int status = *((int *)user_data);
+
+    if (status == 1)
+    {
+        timer = g_timeout_add(1000, serial_data, &status);
+    }
+    else if (status == 0 && timer != 0)
+    {
+        g_source_remove(timer);
+        timer = 0;
+        if (serial_counter < 3)
+        {
+            printf("play uno \n");
+        }
+        else
+        {
+            printf("phat 2\n");
+            phat(2, &l1, &s);
+            hand_size += 2;
+            draw_hand(playerBox);
+        }
+        printf("cancel %d\n", serial_counter);
+        serial_counter = 0;
+        getNextPlayer();
+    }
+}
+
+void main_play_with_player()
+{
+    //build wait screen
+    gtk_widget_hide(playModeDialog);
+    gtk_widget_show_all(waitAnotherPlayerDialog);
+
+    // if(connect_with_another_player()==1){
+
+    //     gtk_widget_hide(waitAnotherPlayerDialog);
+    //     build_board_game_with_player();
+    //     gtk_widget_show_all(boardWindow);
+    // }
+
+    //build boardgame();
+    c->signal = PLAY_WITH_PERSON;
+    send(sock_app, c, sizeof(Client), 0);
+    connect_with_another_player(1);
+}
+
+int connect_with_another_player(int status)
+{
+    if (status == 1)
+    {
+        timer = g_timeout_add(1000, check_connect_other_player, &status);
+    }
+    else if (status == 0 && timer != 0)
+    {
+        g_source_remove(timer);
+        timer = 0;
+        gtk_widget_hide(waitAnotherPlayerDialog);
+        build_board_game_with_player();
+        gtk_widget_show_all(boardWindow);
+    }
+    else if(timer != 0)
+    {
+        g_source_remove(timer);
+        timer = 0;
+        gtk_widget_hide(waitAnotherPlayerDialog);
+        gtk_widget_show_all(mainMenuWindow);
+    }
+    return 1;
+}
+static gint check_connect_other_player(gpointer status)
+{
+    rcvBytes = recv(sock_app, buff, BUFF_SIZE, 0);
+    buff[rcvBytes] = '\0';
+    printf("%s\n", buff);
+    if (strstr(buff, "OK") == NULL)
+    {
+        send(sock_app, "wait", 10, 0);
+    }
+    else
+    {
+        connect_with_another_player(0);
+    }
+    return 1;
+}
+
+void build_board_game_with_player()
+{
+    gtk_button_set_label(GTK_BUTTON(usernameLabelBtn), usernameLogin);
+    gtk_label_set_text(GTK_LABEL(playerNameLabel), usernameLogin);
+    gtk_label_set_text(GTK_LABEL(enemyNameLabel), "Bot");
+
+    //**********************************************************************************
+    //khởi tạo: 7 bài được phát || -> || id người đánh tiếp theo | con bài đầu tiên, mau = 'z', phat = 0;
+
+    //sau mỗi lần đánh card_click:
+    //gửi đến room: id người đánh kế tiếp | quân bài vừa đánh (up_Card) | màu | phạt
+    //khi client yêu cầu draw card: lấy về id của card đk phát |
+    //khi client yêu cầu next lượt: người đánh là người còn lại
+    
+}
+
+void on_backfromWaitPlayer_clicked()
+{
+    printf("-1\n");
+    connect_with_another_player(-1);
+}
+
 /**
  * Draw a single card
  *
@@ -1090,14 +1328,14 @@ void change_on_off_icon(int mode)
     if (mode == ENEMY)
     {
         printf("luot doi thu\n");
-        gtk_fixed_move(GTK_FIXED(boardWindowFixed), iconON, 40, 60);
-        gtk_fixed_move(GTK_FIXED(boardWindowFixed), iconOFF, 40, 610);
+        gtk_fixed_move(GTK_FIXED(boardWindowFixed), iconON, 60, 110);
+        gtk_fixed_move(GTK_FIXED(boardWindowFixed), iconOFF, 60, 660);
     }
     else if (mode == PLAYER)
     {
         printf("luot player\n");
-        gtk_fixed_move(GTK_FIXED(boardWindowFixed), iconON, 40, 610);
-        gtk_fixed_move(GTK_FIXED(boardWindowFixed), iconOFF, 40, 60);
+        gtk_fixed_move(GTK_FIXED(boardWindowFixed), iconON, 60, 660);
+        gtk_fixed_move(GTK_FIXED(boardWindowFixed), iconOFF, 60, 110);
     }
 }
 
