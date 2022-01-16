@@ -65,7 +65,6 @@ SendB *copyClient(Play_With_Person *p){
     new->id_room = p->id_room;
     new->id_player = p->id_player;
     new->id_bai = p->id_bai;
-    //strcpy(new->color,p->color);
     new->color = p->color;
     new->bai_phat = p->bai_phat;
     new->so_luong_bai = p->so_luong_bai;

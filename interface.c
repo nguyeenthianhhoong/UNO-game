@@ -1209,6 +1209,12 @@ void main_play_with_player()
     connect_with_another_player(1);
 }
 
+void on_backfromWaitPlayer_clicked()
+{
+    printf("-1\n");
+    connect_with_another_player(-1);
+}
+
 int connect_with_another_player(int status)
 {
     if (status == 1)
@@ -1229,6 +1235,12 @@ int connect_with_another_player(int status)
     {
         g_source_remove(timer);
         timer = 0;
+        // c->signal = NONE;
+        // send(sock_app, c, sizeof(Client), 0);
+        // recv(sock_app, buff, BUFF_SIZE, 0);
+        // buff[rcvBytes] = '\0';
+        // printf("1\n");
+        // printf("%s\n", buff);
         gtk_widget_hide(waitAnotherPlayerDialog);
         gtk_widget_show_all(mainMenuWindow);
     }
@@ -1238,11 +1250,11 @@ static gint check_connect_other_player(gpointer status)
 {
     send_r = (send_room *)malloc(sizeof(send_room));
     rcvBytes = recv(sock_app, send_r, sizeof(send_room), 0);
-    // buff[rcvBytes] = '\0';
     printf("%s\n", send_r->messages);
     if (strstr(send_r->messages, "OK") == NULL)
     {
         send(sock_app, "wait", 10, 0);
+        //printf("Please waiting player");
     }
     else
     {
@@ -1253,15 +1265,19 @@ static gint check_connect_other_player(gpointer status)
 
 //pthread
 
-void recv_msg_handler() {
-    while (1) {
+void recv_msg_handler()
+{
+    while (1)
+    {
         recv(sock_app, sb, sizeof(SendB), 0);
         printf("Player choose %d\n", sb->id_bai);
     }
 }
 
-void send_msg_handler() {
-    while (1) {
+void send_msg_handler()
+{
+    while (1)
+    {
         c->play_with_person.id_player = 1;
         printf("Enter: ");
         scanf("%d", &c->play_with_person.id_bai);
@@ -1270,7 +1286,6 @@ void send_msg_handler() {
         c->play_with_person.so_luong_bai = hand_size--;
         send(sock_app, c, sizeof(Client), 0);
     }
-
 }
 
 // play with player
@@ -1314,12 +1329,6 @@ void build_board_game_with_player()
     //gửi đến room: id người đánh kế tiếp | quân bài vừa đánh (up_Card) | màu | phạt
     //khi client yêu cầu draw card: lấy về id của card đk phát |
     //khi client yêu cầu next lượt: người đánh là người còn lại
-}
-
-void on_backfromWaitPlayer_clicked()
-{
-    printf("-1\n");
-    connect_with_another_player(-1);
 }
 
 /**
