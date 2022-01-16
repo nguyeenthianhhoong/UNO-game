@@ -67,7 +67,7 @@ int rcvBytes;
 int sock_app;
 Client *c;
 send_room *send_r;
-SendB *sb;
+Play_With_Person *play2;
 char usernameLogin[30];
 char playModeStatus[50];
 
@@ -1269,8 +1269,8 @@ void recv_msg_handler()
 {
     while (1)
     {
-        recv(sock_app, sb, sizeof(SendB), 0);
-        printf("Player choose %d\n", sb->id_bai);
+        recv(sock_app, play2, sizeof(Play_With_Person), 0);
+        printf("Player choose %d\n", play2->id_bai);
     }
 }
 
@@ -1297,7 +1297,7 @@ void build_board_game_with_player()
 
     //**********************************************************************************
     //khởi tạo: 7 bài được phát || -> || id người đánh tiếp theo | con bài đầu tiên, mau = 'z', phat = 0;
-    sb = (SendB *)malloc(sizeof(SendB));
+    play2 = (Play_With_Person *)malloc(sizeof(Play_With_Person));
     Init(&l);
     loadTuFile(fileIn, &l);
     ATOI(l, &l1, send_r->list);

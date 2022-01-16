@@ -413,7 +413,6 @@ int main(int argc, char *argv[])
 
     node *tmp = (node *)malloc(sizeof(node));
     node_room *tmp1 = (node_room *)malloc(sizeof(node_room));
-    SendB *sb = (SendB *)malloc(sizeof(SendB));
 
     ////
     Init(&l);
@@ -651,12 +650,13 @@ int main(int argc, char *argv[])
                     tmp1 = checkRoomID(c->play_with_person.id_room);
                     if (conn_sock == tmp1->room.id_player)
                     {
-                        sb = copyClient(&c->play_with_person);
+                        //sb = copyClient(&c->play_with_person);
                         if(conn_sock == tmp1->room.sockfd1){                          
-                            send(tmp1->room.sockfd2, sb, sizeof(SendB), 0);
+                            send(tmp1->room.sockfd2, &c->play_with_person , sizeof(Play_With_Person), 0);
                             tmp1->room.id_player = tmp1->room.sockfd2;
                         }else{
-                            send(tmp1->room.sockfd1, sb, sizeof(SendB), 0);
+                            //send(tmp1->room.sockfd1, sb, sizeof(SendB), 0);
+                            send(tmp1->room.sockfd1, &c->play_with_person , sizeof(Play_With_Person), 0);
                             tmp1->room.id_player = tmp1->room.sockfd1;
                         }
                         

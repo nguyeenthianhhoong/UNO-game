@@ -51,25 +51,6 @@ typedef struct {
     char list[50];
 } send_room;
 
-typedef struct {
-    int id_room;
-    int id_player; // 0:me  1:you
-    int id_bai;
-    char color;
-    int bai_phat;
-    int so_luong_bai;
-} SendB;
-
-SendB *copyClient(Play_With_Person *p){
-    SendB *new = (SendB *)malloc(sizeof(SendB));
-    new->id_room = p->id_room;
-    new->id_player = p->id_player;
-    new->id_bai = p->id_bai;
-    new->color = p->color;
-    new->bai_phat = p->bai_phat;
-    new->so_luong_bai = p->so_luong_bai;
-    return new;
-}
 
 void free_obj(Client *c){
 	free(c);
