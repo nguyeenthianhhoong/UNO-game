@@ -24,6 +24,8 @@ int CHECK(LIST xxx, int id, UNO* uno);
 // ham nap bai khi bi phat
 void phat(int n, LIST* tmp, STACK* s);
 
+int getCardFromStack(int n, STACK* s);
+
 void my_random(char* x);
 
 char* my_itoa(int num, char* str);

@@ -633,13 +633,24 @@ int main(int argc, char *argv[])
                         sprintf(send_r->messages, "OK..Room %d. You(%d) will play with %d", tmp1->room.id, tmp1->room.sockfd1, tmp1->room.sockfd2);
                         ITOA(l1, send_r->list);
                         printf("%s\n%s\n", send_r->messages, send_r->list);
-                        send(conn_sock, send_r, sizeof(send_room), 0);
+                        send(tmp1->room.sockfd1, send_r, sizeof(send_room), 0);
+                        c->play_with_person.id_room = tmp1->room.id;
+                        c->play_with_person.id_player = 0;
+                        int up_card = getCardFromStack(1, &s);
+                        c->play_with_person.id_bai = 3; //todo
+                        c->play_with_person.color = 'z';
+                        c->play_with_person.bai_phat = 1;
+                        c->play_with_person.played = 1;
+                        c->play_with_person.so_luong_bai = 7;
+                        send(tmp1->room.sockfd1, &c->play_with_person , sizeof(Play_With_Person), 0);
 
                         inPutL1(&s, &l2);
                         sprintf(send_r->messages, "OK..Room %d. You(%d) will play with %d", tmp1->room.id, tmp1->room.sockfd2, tmp1->room.sockfd1);
                         ITOA(l2, send_r->list);
                         printf("%s\n%s\n", send_r->messages, send_r->list);
-                        send(tmp1->room.sockfd1, send_r, sizeof(send_room), 0);
+                        send(tmp1->room.sockfd2, send_r, sizeof(send_room), 0);
+                        c->play_with_person.id_player = 1;
+                        send(tmp1->room.sockfd2, &c->play_with_person , sizeof(Play_With_Person), 0);
                         //first_player = tmp1->room.sockfd1;
                         room_id++;
                     }
@@ -648,8 +659,10 @@ int main(int argc, char *argv[])
                 case PLAY_WITH_PERSON:
                     printf("------------PLAY WITH PERSON------------\n");
                     tmp1 = checkRoomID(c->play_with_person.id_room);
+                    printf("%d %d %d\n", conn_sock, tmp1->room.sockfd1, tmp1->room.sockfd2);
                     if (conn_sock == tmp1->room.id_player)
                     {
+                        printf("card_id: %d\n", c->play_with_person.id_bai);
                         //sb = copyClient(&c->play_with_person);
                         if(conn_sock == tmp1->room.sockfd1){                          
                             send(tmp1->room.sockfd2, &c->play_with_person , sizeof(Play_With_Person), 0);
@@ -664,6 +677,7 @@ int main(int argc, char *argv[])
                     else
                     {
                         //send(tmp1->room.sockfd2, sb, sizeof(SendB), 0);
+
                     }
 
                     break;

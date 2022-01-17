@@ -59,6 +59,8 @@ static void checkTimeOutUnoButton(gpointer user_data);
 void main_play_with_player();
 int connect_with_another_player();
 static gint check_connect_other_player(gpointer status);
+void recv_msg_handler();
+void send_msg_handler();
 void build_board_game_with_player();
 void on_backfromWaitPlayer_clicked();
 

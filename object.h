@@ -35,6 +35,7 @@ typedef struct {
     char color;
     int bai_phat;
     int so_luong_bai;
+    int played;
 }Play_With_Person;
 
 typedef struct {
