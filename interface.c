@@ -324,6 +324,9 @@ void on_exitBtn_clicked()
     {
         c->play_with_bot.id_player = 0;
         send(sock_app, c, sizeof(Client), 0);
+    } else if(c->signal == PLAY_WITH_PERSON){      ///**
+        c->play_with_person.so_luong_bai = -1;
+        send(sock_app, c, sizeof(Client), 0);
     }
     if (strlen(usernameLogin) != 0)
     {
@@ -490,6 +493,9 @@ void on_backMainMenuBtn_clicked()
     if (c->signal == PLAY_WITH_BOT && c->play_with_bot.id_player == -1)
     {
         c->play_with_bot.id_player = 0;
+        send(sock_app, c, sizeof(Client), 0);
+    } else if( c->signal == PLAY_WITH_PERSON ){  ///**
+        c->play_with_person.so_luong_bai = -1;
         send(sock_app, c, sizeof(Client), 0);
     }
     gtk_widget_hide(confirm2Dialog);
@@ -1309,8 +1315,12 @@ int connect_with_another_player(int status)
     }
     else if (timer != 0)
     {
+        ///**
+        c->signal = NONE;
+        send(sock_app, c, sizeof(Client), 0);
         g_source_remove(timer);
         timer = 0;
+        recv(sock_app, buff, BUFF_SIZE, 0);
         gtk_widget_hide(waitAnotherPlayerDialog);
         gtk_widget_show_all(mainMenuWindow);
     }
@@ -1361,7 +1371,19 @@ void recv_msg_handler()
         int recvCheck = recv(sock_app, play2, sizeof(Play_With_Person), 0);
         if (recvCheck<0) continue;
         printf("recv tu player truoc\n%d-%d-%c-%d-%d\n", play2->id_bai, play2->so_luong_bai, play2->color, play2->bai_phat, play2->so_luong_bai);
-    
+
+        ///**
+        if(play2->so_luong_bai == -1){
+            c->play_with_person.so_luong_bai = 0;
+            //send_msg_handler();
+            send(sock_app, c, sizeof(Client), 0);
+            gtk_widget_show_all(mainMenuWindow);
+            gtk_widget_hide(boardWindow);
+            idUser = OTHER;
+            reset_board_game();
+            break;
+        }
+
         up_card = timUno(l, play2->id_bai);
         mau = play2->color;
         t = play2->bai_phat;
