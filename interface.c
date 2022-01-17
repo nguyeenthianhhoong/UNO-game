@@ -61,6 +61,7 @@ GtkWidget *rankGrid;
 GtkWidget *usernameLabelBtn;
 
 pthread_t tid;
+pthread_t recv_msg_thread;
 
 char buff[80];
 int rcvBytes;
@@ -70,6 +71,7 @@ send_room *send_r;
 Play_With_Person *play2;
 char usernameLogin[30];
 char playModeStatus[50];
+int checkSendMessage = 0;
 
 UNO x_card = {0, 'x', -6};
 
@@ -352,6 +354,14 @@ void after_chooseColor()
     {
         idUser = ENEMY;
     }
+    if(c->signal == PLAY_WITH_PERSON){
+        send_msg_handler();
+        // if (pthread_create(&recv_msg_thread, NULL, (void *)recv_msg_handler, NULL) != 0)
+        // {
+        //     printf("Create pthread error!\n");
+        //     exit(EXIT_FAILURE);
+        // }
+    }
 }
 
 void on_chooseRedBtn_clicked()
@@ -393,7 +403,7 @@ void on_replayBtn_clicked()
 //while playing games
 void unoButtonClick(GtkWidget *button)
 {
-    if (idUser == PLAYER && hand_size == 1 && c->signal == PLAY_WITH_BOT)
+    if (idUser == PLAYER && hand_size == 1)
     {
         g_print("uno button click\n");
         int fal = 0;
@@ -410,11 +420,17 @@ void nextButtonClick(GtkWidget *button)
     }
     else if (drawCardCount == 1 && idUser == PLAYER && c->signal == PLAY_WITH_PERSON)
     {
+        printf("next clicked\n");
         drawCardCount = 0;
         idUser = ENEMY;
         change_on_off_icon(ENEMY);
-        //TODO
-        //chuyển lượt chơi sang cho người kia
+        c->play_with_person.played = 0;
+        send_msg_handler();
+        // if (pthread_create(&recv_msg_thread, NULL, (void *)recv_msg_handler, NULL) != 0)
+        // {
+        //     printf("Create pthread error!\n");
+        //     exit(EXIT_FAILURE);
+        // }
     }
 }
 void drawCardButtonClick(GtkWidget *button)
@@ -437,10 +453,12 @@ void drawCardButtonClick(GtkWidget *button)
     }
     else if (drawCardCount == 0 && idUser == PLAYER && c->signal == PLAY_WITH_PERSON)
     {
-        //TO DO
-        // Lấy 1 lá bài từ server .... và bổ sung vào l1
+        printf("draw clicked\n");
+        phat(1, &l1, &s);
         hand_size++;
         draw_hand(playerBox);
+        // c->play_with_person.played = -1;
+        // send_msg_handler();
 
         NODE *p = find(l, up_card.id);
         UNO uno;
@@ -448,7 +466,13 @@ void drawCardButtonClick(GtkWidget *button)
         {
             idUser = ENEMY;
             change_on_off_icon(ENEMY);
+            c->play_with_person.played = 0;
+            send_msg_handler();
+
             return;
+        }else{
+            c->play_with_person.played = -1;
+            send_msg_handler();
         }
         drawCardCount = 1;
     }
@@ -794,7 +818,13 @@ void draw_enemyCards()
     clear_container(controllerBox);
     draw_card(controllerBox, &up_card, OTHER, 2);
     draw_colorSquare();
-    check_bot_win();
+    if (c->signal == PLAY_WITH_BOT)
+        check_bot_win();
+}
+
+static gint draw_enemyCardsPlayer2(gpointer status){
+    draw_enemyCards();
+    return 0;
 }
 
 GtkWidget *resize_image(GtkWidget *image, char *link, float x)
@@ -866,7 +896,7 @@ int check_bot_win()
 
 int check_up_card(LIST *xxx, int *cml) //check phạt ko đỡ đk thì phạt luôn
 {
-    change_on_off_icon(PLAYER);
+    // change_on_off_icon(PLAYER);
 
     NODE *p = find(l, up_card.id);
     UNO uno;
@@ -875,16 +905,15 @@ int check_up_card(LIST *xxx, int *cml) //check phạt ko đỡ đk thì phạt l
         //************** bị phat
         if ((p->data.number == -3 || p->data.number == -5) && t != 0)
         {
+            if (p->data.number == -3)
+            {
+                mau = p->data.color;
+            }
             printf("\n\nbi phat %d con bai\n", t);
             phat(t, xxx, &s);
             *cml += t;
             t = 0;
             draw_hand(playerBox);
-
-            if (p->data.number == -3)
-            {
-                mau = p->data.color;
-            }
             free(p);
             return 0;
         }
@@ -1026,6 +1055,7 @@ int app(int argc, char **argv, int sockfd)
     giaiPhong(&l2);
     giaiPhong(&l);
     outPut(&s);
+    pthread_cancel(recv_msg_thread);
     // pthread_exit(NULL);
     // return 0;
     return EXIT_SUCCESS;
@@ -1059,21 +1089,66 @@ void card_clicked(GtkWidget *card_button, gpointer card_data)
 
 void getNextPlayer()
 {
-    if (up_card.number == -1)
+    if (c->signal == PLAY_WITH_BOT)
     {
-        idUser = PLAYER;
-        // notificationThread(1, ENEMY);
+        if (up_card.number == -1)
+        {
+            idUser = PLAYER;
+            // notificationThread(1, ENEMY);
+        }
+        else if (up_card.number == -2)
+        {
+            idUser = PLAYER;
+            // notificationThread(2, ENEMY);
+        }
+        else
+        {
+            idUser = ENEMY;
+            if (checkChooseColor != 1)
+                change_on_off_icon(ENEMY);
+        }
     }
-    else if (up_card.number == -2)
+    else if (c->signal == PLAY_WITH_PERSON)
     {
-        idUser = PLAYER;
-        // notificationThread(2, ENEMY);
-    }
-    else
-    {
-        idUser = ENEMY;
-        if (checkChooseColor != 1)
-            change_on_off_icon(ENEMY);
+        if (up_card.number == -1)
+        {
+            c->play_with_person.played = -1;
+            idUser = PLAYER;
+            // notificationThread(1, ENEMY);
+            send_msg_handler();
+        //     if (pthread_create(&recv_msg_thread, NULL, (void *)recv_msg_handler, NULL) != 0)
+        // {
+        //     printf("Create pthread error!\n");
+        //     exit(EXIT_FAILURE);
+        // }
+        }
+        else if (up_card.number == -2)
+        {
+            c->play_with_person.played = -1;
+            idUser = PLAYER;
+            // notificationThread(2, ENEMY);
+            send_msg_handler();
+        //     if (pthread_create(&recv_msg_thread, NULL, (void *)recv_msg_handler, NULL) != 0)
+        // {
+        //     printf("Create pthread error!\n");
+        //     exit(EXIT_FAILURE);
+        // }
+        }
+        else
+        {
+            c->play_with_person.played = 1;
+            idUser = ENEMY;
+            if (checkChooseColor != 1){
+                change_on_off_icon(ENEMY);
+                send_msg_handler();
+        //         if (pthread_create(&recv_msg_thread, NULL, (void *)recv_msg_handler, NULL) != 0)
+        // {
+        //     printf("Create pthread error!\n");
+        //     exit(EXIT_FAILURE);
+        // }
+            }
+        }
+
     }
 }
 
@@ -1183,7 +1258,16 @@ static void checkTimeOutUnoButton(gpointer user_data)
             phat(2, &l1, &s);
             hand_size += 2;
             draw_hand(playerBox);
-        }
+            // if (c->signal == PLAY_WITH_PERSON){
+            //     c->play_with_person.played = -1;
+            //     send_msg_handler();
+        //         if (pthread_create(&recv_msg_thread, NULL, (void *)recv_msg_handler, NULL) != 0)
+        // {
+        //     printf("Create pthread error!\n");
+        //     exit(EXIT_FAILURE);
+        // }
+            }
+        // }
         printf("cancel %d\n", serial_counter);
         serial_counter = 0;
         getNextPlayer();
@@ -1196,13 +1280,6 @@ void main_play_with_player()
     gtk_widget_hide(playModeDialog);
     gtk_widget_show_all(waitAnotherPlayerDialog);
 
-    // if(connect_with_another_player()==1){
-
-    //     gtk_widget_hide(waitAnotherPlayerDialog);
-    //     build_board_game_with_player();
-    //     gtk_widget_show_all(boardWindow);
-    // }
-
     //build boardgame();
     c->signal = ADD_ROOM;
     send(sock_app, c, sizeof(Client), 0);
@@ -1211,7 +1288,6 @@ void main_play_with_player()
 
 void on_backfromWaitPlayer_clicked()
 {
-    printf("-1\n");
     connect_with_another_player(-1);
 }
 
@@ -1235,12 +1311,6 @@ int connect_with_another_player(int status)
     {
         g_source_remove(timer);
         timer = 0;
-        // c->signal = NONE;
-        // send(sock_app, c, sizeof(Client), 0);
-        // recv(sock_app, buff, BUFF_SIZE, 0);
-        // buff[rcvBytes] = '\0';
-        // printf("1\n");
-        // printf("%s\n", buff);
         gtk_widget_hide(waitAnotherPlayerDialog);
         gtk_widget_show_all(mainMenuWindow);
     }
@@ -1265,27 +1335,101 @@ static gint check_connect_other_player(gpointer status)
 
 //pthread
 
+static void drawEnemyCardsFromRecv(gpointer user_data)
+{
+    int status = *((int *)user_data);
+
+    if (status == 1)
+    {
+        timer = g_timeout_add(200, draw_enemyCardsPlayer2, NULL);
+    }
+    else if (status == 0 && timer != 0)
+    {
+        g_source_remove(timer);
+        timer = 0;
+    }
+}
+
+
 void recv_msg_handler()
 {
+    pthread_detach(pthread_self());
     while (1)
     {
-        recv(sock_app, play2, sizeof(Play_With_Person), 0);
-        printf("Player choose %d\n", play2->id_bai);
+        printf("recv--\n");
+        // if(checkSendMessage==1){
+        int recvCheck = recv(sock_app, play2, sizeof(Play_With_Person), 0);
+        if (recvCheck<0) continue;
+        printf("recv tu player truoc\n%d-%d-%c-%d-%d\n", play2->id_bai, play2->so_luong_bai, play2->color, play2->bai_phat, play2->so_luong_bai);
+    
+        up_card = timUno(l, play2->id_bai);
+        mau = play2->color;
+        t = play2->bai_phat;
+        enemy_size = play2->so_luong_bai;
+
+        int tr = 1;
+        drawEnemyCardsFromRecv(&tr);
+
+        printf("%d-%d-%c-%d-%d\n", play2->id_bai, play2->so_luong_bai, play2->color, play2->bai_phat, play2->so_luong_bai);
+
+        if (play2->played == -1)
+        {
+            printf("recv-- -1\n");
+            c->play_with_person.played = -2;
+            send_msg_handler();
+            continue;
+        } else if(play2->played == -2){
+            printf("recv-- -2\n");
+            continue;
+        }
+        
+        if (play2->id_player == 0)
+        {
+            change_on_off_icon(PLAYER);
+            idUser = PLAYER;
+        }
+        else
+        {
+            change_on_off_icon(ENEMY);
+            idUser = ENEMY;
+        }
+        // if (check_up_card(&l1, &hand_size) != 1)
+        // {
+        //     c->play_with_person.played = 0;
+        //     idUser = ENEMY;
+        //     send_msg_handler();
+        // }
+
+        // if ((up_card.id == -1 || up_card.id == -2) && play2->played == 1)
+        // {
+        //     sleep(2);
+        //     c->play_with_person.played = 0;
+        //     send_msg_handler();
+        //     // recv_msg_handler()
+        // }
+        // }
+        printf("recv-- %d\n", up_card.id);
     }
 }
 
 void send_msg_handler()
 {
-    while (1)
+    printf("send_msg\n");
+    checkSendMessage = 1;
+    c->play_with_person.id_player = 1;
+    if (idUser == ENEMY)
+    {
+        c->play_with_person.id_player = 0;
+    }
+    else
     {
         c->play_with_person.id_player = 1;
-        printf("Enter: ");
-        scanf("%d", &c->play_with_person.id_bai);
-
-        c->play_with_person.bai_phat = 0;
-        c->play_with_person.so_luong_bai = hand_size--;
-        send(sock_app, c, sizeof(Client), 0);
     }
+    c->play_with_person.id_bai = up_card.id;
+    c->play_with_person.color = mau;
+    c->play_with_person.bai_phat = t;
+    c->play_with_person.so_luong_bai = hand_size;
+    send(sock_app, c, sizeof(Client), 0);
 }
 
 // play with player
@@ -1303,19 +1447,64 @@ void build_board_game_with_player()
     ATOI(l, &l1, send_r->list);
     printf("%s\n", send_r->list);
     hand_size = 7;
-    idUser = PLAYER;
     draw_hand(playerBox);
 
-    enemy_size = 7;
+    recv(sock_app, play2, sizeof(Play_With_Person), 0);
+    enemy_size = play2->so_luong_bai;
     draw_enemyCards();
+    if (play2->id_player == 0)
+    {
+        change_on_off_icon(PLAYER);
+        idUser = PLAYER;
+    }
+    else
+    {
+        checkSendMessage = 1;
+        change_on_off_icon(ENEMY);
+        idUser = ENEMY;
+    }
+
+    up_card = timUno(l, play2->id_bai);
+
+    //******vào lượt người chơi:
+
+    //xử lý +2 | +4 | mất lượt | chuyển màu | xoay vòng
+    if (up_card.number == -3)
+    {
+        t = 2;
+    }
+    else if (up_card.number == -5)
+    {
+        t = 4;
+        mau = 'r';
+    }
+    else if (up_card.number == -4)
+    {
+        mau = 'r';
+    }
+    else if (up_card.number == -1 || up_card.number == -2)
+    {
+        idUser = ENEMY;
+    }
+
+    clear_container(controllerBox);
+    draw_card(controllerBox, &up_card, OTHER, 2);
+    draw_colorSquare();
+
+    // if (check_up_card(&l1, &hand_size) != 1)
+    // {
+    //     idUser = ENEMY;
+    //     bot_play();
+    // }
+    //*************************************************888****************8
 
     // fake data
-    pthread_t send_msg_thread;
-    if (pthread_create(&send_msg_thread, NULL, (void *)send_msg_handler, NULL) != 0)
-    {
-        printf("Create pthread error!\n");
-        exit(EXIT_FAILURE);
-    }
+    // pthread_t send_msg_thread;
+    // if (pthread_create(&send_msg_thread, NULL, (void *)send_msg_handler, NULL) != 0)
+    // {
+    //     printf("Create pthread error!\n");
+    //     exit(EXIT_FAILURE);
+    // }
 
     pthread_t recv_msg_thread;
     if (pthread_create(&recv_msg_thread, NULL, (void *)recv_msg_handler, NULL) != 0)
@@ -1323,7 +1512,6 @@ void build_board_game_with_player()
         printf("Create pthread error!\n");
         exit(EXIT_FAILURE);
     }
-    ///////
 
     //sau mỗi lần đánh card_click:
     //gửi đến room: id người đánh kế tiếp | quân bài vừa đánh (up_Card) | màu | phạt

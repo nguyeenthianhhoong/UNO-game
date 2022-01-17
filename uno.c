@@ -136,6 +136,20 @@ void phat(int n, LIST* tmp, STACK* s) {
 	}
 }
 
+int getCardFromStack(int n, STACK* s) {
+	UNO uno;
+	for (int i = 1; i <= n; i++) {
+		if(!isEmpty(s)){
+			uno = pop(s);
+		}else{
+    		inPutStack(s, l);
+			uno = pop(s);
+		}
+		countLaBai++;
+	}
+	return uno.id;
+}
+
 void my_random(char* x) {
 	char* str = "rgby";
 	int y = 0 + rand() % (3 - 0 + 1);
