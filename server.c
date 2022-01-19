@@ -678,10 +678,16 @@ int main(int argc, char *argv[])
                     }
                     break;
 
+
+                // so_luong_bai  |  played
+                // 0 | 1 -> thắng -> gửi client -2 -> break
+                //
+                //-1 -> thua do thoát | client kia bằng 0 | 0 -> break;
+                //
                 case PLAY_WITH_PERSON:
                     printf("------------PLAY WITH PERSON------------\n");
                     tmp1 = checkRoomID(c->play_with_person.id_room);
-                    printf("%d %d %d\n", conn_sock, tmp1->room.sockfd1, tmp1->room.sockfd2);
+                    printf("%d %d %d %d\n", conn_sock, tmp1->room.sockfd1, tmp1->room.sockfd2, c->play_with_person.so_luong_bai);
                     //**
                     if (c->play_with_person.so_luong_bai == -1)
                     {
@@ -707,7 +713,7 @@ int main(int argc, char *argv[])
                         printf("card_id: %d\n", c->play_with_person.id_bai);
                         printf("so_luong_bai: %d\n", c->play_with_person.so_luong_bai);
                         //**
-                        if (c->play_with_person.so_luong_bai == 0)
+                        if (c->play_with_person.so_luong_bai == 0 && c->play_with_person.played == 0)
                         {
                             tmp = checkUsername(c->login.username);
                             tmp->acc.number++;
@@ -715,6 +721,29 @@ int main(int argc, char *argv[])
                             writeFile();
                             //destroy_room(tmp1->room.id);
                             displayRoom();
+                        }
+                        else if(c->play_with_person.so_luong_bai==-2){
+                            tmp = checkUsername(c->login.username);
+                            tmp->acc.number++;
+                            writeFile();
+                            printf("win -2\n");
+                        }else if(c->play_with_person.so_luong_bai == 0 && c->play_with_person.played == 1){
+                            tmp = checkUsername(c->login.username);
+                            tmp->acc.number++;
+                            tmp->acc.number_win++;
+                            writeFile();
+                            if (conn_sock == tmp1->room.sockfd1)
+                            {
+                                send(tmp1->room.sockfd2, &c->play_with_person, sizeof(Play_With_Person), 0);
+                                tmp1->room.id_player = tmp1->room.sockfd2;
+                            }
+                            else
+                            {
+                                //send(tmp1->room.sockfd1, sb, sizeof(SendB), 0);
+                                send(tmp1->room.sockfd1, &c->play_with_person, sizeof(Play_With_Person), 0);
+                                tmp1->room.id_player = tmp1->room.sockfd1;
+                            }
+
                         }
                         else
                         {
@@ -732,7 +761,6 @@ int main(int argc, char *argv[])
                             }
                         }
                     }
-
 
                     break;
                 case VIEW_RANK:
@@ -754,17 +782,17 @@ int main(int argc, char *argv[])
                     send(conn_sock, buff, strlen(buff), 0);
                     break;
 
-                case NONE:
-                    tmp1 = check_full_room();
-                    printf("------------LEAVE ROOM------------\n");
-                    printf("1\n");
-                    //destroy_waiting_room();
-                    // printf("1\n");
-                    tmp1->room.sockfd2 = 0;
-                    sprintf(buff,"Leave room %d\n", room_id);
-                    send(conn_sock, buff, strlen(buff), 0);
-                    // printf("1\n");
-                    break;
+                // case NONE:
+                //     tmp1 = check_full_room();
+                //     printf("------------LEAVE ROOM------------\n");
+                //     printf("1\n");
+                //     //destroy_waiting_room();
+                //     // printf("1\n");
+                //     tmp1->room.sockfd2 = 0;
+                //     sprintf(buff,"Leave room %d\n", room_id);
+                //     send(conn_sock, buff, strlen(buff), 0);
+                //     // printf("1\n");
+                //     break;
                 }
                 free_obj(c);
             }

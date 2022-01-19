@@ -68,6 +68,8 @@ void on_backfromWaitPlayer_clicked();
 void buildUIGameWindow();
 void draw_hand(GtkWidget *container);
 void draw_enemyCards();
+static gint check_connect_other_player(gpointer status);
+static void drawHandCardsFromRecv(gpointer user_data);
 GtkWidget *resize_image(GtkWidget *image, char *link, float x);
 void draw_card(GtkWidget *container, UNO *card, int status, float sizeCard);
 void draw_colorSquare();
