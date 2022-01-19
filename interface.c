@@ -1,6 +1,7 @@
 #include "interface.h"
 #include "object.h"
 #include <pthread.h>
+#include <X11/Xlib.h>
 
 #define BUFF_SIZE 80
 
@@ -34,7 +35,7 @@ GtkWidget *boardWindow;
 GtkWidget *playerNotificationBox;
 GtkWidget *enemyNotificationBox;
 
-GtkWidget *bgColorSquare; // background
+GtkWidget *bgColorSquare;
 GtkWidget *colorSquare;
 
 GtkWidget *winDialog;
@@ -924,9 +925,9 @@ int check_bot_win()
         }
         printf("bot Win\n");
         gtk_widget_show(loserDialog);
-        // gtk_window_set_accept_focus(GTK_WINDOW(boardWindow), FALSE);
+        gtk_window_set_accept_focus(GTK_WINDOW(boardWindow), FALSE);
         idUser = OTHER;
-        // reset_board_game();
+        reset_board_game();
         return 1;
     }
     return 0;
@@ -1049,6 +1050,7 @@ void mayDanh(LIST *xxx, int *idUser, int *id, int *t, int *cml, char *mau, int *
 
 int app(int argc, char **argv, int sockfd)
 {
+    XInitThreads();
     gtk_init(&argc, &argv);
     sock_app = sockfd;
     c = (Client *)malloc(sizeof(Client));
@@ -1463,7 +1465,7 @@ void recv_msg_handler()
             //send_msg_handler();
             enemy_size = 0;
             // check_bot_win()
-            //  gtk_widget_show(loserDialog);
+            gtk_widget_show(loserDialog);
             printf("bot_win\n");
             gtk_window_set_accept_focus(GTK_WINDOW(boardWindow), FALSE);
             idUser = OTHER;

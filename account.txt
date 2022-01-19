@@ -1,5 +1,9 @@
-hong 111 5 7 1
-hongnta 123 2 4 0
-LTmang 123 1 2 1
-hientran 111 3 4 0
-hi 111 1 2 1
+hong 111 0 0 0
+hongnta 123 0 0 0
+LTmang 123 0 0 0
+hientran 111 1 2 1
+hi 111 2 2 1
+a a 0 1 1
+b b 1 1 1
+c c 1 2 1
+d d 1 2 1
