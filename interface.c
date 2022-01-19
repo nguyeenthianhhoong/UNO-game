@@ -327,6 +327,7 @@ void on_exitBtn_clicked()
     } else if(c->signal == PLAY_WITH_PERSON){      ///**
         c->play_with_person.so_luong_bai = -1;
         send(sock_app, c, sizeof(Client), 0);
+        recv(sock_app, buff, BUFF_SIZE, 0);
     }
     if (strlen(usernameLogin) != 0)
     {

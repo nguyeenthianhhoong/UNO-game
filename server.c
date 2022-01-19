@@ -689,6 +689,9 @@ int main(int argc, char *argv[])
                         tmp = checkUsername(c->login.username);
                         tmp->acc.number++;
                         writeFile();
+                        sprintf(buff, "OK");
+                        printf("%s\n", buff);
+                        send(conn_sock, buff, strlen(buff), 0);
                         if (conn_sock == tmp1->room.sockfd1)
                         {
                             send(tmp1->room.sockfd2, &c->play_with_person, sizeof(Play_With_Person), 0);
