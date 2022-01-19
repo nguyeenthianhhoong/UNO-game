@@ -3,3 +3,7 @@ hongnta 123 2 4 0
 LTmang 123 1 2 1
 hientran 111 3 4 0
 hi 111 1 2 1
+a a 2 2 1
+b b 0 2 1
+c c 0 0 0
+d d 0 0 0

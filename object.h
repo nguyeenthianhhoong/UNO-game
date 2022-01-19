@@ -47,7 +47,21 @@ typedef struct {
 }Client;
 
 typedef struct {
+    int sock;
+    char name[30];
+}Socket;
+
+typedef struct room
+{
+    int id;
+    Socket sockfd1;
+    Socket sockfd2;
+    int id_player; // ng chơi đến lượt đi
+} room;
+
+typedef struct {
     int id_room;
+    char name[30]; // ten doi thu
     char messages[100];
     char list[50];
 } send_room;
