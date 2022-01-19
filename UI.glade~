@@ -199,6 +199,7 @@
             <property name="height_request">50</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
+            <property name="visibility">False</property>
           </object>
           <packing>
             <property name="x">295</property>
@@ -211,6 +212,7 @@
             <property name="height_request">50</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
+            <property name="visibility">False</property>
           </object>
           <packing>
             <property name="x">295</property>

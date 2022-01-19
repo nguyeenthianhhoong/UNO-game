@@ -81,6 +81,7 @@ int hand_size = 7;
 int enemy_size = 7;
 
 guint timer = 0;
+guint timer2 = 0;
 guint serial_counter = 0;
 
 int t = 0;      // t luu tong so quan bai bi phat
@@ -324,10 +325,12 @@ void on_exitBtn_clicked()
     {
         c->play_with_bot.id_player = 0;
         send(sock_app, c, sizeof(Client), 0);
-    } else if(c->signal == PLAY_WITH_PERSON){      ///**
-        c->play_with_person.so_luong_bai = -1;
-        send(sock_app, c, sizeof(Client), 0);
     }
+    // else if (c->signal == PLAY_WITH_PERSON)
+    // { ///**
+    //     c->play_with_person.so_luong_bai = -1;
+    //     send(sock_app, c, sizeof(Client), 0);
+    // }
     if (strlen(usernameLogin) != 0)
     {
         c->signal = LOGOUT;
@@ -357,13 +360,9 @@ void after_chooseColor()
     {
         idUser = ENEMY;
     }
-    if(c->signal == PLAY_WITH_PERSON){
+    if (c->signal == PLAY_WITH_PERSON)
+    {
         send_msg_handler();
-        // if (pthread_create(&recv_msg_thread, NULL, (void *)recv_msg_handler, NULL) != 0)
-        // {
-        //     printf("Create pthread error!\n");
-        //     exit(EXIT_FAILURE);
-        // }
     }
 }
 
@@ -473,7 +472,9 @@ void drawCardButtonClick(GtkWidget *button)
             send_msg_handler();
 
             return;
-        }else{
+        }
+        else
+        {
             c->play_with_person.played = -1;
             send_msg_handler();
         }
@@ -494,7 +495,9 @@ void on_backMainMenuBtn_clicked()
     {
         c->play_with_bot.id_player = 0;
         send(sock_app, c, sizeof(Client), 0);
-    } else if( c->signal == PLAY_WITH_PERSON ){  ///**
+    }
+    else if (c->signal == PLAY_WITH_PERSON)
+    { ///**
         c->play_with_person.so_luong_bai = -1;
         send(sock_app, c, sizeof(Client), 0);
     }
@@ -828,8 +831,25 @@ void draw_enemyCards()
         check_bot_win();
 }
 
-static gint draw_enemyCardsPlayer2(gpointer status){
-    draw_enemyCards();
+static gint draw_enemyCardsPlayer2(gpointer status)
+{
+    int i = 0;
+    while (i < 2)
+    {
+        draw_enemyCards();
+        i++;
+    }
+    return 0;
+}
+
+static gint draw_handCards(gpointer status)
+{
+    int i = 0;
+    while (i < 2)
+    {
+        draw_hand(playerBox);
+        i++;
+    }
     return 0;
 }
 
@@ -872,13 +892,22 @@ int check_player_win()
 {
     if (hand_size == 0)
     {
-        c->play_with_bot.id_player = 1;
-        send(sock_app, c, sizeof(Client), 0);
+        if (c->signal == PLAY_WITH_BOT)
+        {
+            c->play_with_bot.id_player = 1;
+            send(sock_app, c, sizeof(Client), 0);
+        }
+        // else
+        // {
+        //     c->play_with_person.played = 1;
+        //     // send(sock_app, c, sizeof(Client), 0);
+        //     send_msg_handler();
+        // }
         printf("player Win\n");
         gtk_widget_show(winDialog);
         gtk_window_set_accept_focus(GTK_WINDOW(boardWindow), FALSE);
         idUser = OTHER;
-        reset_board_game();
+        // reset_board_game();
         return 1;
     }
     return 0;
@@ -888,13 +917,16 @@ int check_bot_win()
 {
     if (enemy_size == 0)
     {
-        c->play_with_bot.id_player = 0;
-        send(sock_app, c, sizeof(Client), 0);
+        if (c->signal == PLAY_WITH_BOT)
+        {
+            c->play_with_bot.id_player = 0;
+            send(sock_app, c, sizeof(Client), 0);
+        }
         printf("bot Win\n");
         gtk_widget_show(loserDialog);
-        gtk_window_set_accept_focus(GTK_WINDOW(boardWindow), FALSE);
+        // gtk_window_set_accept_focus(GTK_WINDOW(boardWindow), FALSE);
         idUser = OTHER;
-        reset_board_game();
+        // reset_board_game();
         return 1;
     }
     return 0;
@@ -902,7 +934,7 @@ int check_bot_win()
 
 int check_up_card(LIST *xxx, int *cml) //check phạt ko đỡ đk thì phạt luôn
 {
-    // change_on_off_icon(PLAYER);
+    change_on_off_icon(PLAYER);
 
     NODE *p = find(l, up_card.id);
     UNO uno;
@@ -911,17 +943,32 @@ int check_up_card(LIST *xxx, int *cml) //check phạt ko đỡ đk thì phạt l
         //************** bị phat
         if ((p->data.number == -3 || p->data.number == -5) && t != 0)
         {
-            if (p->data.number == -3)
+            if ((c->signal == PLAY_WITH_PERSON && play2->played == 1) || (c->signal == PLAY_WITH_BOT))
             {
-                mau = p->data.color;
+
+                if (p->data.number == -3)
+                {
+                    mau = p->data.color;
+                }
+                printf("\n\nbi phat %d con bai\n", t);
+                phat(t, xxx, &s);
+                *cml += t;
+                t = 0;
+                printf("truoc draw\n");
+
+                if (c->signal == PLAY_WITH_PERSON)
+                {
+                    int tr = 1;
+                    drawHandCardsFromRecv(&tr);
+                }
+                else
+                {
+                    draw_hand(playerBox);
+                }
+                printf("sau draw\n");
+                free(p);
+                return 0;
             }
-            printf("\n\nbi phat %d con bai\n", t);
-            phat(t, xxx, &s);
-            *cml += t;
-            t = 0;
-            draw_hand(playerBox);
-            free(p);
-            return 0;
         }
     }
     free(p);
@@ -1122,11 +1169,11 @@ void getNextPlayer()
             idUser = PLAYER;
             // notificationThread(1, ENEMY);
             send_msg_handler();
-        //     if (pthread_create(&recv_msg_thread, NULL, (void *)recv_msg_handler, NULL) != 0)
-        // {
-        //     printf("Create pthread error!\n");
-        //     exit(EXIT_FAILURE);
-        // }
+            //     if (pthread_create(&recv_msg_thread, NULL, (void *)recv_msg_handler, NULL) != 0)
+            // {
+            //     printf("Create pthread error!\n");
+            //     exit(EXIT_FAILURE);
+            // }
         }
         else if (up_card.number == -2)
         {
@@ -1134,27 +1181,27 @@ void getNextPlayer()
             idUser = PLAYER;
             // notificationThread(2, ENEMY);
             send_msg_handler();
-        //     if (pthread_create(&recv_msg_thread, NULL, (void *)recv_msg_handler, NULL) != 0)
-        // {
-        //     printf("Create pthread error!\n");
-        //     exit(EXIT_FAILURE);
-        // }
+            //     if (pthread_create(&recv_msg_thread, NULL, (void *)recv_msg_handler, NULL) != 0)
+            // {
+            //     printf("Create pthread error!\n");
+            //     exit(EXIT_FAILURE);
+            // }
         }
         else
         {
             c->play_with_person.played = 1;
             idUser = ENEMY;
-            if (checkChooseColor != 1){
+            if (checkChooseColor != 1)
+            {
                 change_on_off_icon(ENEMY);
                 send_msg_handler();
-        //         if (pthread_create(&recv_msg_thread, NULL, (void *)recv_msg_handler, NULL) != 0)
-        // {
-        //     printf("Create pthread error!\n");
-        //     exit(EXIT_FAILURE);
-        // }
+                //         if (pthread_create(&recv_msg_thread, NULL, (void *)recv_msg_handler, NULL) != 0)
+                // {
+                //     printf("Create pthread error!\n");
+                //     exit(EXIT_FAILURE);
+                // }
             }
         }
-
     }
 }
 
@@ -1267,12 +1314,12 @@ static void checkTimeOutUnoButton(gpointer user_data)
             // if (c->signal == PLAY_WITH_PERSON){
             //     c->play_with_person.played = -1;
             //     send_msg_handler();
-        //         if (pthread_create(&recv_msg_thread, NULL, (void *)recv_msg_handler, NULL) != 0)
-        // {
-        //     printf("Create pthread error!\n");
-        //     exit(EXIT_FAILURE);
-        // }
-            }
+            //         if (pthread_create(&recv_msg_thread, NULL, (void *)recv_msg_handler, NULL) != 0)
+            // {
+            //     printf("Create pthread error!\n");
+            //     exit(EXIT_FAILURE);
+            // }
+        }
         // }
         printf("cancel %d\n", serial_counter);
         serial_counter = 0;
@@ -1316,11 +1363,11 @@ int connect_with_another_player(int status)
     else if (timer != 0)
     {
         ///**
-        c->signal = NONE;
-        send(sock_app, c, sizeof(Client), 0);
+        // c->signal = NONE;
+        // send(sock_app, c, sizeof(Client), 0);
         g_source_remove(timer);
         timer = 0;
-        recv(sock_app, buff, BUFF_SIZE, 0);
+        // recv(sock_app, buff, BUFF_SIZE, 0);
         gtk_widget_hide(waitAnotherPlayerDialog);
         gtk_widget_show_all(mainMenuWindow);
     }
@@ -1351,7 +1398,11 @@ static void drawEnemyCardsFromRecv(gpointer user_data)
 
     if (status == 1)
     {
-        timer = g_timeout_add(200, draw_enemyCardsPlayer2, NULL);
+        timer = g_timeout_add(100, draw_enemyCardsPlayer2, NULL);
+        // if (enemy_size == 0)
+        // {
+        //     gtk_widget_show(winDialog);
+        // }
     }
     else if (status == 0 && timer != 0)
     {
@@ -1360,6 +1411,20 @@ static void drawEnemyCardsFromRecv(gpointer user_data)
     }
 }
 
+static void drawHandCardsFromRecv(gpointer user_data)
+{
+    int status = *((int *)user_data);
+
+    if (status == 1)
+    {
+        timer2 = g_timeout_add(100, draw_handCards, NULL);
+    }
+    else if (status == 0 && timer2 != 0)
+    {
+        g_source_remove(timer2);
+        timer2 = 0;
+    }
+}
 
 void recv_msg_handler()
 {
@@ -1369,19 +1434,51 @@ void recv_msg_handler()
         printf("recv--\n");
         // if(checkSendMessage==1){
         int recvCheck = recv(sock_app, play2, sizeof(Play_With_Person), 0);
-        if (recvCheck<0) continue;
+        if (recvCheck < 0)
+            continue;
         printf("recv tu player truoc\n%d-%d-%c-%d-%d\n", play2->id_bai, play2->so_luong_bai, play2->color, play2->bai_phat, play2->so_luong_bai);
 
+        int ibreak = 0;
         ///**
-        if(play2->so_luong_bai == -1){
+        if (play2->so_luong_bai == -1)
+        {
+            idUser = OTHER;
             c->play_with_person.so_luong_bai = 0;
+            c->play_with_person.played = 0;
             //send_msg_handler();
             send(sock_app, c, sizeof(Client), 0);
-            gtk_widget_show_all(mainMenuWindow);
+            gtk_widget_show_all(winDialog);
+            // gtk_widget_show_all(mainMenuWindow);
             gtk_widget_hide(boardWindow);
+            // reset_board_game();
+            ibreak = 1;
+            // break;
+        }
+
+        if (play2->so_luong_bai == 0 && play2->played == 1)
+        {
             idUser = OTHER;
-            reset_board_game();
-            break;
+            hand_size = -2;
+            c->play_with_person.played = 0;
+            //send_msg_handler();
+            enemy_size = 0;
+            // check_bot_win()
+            //  gtk_widget_show(loserDialog);
+            printf("bot_win\n");
+            gtk_window_set_accept_focus(GTK_WINDOW(boardWindow), FALSE);
+            idUser = OTHER;
+            send_msg_handler();
+
+            // up_card = timUno(l, play2->id_bai);
+            // mau = play2->color;
+            // t = play2->bai_phat;
+            // enemy_size = play2->so_luong_bai;
+
+            // int tr = 1;
+            // drawEnemyCardsFromRecv(&tr);
+            // reset_board_game();
+            // break;
+            ibreak = 1;
         }
 
         up_card = timUno(l, play2->id_bai);
@@ -1391,6 +1488,12 @@ void recv_msg_handler()
 
         int tr = 1;
         drawEnemyCardsFromRecv(&tr);
+        if (ibreak == 1 || enemy_size == 0)
+        {
+            change_on_off_icon(ENEMY);
+            printf("win\n");
+            break;
+        }
 
         printf("%d-%d-%c-%d-%d\n", play2->id_bai, play2->so_luong_bai, play2->color, play2->bai_phat, play2->so_luong_bai);
 
@@ -1400,11 +1503,13 @@ void recv_msg_handler()
             c->play_with_person.played = -2;
             send_msg_handler();
             continue;
-        } else if(play2->played == -2){
+        }
+        else if (play2->played == -2)
+        {
             printf("recv-- -2\n");
             continue;
         }
-        
+
         if (play2->id_player == 0)
         {
             change_on_off_icon(PLAYER);
@@ -1415,21 +1520,15 @@ void recv_msg_handler()
             change_on_off_icon(ENEMY);
             idUser = ENEMY;
         }
-        // if (check_up_card(&l1, &hand_size) != 1)
-        // {
-        //     c->play_with_person.played = 0;
-        //     idUser = ENEMY;
-        //     send_msg_handler();
-        // }
 
-        // if ((up_card.id == -1 || up_card.id == -2) && play2->played == 1)
-        // {
-        //     sleep(2);
-        //     c->play_with_person.played = 0;
-        //     send_msg_handler();
-        //     // recv_msg_handler()
-        // }
-        // }
+        if (check_up_card(&l1, &hand_size) != 1)
+        {
+            c->play_with_person.played = 0;
+            idUser = ENEMY;
+            change_on_off_icon(ENEMY);
+            send_msg_handler();
+        }
+
         printf("recv-- %d\n", up_card.id);
     }
 }
