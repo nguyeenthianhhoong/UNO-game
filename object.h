@@ -3,14 +3,14 @@
 #include <string.h>
 
 typedef enum{
-    NONE,
     LOGIN,
     SIGNUP,
     PLAY_WITH_BOT,
     ADD_ROOM,
     PLAY_WITH_PERSON,
     VIEW_RANK,
-    LOGOUT
+    LOGOUT,
+    LEAVE_ROOM
 }Signal;
 
 typedef struct {
