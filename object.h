@@ -2,7 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef enum{
+typedef enum Signal{
+    NONE,
     LOGIN,
     SIGNUP,
     PLAY_WITH_BOT,
@@ -10,7 +11,7 @@ typedef enum{
     PLAY_WITH_PERSON,
     VIEW_RANK,
     LOGOUT,
-    LEAVE_ROOM
+    LEAVE_ROOM,
 }Signal;
 
 typedef struct {

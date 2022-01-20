@@ -13,8 +13,6 @@
 #define BUFF_SIZE 100
 #define BACKLOG 10 //number of pending connections in queue
 
-
-
 typedef room room;
 
 typedef struct node_room
@@ -251,7 +249,6 @@ node *checkUsername(char username[])
     }
     return NULL;
 }
-
 
 int main(int argc, char *argv[])
 {
@@ -540,7 +537,6 @@ int main(int argc, char *argv[])
                     }
                     break;
 
-
                 // so_luong_bai  |  played
                 // 0 | 1 -> thắng -> gửi client -2 -> break
                 //
@@ -623,13 +619,8 @@ int main(int argc, char *argv[])
                 case LEAVE_ROOM:
                     printf("------------LEAVE ROOM------------\n");
                     tmp1 = check_full_room();
-                    //destroy_waiting_room();
-                    // printf("1\n");
                     tmp1->room.sockfd2.sock = 0;
-                    sprintf(buff, "Leave room %d\n", room_id);
-                    send(conn_sock, buff, strlen(buff), 0);
                     break;
-
                 }
                 free_obj(c);
             }
