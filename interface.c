@@ -1,6 +1,7 @@
 #include "interface.h"
 #include "object.h"
 #include <pthread.h>
+#include <X11/Xlib.h>
 
 #define BUFF_SIZE 80
 
@@ -34,7 +35,7 @@ GtkWidget *boardWindow;
 GtkWidget *playerNotificationBox;
 GtkWidget *enemyNotificationBox;
 
-GtkWidget *bgColorSquare; // background
+GtkWidget *bgColorSquare;
 GtkWidget *colorSquare;
 
 GtkWidget *winDialog;
@@ -277,7 +278,6 @@ void on_playerModeBtn_clicked()
 {
     gtk_widget_hide(playModeDialog);
     main_play_with_player();
-    // printf("player game with player!\n");
 }
 
 void on_botModeBtn_clicked()
@@ -322,20 +322,22 @@ void on_cancelExitBtn_clicked()
 
 void on_exitBtn_clicked()
 {
-    if (c->signal == PLAY_WITH_BOT && c->play_with_bot.id_player == -1)
+    if (hand_size != 0 && enemy_size != 0 && c->play_with_person.played != -4 && c->play_with_person.so_luong_bai != -2)
     {
-        c->play_with_bot.id_player = 0;
-        send(sock_app, c, sizeof(Client), 0);
-    } else if(c->signal == PLAY_WITH_PERSON){      ///**
-        c->play_with_person.so_luong_bai = -1;
-        send(sock_app, c, sizeof(Client), 0);
-        recv(sock_app, buff, BUFF_SIZE, 0);
+        if (c->signal == PLAY_WITH_BOT && c->play_with_bot.id_player == -1)
+        {
+            c->play_with_bot.id_player = 0;
+            send(sock_app, c, sizeof(Client), 0);
+        }
+        else if (c->signal == PLAY_WITH_PERSON)
+        {
+            c->play_with_person.played = -3;
+            send_msg_handler();
+        }
     }
-    // else if (c->signal == PLAY_WITH_PERSON)
-    // { ///**
-    //     c->play_with_person.so_luong_bai = -1;
-    //     send(sock_app, c, sizeof(Client), 0);
-    // }
+
+    reset_board_game();
+    pthread_cancel(recv_msg_thread);
     if (strlen(usernameLogin) != 0)
     {
         c->signal = LOGOUT;
@@ -399,12 +401,21 @@ void on_backToHomeBtn_clicked()
     gtk_widget_hide(winDialog);
     gtk_widget_hide(loserDialog);
     gtk_widget_hide(boardWindow);
+    pthread_cancel(recv_msg_thread);
 }
 void on_replayBtn_clicked()
 {
     gtk_widget_hide(winDialog);
     gtk_widget_hide(loserDialog);
-    main_play_game_with_bot();
+    if (c->signal == PLAY_WITH_BOT)
+    {
+        main_play_game_with_bot();
+    }
+    else if (c->signal == PLAY_WITH_PERSON)
+    {
+        pthread_cancel(recv_msg_thread);
+        on_playerModeBtn_clicked();
+    }
 }
 
 //while playing games
@@ -433,11 +444,6 @@ void nextButtonClick(GtkWidget *button)
         change_on_off_icon(ENEMY);
         c->play_with_person.played = 0;
         send_msg_handler();
-        // if (pthread_create(&recv_msg_thread, NULL, (void *)recv_msg_handler, NULL) != 0)
-        // {
-        //     printf("Create pthread error!\n");
-        //     exit(EXIT_FAILURE);
-        // }
     }
 }
 void drawCardButtonClick(GtkWidget *button)
@@ -496,16 +502,22 @@ void on_backMainMenuBtn_clicked()
 {
     gtk_widget_show_all(mainMenuWindow);
     gtk_widget_hide(boardWindow);
-    if (c->signal == PLAY_WITH_BOT && c->play_with_bot.id_player == -1)
+    gtk_widget_hide(winDialog);
+    gtk_widget_hide(loserDialog);
+    if (hand_size != 0 && enemy_size != 0 && c->play_with_person.played != -4 && c->play_with_person.so_luong_bai != -2)
     {
-        c->play_with_bot.id_player = 0;
-        send(sock_app, c, sizeof(Client), 0);
+        if (c->signal == PLAY_WITH_BOT && c->play_with_bot.id_player == -1)
+        {
+            c->play_with_bot.id_player = 0;
+            send(sock_app, c, sizeof(Client), 0);
+        }
+        else if (c->signal == PLAY_WITH_PERSON)
+        {
+            c->play_with_person.played = -3;
+            send_msg_handler();
+        }
     }
-    else if (c->signal == PLAY_WITH_PERSON)
-    { ///**
-        c->play_with_person.so_luong_bai = -1;
-        send(sock_app, c, sizeof(Client), 0);
-    }
+    pthread_cancel(recv_msg_thread);
     gtk_widget_hide(confirm2Dialog);
     idUser = OTHER;
     reset_board_game();
@@ -884,11 +896,15 @@ GtkWidget *resize_image(GtkWidget *image, char *link, float x)
 void reset_board_game()
 {
     mau = 'z';
-    hand_size = 0;
-    enemy_size = 0;
+    // hand_size = 0;
+    // enemy_size = 0;
     outPut(&s);
     giaiPhong(&l1);
     giaiPhong(&l2);
+    if(c->signal == PLAY_WITH_PERSON){
+        c->play_with_person.so_luong_bai = 7;
+        c->play_with_person.played = 0;
+    }
     // pthread_cancel(tid);
     // pthread_exit(NULL);
 }
@@ -1054,6 +1070,7 @@ void mayDanh(LIST *xxx, int *idUser, int *id, int *t, int *cml, char *mau, int *
 
 int app(int argc, char **argv, int sockfd)
 {
+    XInitThreads();
     gtk_init(&argc, &argv);
     sock_app = sockfd;
     c = (Client *)malloc(sizeof(Client));
@@ -1174,11 +1191,6 @@ void getNextPlayer()
             idUser = PLAYER;
             // notificationThread(1, ENEMY);
             send_msg_handler();
-            //     if (pthread_create(&recv_msg_thread, NULL, (void *)recv_msg_handler, NULL) != 0)
-            // {
-            //     printf("Create pthread error!\n");
-            //     exit(EXIT_FAILURE);
-            // }
         }
         else if (up_card.number == -2)
         {
@@ -1186,11 +1198,6 @@ void getNextPlayer()
             idUser = PLAYER;
             // notificationThread(2, ENEMY);
             send_msg_handler();
-            //     if (pthread_create(&recv_msg_thread, NULL, (void *)recv_msg_handler, NULL) != 0)
-            // {
-            //     printf("Create pthread error!\n");
-            //     exit(EXIT_FAILURE);
-            // }
         }
         else
         {
@@ -1200,11 +1207,6 @@ void getNextPlayer()
             {
                 change_on_off_icon(ENEMY);
                 send_msg_handler();
-                //         if (pthread_create(&recv_msg_thread, NULL, (void *)recv_msg_handler, NULL) != 0)
-                // {
-                //     printf("Create pthread error!\n");
-                //     exit(EXIT_FAILURE);
-                // }
             }
         }
     }
@@ -1347,6 +1349,9 @@ void main_play_with_player()
 void on_backfromWaitPlayer_clicked()
 {
     connect_with_another_player(-1);
+    c->signal = LEAVE_ROOM;
+    send(sock_app, c, sizeof(Client), 0);
+    pthread_cancel(recv_msg_thread);
 }
 
 int connect_with_another_player(int status)
@@ -1367,14 +1372,10 @@ int connect_with_another_player(int status)
         build_board_game_with_player();
         gtk_widget_show_all(boardWindow);
     }
-    else if (timer != 0)
+    else if (status == -1 && timer != 0)
     {
-        ///**
-        // c->signal = NONE;
-        // send(sock_app, c, sizeof(Client), 0);
         g_source_remove(timer);
         timer = 0;
-        // recv(sock_app, buff, BUFF_SIZE, 0);
         gtk_widget_hide(waitAnotherPlayerDialog);
         gtk_widget_show_all(mainMenuWindow);
     }
@@ -1447,44 +1448,28 @@ void recv_msg_handler()
 
         int ibreak = 0;
         ///**
-        if (play2->so_luong_bai == -1)
+        if (play2->played == -3)
         {
+            //
             idUser = OTHER;
-            c->play_with_person.so_luong_bai = 0;
-            c->play_with_person.played = 0;
-            //send_msg_handler();
-            send(sock_app, c, sizeof(Client), 0);
+            c->play_with_person.played = -4;
             gtk_widget_show_all(winDialog);
-            // gtk_widget_show_all(mainMenuWindow);
-            gtk_widget_hide(boardWindow);
-            // reset_board_game();
+            gtk_window_set_accept_focus(GTK_WINDOW(boardWindow), FALSE);
+            idUser = OTHER;
+            send_msg_handler();
             ibreak = 1;
-            // break;
         }
-
-        if (play2->so_luong_bai == 0 && play2->played == 1)
+        else if (play2->so_luong_bai == 0 && play2->played == 1)
         {
+            //thua do chơi hết bài
             idUser = OTHER;
             hand_size = -2;
             c->play_with_person.played = 0;
-            //send_msg_handler();
-            enemy_size = 0;
-            // check_bot_win()
-            //  gtk_widget_show(loserDialog);
+            gtk_widget_show(loserDialog);
             printf("bot_win\n");
             gtk_window_set_accept_focus(GTK_WINDOW(boardWindow), FALSE);
             idUser = OTHER;
             send_msg_handler();
-
-            // up_card = timUno(l, play2->id_bai);
-            // mau = play2->color;
-            // t = play2->bai_phat;
-            // enemy_size = play2->so_luong_bai;
-
-            // int tr = 1;
-            // drawEnemyCardsFromRecv(&tr);
-            // reset_board_game();
-            // break;
             ibreak = 1;
         }
 
@@ -1499,6 +1484,8 @@ void recv_msg_handler()
         {
             change_on_off_icon(ENEMY);
             printf("win\n");
+            pthread_cancel(recv_msg_thread);
+            reset_board_game();
             break;
         }
 
@@ -1558,6 +1545,9 @@ void send_msg_handler()
     c->play_with_person.bai_phat = t;
     c->play_with_person.so_luong_bai = hand_size;
     send(sock_app, c, sizeof(Client), 0);
+    // if(hand_size ==0 || enemy_size ==0 || ((play2->so_luong_bai == 0 && play2->played == 1)) || (play2->so_luong_bai == -1)){
+    //    pthread_cancel(recv_msg_thread);
+    // }
 }
 
 // play with player
@@ -1624,17 +1614,7 @@ void build_board_game_with_player()
     //     idUser = ENEMY;
     //     bot_play();
     // }
-    //*************************************************888****************8
 
-    // fake data
-    // pthread_t send_msg_thread;
-    // if (pthread_create(&send_msg_thread, NULL, (void *)send_msg_handler, NULL) != 0)
-    // {
-    //     printf("Create pthread error!\n");
-    //     exit(EXIT_FAILURE);
-    // }
-
-    pthread_t recv_msg_thread;
     if (pthread_create(&recv_msg_thread, NULL, (void *)recv_msg_handler, NULL) != 0)
     {
         printf("Create pthread error!\n");

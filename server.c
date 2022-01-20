@@ -105,7 +105,8 @@ void destroy_room(int id)
     }
 }
 
-void displayRoom(){
+void displayRoom()
+{
     node_room *tmp = root_r;
     while (tmp != NULL)
     {
@@ -199,7 +200,7 @@ void writeFileRank()
     printf("rank\n");
     for (node *pTmp = root; pTmp != NULL; pTmp = pTmp->next, i++)
     {
-        int score = pTmp->acc.number_win * 3 - pTmp->acc.number * 1;
+        int score = pTmp->acc.number_win * 4 - pTmp->acc.number * 1;
         //nếu bằng điểm thì cùng hạng | tổng ván ít hơn thì xếp cao hơn
         if (i == 0)
         {
@@ -251,144 +252,7 @@ node *checkUsername(char username[])
     return NULL;
 }
 
-/*
-void *client_handler(void *arg)
-{
-    int clientfd;
-    int sendBytes, rcvBytes;
-    char buff[BUFF_SIZE];
-    node *tmp = (node *)malloc(sizeof(node));
-    pthread_detach(pthread_self());
-    clientfd = *((int *)arg);
-    while (1)
-    {
-        Client *c = (Client *)malloc(sizeof(Client));
-        rcvBytes = recv(clientfd, c, sizeof(Client), 0);
-        if (rcvBytes < 0)
-        {
-            perror("Error: ");
-            return 0;
-        }
 
-        switch (c->signal)
-        {
-        case LOGIN:
-            printf("------------LOGIN------------\n");
-            tmp = checkUsername(c->login.username);
-            if (tmp == NULL)
-            {
-                strcpy(buff, "Tài khoản không tồn tại");
-                printf("%s\n", buff);
-                send(clientfd, buff, strlen(buff), 0);
-                //continue;
-            }
-            else if (tmp->acc.isLogin == 1)
-            {
-                strcpy(buff, "Tài khoản đã đăng nhập");
-                printf("%s\n", buff);
-                send(clientfd, buff, strlen(buff), 0);
-                //continue;
-            }
-            else
-            {
-                
-                if (strcmp(tmp->acc.password, c->login.password) == 0)
-                {
-                    strcpy(buff, "OK");
-                    printf("%s\n", buff);
-                    tmp->acc.isLogin = 1;
-                    writeFile();
-                    send(clientfd, buff, strlen(buff), 0);
-                    // strcpy(userSignedIn, username);
-                    // is_login = 1;
-                    //break;
-                }
-                else
-                {
-                    strcpy(buff, "Mật khẩu không đúng");
-                    printf("%s\n", buff);
-                    send(clientfd, buff, strlen(buff), 0);
-                }
-            }
-            break;
-
-        case SIGNUP:
-            printf("------------SIGN UP------------\n"); 
-            //tmp = checkUsername(c->signup.username);
-            if (checkUsername(c->signup.username) != NULL)
-            {
-                strcpy(buff, "Tài khoản đã tồn tại");
-                printf("%s\n", buff);
-                send(clientfd, buff, strlen(buff), 0);
-                //continue;
-            }
-            else
-            {
-                if (strcmp(c->signup.password, c->signup.confirm_password) == 0)
-                {
-                    strcpy(buff, "OK");
-                    printf("%s\n", buff);
-                    account acc;
-                    strcpy(acc.username, c->signup.username);
-                    strcpy(acc.password, c->signup.password);
-                    acc.number = 0;
-                    acc.number_win = 0;
-                    acc.isLogin = 0;
-                    addAccount(acc);
-                    writeFile();
-                    send(clientfd, buff, strlen(buff), 0);
-                    //break;
-                }
-                else
-                {
-                    strcpy(buff, "Mật khẩu không đúng");
-                    printf("%s\n", buff);
-                    send(clientfd, buff, strlen(buff), 0);
-                }
-            }
-            break;
-
-        case PLAY_WITH_BOT:
-            printf("------------PLAY WITH BOT------------\n");
-            //printf("%s\n", tmp->acc.username);
-            tmp->acc.number++;
-            if (c->play_with_bot.id_player == 1)
-            {
-                tmp->acc.number_win++;
-            }
-            writeFile();
-            break;
-
-        case PLAY_WITH_PERSON:
-
-            break;
-
-        case VIEW_RANK:
-
-            break;
-
-        case LOGOUT:
-            printf("------------LOGOUT------------\n");
-            //tmp = checkUsername(c->login.username);
-            printf("%s\n", tmp->acc.username);
-            tmp->acc.isLogin = 0;
-            writeFile();
-            sprintf(buff, "bye %s", c->login.username);
-            printf("%s\n", buff);
-            send(clientfd, buff, strlen(buff), 0);
-            break;
-
-            free_obj(c);
-            // default:
-            //     break;
-            // }
-        }
-
-        //break;
-    }
-    close(clientfd);
-}
-*/
 int main(int argc, char *argv[])
 {
     if (argc != 2)
@@ -531,7 +395,7 @@ int main(int argc, char *argv[])
                     perror("Error: ");
                     return 0;
                 }
-
+                memset(buff, 0, strlen(buff));
                 switch (c->signal)
                 {
                 case LOGIN:
@@ -687,26 +551,11 @@ int main(int argc, char *argv[])
                     tmp1 = checkRoomID(c->play_with_person.id_room);
                     printf("%d %d %d %d\n", conn_sock, tmp1->room.sockfd1.sock, tmp1->room.sockfd2.sock, c->play_with_person.so_luong_bai);
                     //**
-                    if (c->play_with_person.so_luong_bai == -1)
+                    if (c->play_with_person.played == -3)
                     {
-                        printf("hi\n");
                         tmp = checkUsername(c->login.username);
                         tmp->acc.number++;
                         writeFile();
-                        sprintf(buff, "OK");
-                        printf("%s\n", buff);
-                        send(conn_sock, buff, strlen(buff), 0);
-                        if (conn_sock == tmp1->room.sockfd1.sock)
-                        {
-                            send(tmp1->room.sockfd2.sock, &c->play_with_person, sizeof(Play_With_Person), 0);
-                            tmp1->room.id_player = tmp1->room.sockfd2.sock;
-                        }
-                        else
-                        {
-                            //send(tmp1->room.sockfd1, sb, sizeof(SendB), 0);
-                            send(tmp1->room.sockfd1.sock, &c->play_with_person, sizeof(Play_With_Person), 0);
-                            tmp1->room.id_player = tmp1->room.sockfd1.sock;
-                        }
                     }
                     //**
                     else if (conn_sock == tmp1->room.id_player)
@@ -714,7 +563,7 @@ int main(int argc, char *argv[])
                         printf("card_id: %d\n", c->play_with_person.id_bai);
                         printf("so_luong_bai: %d\n", c->play_with_person.so_luong_bai);
                         //**
-                        if (c->play_with_person.so_luong_bai == 0 && c->play_with_person.played == 0)
+                        if (c->play_with_person.played == -4)
                         {
                             tmp = checkUsername(c->login.username);
                             tmp->acc.number++;
@@ -722,45 +571,33 @@ int main(int argc, char *argv[])
                             writeFile();
                             //destroy_room(tmp1->room.id);
                             displayRoom();
+                            break;
                         }
-                        else if(c->play_with_person.so_luong_bai==-2){
+                        else if (c->play_with_person.so_luong_bai == -2)
+                        {
                             tmp = checkUsername(c->login.username);
                             tmp->acc.number++;
                             writeFile();
-                            printf("win -2\n");
-                        }else if(c->play_with_person.so_luong_bai == 0 && c->play_with_person.played == 1){
+                            break;
+                        }
+                        else if (c->play_with_person.so_luong_bai == 0 && c->play_with_person.played == 1)
+                        {
                             tmp = checkUsername(c->login.username);
                             tmp->acc.number++;
                             tmp->acc.number_win++;
                             writeFile();
-                            if (conn_sock == tmp1->room.sockfd1.sock)
-                            {
-                                send(tmp1->room.sockfd2.sock, &c->play_with_person, sizeof(Play_With_Person), 0);
-                                tmp1->room.id_player = tmp1->room.sockfd2.sock;
-                            }
-                            else
-                            {
-                                //send(tmp1->room.sockfd1, sb, sizeof(SendB), 0);
-                                send(tmp1->room.sockfd1.sock, &c->play_with_person, sizeof(Play_With_Person), 0);
-                                tmp1->room.id_player = tmp1->room.sockfd1.sock;
-                            }
-
                         }
-                        else
-                        {
+                    }
 
-                            if (conn_sock == tmp1->room.sockfd1.sock)
-                            {
-                                send(tmp1->room.sockfd2.sock, &c->play_with_person, sizeof(Play_With_Person), 0);
-                                tmp1->room.id_player = tmp1->room.sockfd2.sock;
-                            }
-                            else
-                            {
-                                //send(tmp1->room.sockfd1, sb, sizeof(SendB), 0);
-                                send(tmp1->room.sockfd1.sock, &c->play_with_person, sizeof(Play_With_Person), 0);
-                                tmp1->room.id_player = tmp1->room.sockfd1.sock;
-                            }
-                        }
+                    if (conn_sock == tmp1->room.sockfd1.sock)
+                    {
+                        send(tmp1->room.sockfd2.sock, &c->play_with_person, sizeof(Play_With_Person), 0);
+                        tmp1->room.id_player = tmp1->room.sockfd2.sock;
+                    }
+                    else
+                    {
+                        send(tmp1->room.sockfd1.sock, &c->play_with_person, sizeof(Play_With_Person), 0);
+                        tmp1->room.id_player = tmp1->room.sockfd1.sock;
                     }
 
                     break;
@@ -783,17 +620,16 @@ int main(int argc, char *argv[])
                     send(conn_sock, buff, strlen(buff), 0);
                     break;
 
-                // case NONE:
-                //     tmp1 = check_full_room();
-                //     printf("------------LEAVE ROOM------------\n");
-                //     printf("1\n");
-                //     //destroy_waiting_room();
-                //     // printf("1\n");
-                //     tmp1->room.sockfd2 = 0;
-                //     sprintf(buff,"Leave room %d\n", room_id);
-                //     send(conn_sock, buff, strlen(buff), 0);
-                //     // printf("1\n");
-                //     break;
+                case LEAVE_ROOM:
+                    printf("------------LEAVE ROOM------------\n");
+                    tmp1 = check_full_room();
+                    //destroy_waiting_room();
+                    // printf("1\n");
+                    tmp1->room.sockfd2.sock = 0;
+                    sprintf(buff, "Leave room %d\n", room_id);
+                    send(conn_sock, buff, strlen(buff), 0);
+                    break;
+
                 }
                 free_obj(c);
             }
