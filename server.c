@@ -223,12 +223,8 @@ void sortRank()
         {
             int preScore = pTmp->acc.number_win * 3 - pTmp->acc.number * 1;
             int score = pTmp2->acc.number_win * 3 - pTmp2->acc.number * 1;
-            if (preScore <= score)
+            if (preScore < score)
             {
-                if (preScore == score && score != 0 && pTmp->acc.number < pTmp2->acc.number)
-                {
-                    continue;
-                }
                 account tmp = pTmp->acc;
                 pTmp->acc = pTmp2->acc;
                 pTmp2->acc = tmp;
