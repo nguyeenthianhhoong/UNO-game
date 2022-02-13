@@ -118,13 +118,13 @@ int main(int argc, char *argv[])
     if (connect(sockfd, (struct sockaddr *)&servaddr, sizeof(struct sockaddr)) < 0)
     {
         printf("\nError! Can not connect to sever! ");
-        return 0;
+        displayDisconnectToServer(argc,argv);
+        // return 0;
+    }else{
+         // GTK
+        app(argc,argv,sockfd);
     }
-    
-    // GTK
-    app(argc,argv,sockfd);
 
-    
     close(sockfd);
     return 1;
 }

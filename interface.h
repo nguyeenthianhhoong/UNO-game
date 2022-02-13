@@ -17,6 +17,9 @@
 void trim(char s[]);
 int checkSpace(char s[]);
 
+int displayDisconnectToServer();
+// void on_closeDisconnectWindow_clicked();
+
 // LOGIN SIGNGIN
 void on_loginBtn_clicked();
 void on_LoginWindow_destroy();
