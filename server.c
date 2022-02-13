@@ -169,6 +169,7 @@ void readFile(FILE *f)
     while (!feof(f))
     {
         fscanf(f, "%s %s %d %d %d\n", acc.username, acc.password, &acc.number_win, &acc.number, &acc.isLogin);
+        acc.isLogin = 0;
         addAccount(acc);
     }
     fclose(f);
@@ -194,19 +195,24 @@ void writeFileRank()
 
     int i = 0;
     int preScore;
+    int newUser=0;
     int rankcount = i + 1;
     printf("rank\n");
     for (node *pTmp = root; pTmp != NULL; pTmp = pTmp->next, i++)
     {
         int score = pTmp->acc.number_win * 4 - pTmp->acc.number * 1;
-        //nếu bằng điểm thì cùng hạng | tổng ván ít hơn thì xếp cao hơn
+        if(score==0 && pTmp->acc.number==0){
+            newUser++;
+            continue;
+        }
         if (i == 0)
         {
             preScore = score;
         }
         else if (score != preScore)
         {
-            rankcount = i + 1;
+            preScore = score;
+            rankcount = i + 1 - newUser;
         }
         fprintf(f, "%d %s %d %d %d\n", rankcount, pTmp->acc.username, score, pTmp->acc.number_win, pTmp->acc.number);
     }
@@ -216,13 +222,12 @@ void writeFileRank()
 
 void sortRank()
 {
-    for (node *pTmp = root; pTmp != NULL; pTmp = pTmp->next)
+    for (node *pTmp = root; pTmp->next != NULL; pTmp = pTmp->next)
     {
-        //for loop thứ hai
         for (node *pTmp2 = pTmp->next; pTmp2 != NULL; pTmp2 = pTmp2->next)
         {
-            int preScore = pTmp->acc.number_win * 3 - pTmp->acc.number * 1;
-            int score = pTmp2->acc.number_win * 3 - pTmp2->acc.number * 1;
+            int preScore = pTmp->acc.number_win * 4 - pTmp->acc.number * 1;
+            int score = pTmp2->acc.number_win * 4 - pTmp2->acc.number * 1;
             if (preScore < score)
             {
                 account tmp = pTmp->acc;
@@ -309,6 +314,7 @@ int main(int argc, char *argv[])
     servaddr.sin_family = AF_INET;
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     servaddr.sin_port = htons(atoi(argv[1]));
+
     if (bind(listen_sock, (struct sockaddr *)&servaddr, sizeof(servaddr)) == -1)
     {
         perror("Error: ");
