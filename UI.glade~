@@ -423,7 +423,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel">
+              <object class="GtkLabel" id="confirm2MessLabel">
                 <property name="width_request">100</property>
                 <property name="height_request">80</property>
                 <property name="visible">True</property>
@@ -539,7 +539,7 @@ Are you sure to back to menu? </property>
               </packing>
             </child>
             <child>
-              <object class="GtkLabel">
+              <object class="GtkLabel" id="confirmMessLabel">
                 <property name="width_request">100</property>
                 <property name="height_request">80</property>
                 <property name="visible">True</property>
@@ -752,12 +752,36 @@ Are you sure to back to menu? </property>
           </packing>
         </child>
         <child>
-          <object class="GtkImage">
-            <property name="width_request">50</property>
-            <property name="height_request">50</property>
+          <object class="GtkFixed">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="pixbuf">images/messages/win.png</property>
+            <child>
+              <object class="GtkImage">
+                <property name="width_request">100</property>
+                <property name="height_request">80</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="pixbuf">images/messages/win.png</property>
+              </object>
+              <packing>
+                <property name="x">100</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="winMessLabel">
+                <property name="width_request">450</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">The opponent has stopped the game
+			      you win</property>
+                <attributes>
+                  <attribute name="foreground" value="#7373d2d21616"/>
+                </attributes>
+              </object>
+              <packing>
+                <property name="y">230</property>
+              </packing>
+            </child>
           </object>
           <packing>
             <property name="expand">False</property>

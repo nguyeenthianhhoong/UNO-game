@@ -11,6 +11,7 @@
 #include "uno.h"
 #include "object.h"
 #define BUFF_SIZE 100
+#define SIZE 1024
 #define BACKLOG 10 //number of pending connections in queue
 
 typedef room room;
@@ -195,13 +196,14 @@ void writeFileRank()
 
     int i = 0;
     int preScore;
-    int newUser=0;
+    int newUser = 0;
     int rankcount = i + 1;
     printf("rank\n");
     for (node *pTmp = root; pTmp != NULL; pTmp = pTmp->next, i++)
     {
         int score = pTmp->acc.number_win * 4 - pTmp->acc.number * 1;
-        if(score==0 && pTmp->acc.number==0){
+        if (score == 0 && pTmp->acc.number == 0)
+        {
             newUser++;
             continue;
         }
@@ -216,7 +218,7 @@ void writeFileRank()
         }
         fprintf(f, "%d %s %d %d %d\n", rankcount, pTmp->acc.username, score, pTmp->acc.number_win, pTmp->acc.number);
     }
-
+    printf("rank2\n");
     fclose(f);
 }
 
@@ -237,6 +239,27 @@ void sortRank()
         }
     }
     writeFileRank();
+}
+
+void send_file_ranktxt(FILE *fp, int sockfd)
+{
+    int n;
+    char data[SIZE] = {0};
+
+    while (fgets(data, SIZE, fp) != NULL)
+    {
+        printf("%s\n", data);
+        if (send(sockfd, data, sizeof(data), 0) == -1)
+        {
+            perror("[-]Error in sending file.");
+            exit(1);
+        }
+        bzero(data, SIZE);
+    }
+    memset(data, strlen(data), 0);
+    strcpy(data, "end");
+    send(sockfd, data, sizeof(data), 0);
+    printf("send file ok\n");
 }
 
 node *checkUsername(char username[])
@@ -310,9 +333,13 @@ int main(int argc, char *argv[])
     }
 
     //Step 2: Bind address to socket
+    char *hostname = "192.168.0.43";
     bzero(&servaddr, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
-    servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    servaddr.sin_addr.s_addr = inet_addr(hostname);
+    // servaddr.sin_port = htons(8000);
+
+    // servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     servaddr.sin_port = htons(atoi(argv[1]));
 
     if (bind(listen_sock, (struct sockaddr *)&servaddr, sizeof(servaddr)) == -1)
@@ -605,6 +632,16 @@ int main(int argc, char *argv[])
                     sprintf(buff, "OK");
                     printf("%s\n", buff);
                     send(conn_sock, buff, strlen(buff), 0);
+                    sleep(0.01);
+                    FILE* fp;
+                    fp = fopen("rank.txt", "r");
+                    if (fp == NULL)
+                    {
+                        perror("[-]Error in reading file.");
+                        return 0;
+                    }
+                    send_file_ranktxt(fp, conn_sock);
+                
                     break;
 
                 case LOGOUT:

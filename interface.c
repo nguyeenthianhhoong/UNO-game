@@ -4,6 +4,7 @@
 #include <X11/Xlib.h>
 
 #define BUFF_SIZE 80
+#define SIZE 1024
 
 const int WINDOW_WIDTH = 1250; //1250 1140
 const int WINDOW_HEIGHT = 800; //800 700
@@ -46,6 +47,10 @@ GtkWidget *confirmDialog;
 GtkWidget *confirm2Dialog;
 GtkWidget *playModeDialog;
 GtkWidget *waitAnotherPlayerDialog;
+
+GtkWidget *confirmMessLabel;
+GtkWidget *confirm2MessLabel;
+GtkWidget *winMessLabel;
 
 GtkWidget *boardWindow;
 GtkWidget *boardWindowFixed;
@@ -125,6 +130,35 @@ int checkSpace(char s[])
         if (s[i] == ' ')
             return 1;
     }
+    return 0;
+}
+
+int write_file_ranktxt()
+{
+    int sockfd = sock_app;
+    int n;
+    FILE *fp;
+    char *filename = "rankRecv.txt";
+    char buffer[SIZE];
+
+    printf("write file\n");
+    fp = fopen(filename, "w");
+    while (1)
+    {
+        n = recv(sockfd, buffer, SIZE, 0);
+        printf("%s\n", buffer);
+        if (n <= 0 || strcmp(buffer, "end") == 0)
+        {
+            break;
+            return 0;
+        }
+        fprintf(fp, "%s", buffer);
+        bzero(buffer, SIZE);
+    }
+    fclose(fp);
+    printf("write file ok\n");
+    build_rankWindow();
+    gtk_widget_show_all(rankWindow);
     return 0;
 }
 
@@ -307,6 +341,11 @@ void on_registerSubmitBtn_clicked()
 
 void on_mainMenuWindow_destroy()
 {
+    if (isEndgame == FALSE)
+        gtk_label_set_text(GTK_LABEL(confirmMessLabel), "You will lose.\nAre you sure to back to menu? ");
+    else
+        gtk_label_set_text(GTK_LABEL(confirmMessLabel), "Are you sure to exit?");
+
     gtk_widget_show_all(confirmDialog);
 }
 
@@ -350,8 +389,7 @@ void on_viewRankBtn_clicked()
     printf("%s\n", buff);
 
     gtk_widget_hide(mainMenuWindow);
-    build_rankWindow();
-    gtk_widget_show_all(rankWindow);
+    g_timeout_add(0, write_file_ranktxt, NULL);
 }
 
 void on_logoutBtn_clicked()
@@ -561,6 +599,11 @@ void drawCardButtonClick(GtkWidget *button)
 
 void on_usernameLabelBtn_clicked()
 {
+    if (isEndgame == FALSE)
+        gtk_label_set_text(GTK_LABEL(confirm2MessLabel), "You will lose.\nAre you sure to back to menu? ");
+    else
+        gtk_label_set_text(GTK_LABEL(confirm2MessLabel), "Are you sure to exit?");
+
     gtk_widget_show_all(confirm2Dialog);
 }
 
@@ -1001,6 +1044,7 @@ int check_player_win()
         //     send_msg_handler();
         // }
         printf("player Win\n");
+        gtk_label_set_text(GTK_LABEL(winMessLabel), "");
         gtk_widget_show(winDialog);
         isEndgame = TRUE;
         gtk_window_set_accept_focus(GTK_WINDOW(boardWindow), FALSE);
@@ -1192,6 +1236,10 @@ int app(int argc, char **argv, int sockfd)
     confirm2Dialog = GTK_WIDGET(gtk_builder_get_object(builder, "confirm2Dialog"));
     playModeDialog = GTK_WIDGET(gtk_builder_get_object(builder, "playModeDialog"));
     waitAnotherPlayerDialog = GTK_WIDGET(gtk_builder_get_object(builder, "waitAnotherPlayerDialog"));
+
+    confirmMessLabel = GTK_WIDGET(gtk_builder_get_object(builder, "confirmMessLabel"));
+    confirm2MessLabel = GTK_WIDGET(gtk_builder_get_object(builder, "confirm2MessLabel"));
+    winMessLabel = GTK_WIDGET(gtk_builder_get_object(builder, "winMessLabel"));
 
     rankWindow = GTK_WIDGET(gtk_builder_get_object(builder, "rankWindow"));
     rankBox = GTK_WIDGET(gtk_builder_get_object(builder, "rankBox"));
@@ -1607,6 +1655,8 @@ void recv_msg_handler()
             //
             idUser = OTHER;
             c->play_with_person.played = -4;
+
+            gtk_label_set_text(GTK_LABEL(winMessLabel), "The opponent has stopped the game\n\t\t\t      you win");
             gtk_widget_show_all(winDialog);
             isEndgame = TRUE;
             gtk_window_set_accept_focus(GTK_WINDOW(boardWindow), FALSE);
@@ -1971,7 +2021,6 @@ void clear_container(GtkWidget *container)
 //***********
 void build_rankWindow()
 {
-
     PangoAttrList *attrlist = pango_attr_list_new();
     PangoFontDescription *font_desc = pango_font_description_new();
     pango_font_description_set_size(font_desc, 14 * PANGO_SCALE);
@@ -1980,7 +2029,11 @@ void build_rankWindow()
     pango_attr_list_insert(attrlist, attr);
 
     FILE *f;
-    f = fopen("rank.txt", "r");
+    if ((f = fopen("rankRecv.txt", "r")) == NULL)
+    {
+        printf("ko the mo file\n");
+        return;
+    }
 
     for (int i = 0; !feof(f); i++)
     {
@@ -2004,6 +2057,14 @@ void build_rankWindow()
         {
             char rankcount[10], name[30], scr[10], number_win[10], number[10];
             fscanf(f, "%s %s %s %s %s\n", rankcount, name, scr, number_win, number);
+
+            if (strlen(number) == 0)
+            {
+                gtk_label_set_text(GTK_LABEL(score), "khong co xep hang!!!");
+                gtk_label_set_attributes(GTK_LABEL(score), attrlist);
+                gtk_grid_attach(GTK_GRID(rankGrid), score, 0, row, 5, 1);
+                return;
+            }
 
             gtk_label_set_text(GTK_LABEL(rank), rankcount);
             gtk_label_set_text(GTK_LABEL(username), name);
