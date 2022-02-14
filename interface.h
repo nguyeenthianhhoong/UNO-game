@@ -16,6 +16,7 @@
 //Check Input
 void trim(char s[]);
 int checkSpace(char s[]);
+int write_file_ranktxt();
 
 int displayDisconnectToServer();
 // void on_closeDisconnectWindow_clicked();

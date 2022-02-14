@@ -17,4 +17,4 @@ structData.o : structData.c
 	${CC} ${CFLAGS} structData.c
 
 clean:
-	rm -rf *.o *.~ tmp.jpg make rank.txt
+	rm -rf *.o *.~ tmp.jpg make rank.txt rankRecv.txt
