@@ -604,7 +604,7 @@ Are you sure to back to menu? </property>
                 <property name="height_request">80</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="pixbuf">images/messages/disconnect.png</property>
+                <property name="pixbuf">../src/images/messages/disconnect.png</property>
                 <property name="icon_size">6</property>
               </object>
               <packing>
@@ -670,28 +670,28 @@ Are you sure to back to menu? </property>
   <object class="GtkImage" id="image10">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="pixbuf">images/color/g.png</property>
+    <property name="pixbuf">../src/images/color/g.png</property>
   </object>
   <object class="GtkImage" id="image11">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="pixbuf">images/color/b.png</property>
+    <property name="pixbuf">../src/images/color/b.png</property>
   </object>
   <object class="GtkImage" id="image12">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="pixbuf">images/color/y.png</property>
+    <property name="pixbuf">../src/images/color/y.png</property>
   </object>
   <object class="GtkImage" id="image5">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="pixbuf">images/button/home.png</property>
+    <property name="pixbuf">../src/images/button/home.png</property>
     <property name="icon_size">6</property>
   </object>
   <object class="GtkImage" id="image6">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="pixbuf">images/button/next-track.png</property>
+    <property name="pixbuf">../src/images/button/next-track.png</property>
   </object>
   <object class="GtkDialog" id="winDialog">
     <property name="can_focus">False</property>
@@ -761,7 +761,7 @@ Are you sure to back to menu? </property>
                 <property name="height_request">80</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="pixbuf">images/messages/win.png</property>
+                <property name="pixbuf">../src/images/messages/win.png</property>
               </object>
               <packing>
                 <property name="x">100</property>
@@ -795,12 +795,12 @@ Are you sure to back to menu? </property>
   <object class="GtkImage" id="image7">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="pixbuf">images/button/home.png</property>
+    <property name="pixbuf">../src/images/button/home.png</property>
   </object>
   <object class="GtkImage" id="image8">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="pixbuf">images/button/next-track.png</property>
+    <property name="pixbuf">../src/images/button/next-track.png</property>
   </object>
   <object class="GtkDialog" id="loserDialog">
     <property name="can_focus">False</property>
@@ -864,7 +864,7 @@ Are you sure to back to menu? </property>
             <property name="can_focus">False</property>
             <property name="margin_top">30</property>
             <property name="margin_bottom">30</property>
-            <property name="pixbuf">images/messages/loser.png</property>
+            <property name="pixbuf">../src/images/messages/loser.png</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -878,7 +878,7 @@ Are you sure to back to menu? </property>
   <object class="GtkImage" id="image9">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="pixbuf">images/color/r.png</property>
+    <property name="pixbuf">../src/images/color/r.png</property>
   </object>
   <object class="GtkDialog" id="chooseColorDialog">
     <property name="can_focus">False</property>
@@ -1360,7 +1360,7 @@ players or bot?</property>
                 <property name="height_request">80</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="pixbuf">images/messages/waiting.png</property>
+                <property name="pixbuf">../src/images/messages/waiting.png</property>
                 <property name="icon_size">6</property>
               </object>
               <packing>

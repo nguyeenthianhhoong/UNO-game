@@ -8,8 +8,8 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 //#include <pthread.h>
-#include "uno.h"
-#include "object.h"
+#include "../unoStruct/uno.h"
+#include "../unoStruct/object.h"
 #define BUFF_SIZE 100
 #define SIZE 1024
 #define BACKLOG 10 //number of pending connections in queue
@@ -109,7 +109,6 @@ void displayRoom()
     node_room *tmp = root_r;
     while (tmp != NULL)
     {
-        printf("Room %d\n", tmp->room.id);
         tmp = tmp->next;
     }
 }
@@ -180,7 +179,7 @@ void writeFile()
 {
     FILE *f;
     node *tmp = root;
-    f = fopen("account.txt", "w");
+    f = fopen("../src/account.txt", "w");
     while (tmp != NULL)
     {
         fprintf(f, "%s %s %d %d %d\n", tmp->acc.username, tmp->acc.password, tmp->acc.number_win, tmp->acc.number, tmp->acc.isLogin);
@@ -192,13 +191,12 @@ void writeFile()
 void writeFileRank()
 {
     FILE *f;
-    f = fopen("rank.txt", "w");
+    f = fopen("../src/rank.txt", "w");
 
     int i = 0;
     int preScore;
     int newUser = 0;
     int rankcount = i + 1;
-    printf("rank\n");
     for (node *pTmp = root; pTmp != NULL; pTmp = pTmp->next, i++)
     {
         int score = pTmp->acc.number_win * 4 - pTmp->acc.number * 1;
@@ -218,7 +216,6 @@ void writeFileRank()
         }
         fprintf(f, "%d %s %d %d %d\n", rankcount, pTmp->acc.username, score, pTmp->acc.number_win, pTmp->acc.number);
     }
-    printf("rank2\n");
     fclose(f);
 }
 
@@ -248,7 +245,6 @@ void send_file_ranktxt(FILE *fp, int sockfd)
 
     while (fgets(data, SIZE, fp) != NULL)
     {
-        printf("%s\n", data);
         if (send(sockfd, data, sizeof(data), 0) == -1)
         {
             perror("[-]Error in sending file.");
@@ -259,7 +255,6 @@ void send_file_ranktxt(FILE *fp, int sockfd)
     memset(data, strlen(data), 0);
     strcpy(data, "end");
     send(sockfd, data, sizeof(data), 0);
-    printf("send file ok\n");
 }
 
 node *checkUsername(char username[])
@@ -283,20 +278,13 @@ int main(int argc, char *argv[])
         return 1;
     }
     FILE *f;
-    f = fopen("account.txt", "r");
+    f = fopen("../src/account.txt", "r");
     if (f == NULL)
     {
         printf("Can't open file account.txt\n");
         return 0;
     }
     readFile(f);
-
-    // LIST l, l1, l2;
-    // STACK s, s1;
-
-    // Init(&l);
-    // printf("hi\n");
-    // loadTuFile(fileIn, &l);
 
     int listen_sock, conn_sock;
     int rcvBytes, sendBytes;
@@ -385,7 +373,7 @@ int main(int argc, char *argv[])
                 perror("\nError: ");
             else
             {
-                printf("You got a connection from %d\n", conn_sock); /* prints client's IP */
+                // printf("You got a connection from %d\n", conn_sock); /* prints client's IP */
                 for (i = 0; i < FD_SETSIZE; i++)
                     if (client[i] < 0)
                     {
@@ -425,21 +413,16 @@ int main(int argc, char *argv[])
                 switch (c->signal)
                 {
                 case LOGIN:
-                    printf("------------LOGIN------------\n");
                     tmp = checkUsername(c->login.username);
                     if (tmp == NULL)
                     {
                         strcpy(buff, "Tài khoản không tồn tại");
-                        printf("%s\n", buff);
                         send(conn_sock, buff, strlen(buff), 0);
-                        //continue;
                     }
                     else if (tmp->acc.isLogin == 1)
                     {
                         strcpy(buff, "Tài khoản đã đăng nhập");
-                        printf("%s\n", buff);
                         send(conn_sock, buff, strlen(buff), 0);
-                        //continue;
                     }
                     else
                     {
@@ -447,18 +430,13 @@ int main(int argc, char *argv[])
                         if (strcmp(tmp->acc.password, c->login.password) == 0)
                         {
                             strcpy(buff, "OK");
-                            printf("%s\n", buff);
                             tmp->acc.isLogin = 1;
                             writeFile();
                             send(conn_sock, buff, strlen(buff), 0);
-                            // strcpy(userSignedIn, username);
-                            // is_login = 1;
-                            //break;
                         }
                         else
                         {
                             strcpy(buff, "Mật khẩu không đúng");
-                            printf("%s\n", buff);
                             send(conn_sock, buff, strlen(buff), 0);
                         }
                     }
@@ -466,20 +444,16 @@ int main(int argc, char *argv[])
 
                 case SIGNUP:
                     printf("------------SIGN UP------------\n");
-                    //tmp = checkUsername(c->signup.username);
                     if (checkUsername(c->signup.username) != NULL)
                     {
                         strcpy(buff, "Tài khoản đã tồn tại");
-                        printf("%s\n", buff);
                         send(conn_sock, buff, strlen(buff), 0);
-                        //continue;
                     }
                     else
                     {
                         if (strcmp(c->signup.password, c->signup.confirm_password) == 0)
                         {
                             strcpy(buff, "OK");
-                            printf("%s\n", buff);
                             account acc;
                             strcpy(acc.username, c->signup.username);
                             strcpy(acc.password, c->signup.password);
@@ -494,15 +468,12 @@ int main(int argc, char *argv[])
                         else
                         {
                             strcpy(buff, "Mật khẩu không đúng");
-                            printf("%s\n", buff);
                             send(conn_sock, buff, strlen(buff), 0);
                         }
                     }
                     break;
 
                 case PLAY_WITH_BOT:
-                    printf("------------PLAY WITH BOT------------\n");
-                    //printf("%s\n", tmp->acc.username);
                     tmp = checkUsername(c->login.username);
                     tmp->acc.number++;
                     if (c->play_with_bot.id_player == 1)
@@ -513,7 +484,7 @@ int main(int argc, char *argv[])
                     break;
 
                 case ADD_ROOM:
-                    printf("------------ADD ROOM------------\n");
+                    printf(" ");
                     send_room *send_r = (send_room *)malloc(sizeof(send_room));
                     tmp1 = check_full_room();
                     if (tmp1 == NULL)
@@ -526,7 +497,6 @@ int main(int argc, char *argv[])
                         strcpy(r.sockfd1.name, c->login.username);
                         addRoom(r);
                         sprintf(send_r->messages, "Room %d. Please wait another person", r.id);
-                        printf("%s\n", send_r->messages);
                         send(conn_sock, send_r, sizeof(send_room), 0);
                     }
                     else
@@ -541,7 +511,6 @@ int main(int argc, char *argv[])
                         inPutL1(&s, &l1);
                         sprintf(send_r->messages, "OK..Room %d. You(%d) will play with %s", tmp1->room.id, tmp1->room.sockfd1.sock, tmp1->room.sockfd2.name);
                         ITOA(l1, send_r->list);
-                        printf("%s\n%s\n", send_r->messages, send_r->list);
                         send(tmp1->room.sockfd1.sock, send_r, sizeof(send_room), 0);
                         c->play_with_person.id_room = tmp1->room.id;
                         c->play_with_person.id_player = 0;
@@ -556,12 +525,10 @@ int main(int argc, char *argv[])
                         inPutL1(&s, &l2);
                         sprintf(send_r->messages, "OK..Room %d. You(%d) will play with %s", tmp1->room.id, tmp1->room.sockfd2.sock, tmp1->room.sockfd1.name);
                         ITOA(l2, send_r->list);
-                        printf("%s\n%s\n", send_r->messages, send_r->list);
                         strcpy(send_r->name, tmp1->room.sockfd1.name);
                         send(tmp1->room.sockfd2.sock, send_r, sizeof(send_room), 0);
                         c->play_with_person.id_player = 1;
                         send(tmp1->room.sockfd2.sock, &c->play_with_person, sizeof(Play_With_Person), 0);
-                        //first_player = tmp1->room.sockfd1;
                         room_id++;
                     }
                     break;
@@ -572,10 +539,7 @@ int main(int argc, char *argv[])
                 //-1 -> thua do thoát | client kia bằng 0 | 0 -> break;
                 //
                 case PLAY_WITH_PERSON:
-                    printf("------------PLAY WITH PERSON------------\n");
                     tmp1 = checkRoomID(c->play_with_person.id_room);
-                    printf("%d %d %d %d\n", conn_sock, tmp1->room.sockfd1.sock, tmp1->room.sockfd2.sock, c->play_with_person.so_luong_bai);
-                    //**
                     if (c->play_with_person.played == -3)
                     {
                         tmp = checkUsername(c->login.username);
@@ -585,16 +549,12 @@ int main(int argc, char *argv[])
                     //**
                     else if (conn_sock == tmp1->room.id_player)
                     {
-                        printf("card_id: %d\n", c->play_with_person.id_bai);
-                        printf("so_luong_bai: %d\n", c->play_with_person.so_luong_bai);
-                        //**
                         if (c->play_with_person.played == -4)
                         {
                             tmp = checkUsername(c->login.username);
                             tmp->acc.number++;
                             tmp->acc.number_win++;
                             writeFile();
-                            //destroy_room(tmp1->room.id);
                             displayRoom();
                             break;
                         }
@@ -627,14 +587,12 @@ int main(int argc, char *argv[])
 
                     break;
                 case VIEW_RANK:
-                    printf("------------VIEW_RANK------------\n");
                     sortRank();
                     sprintf(buff, "OK");
-                    printf("%s\n", buff);
                     send(conn_sock, buff, strlen(buff), 0);
                     sleep(0.01);
                     FILE* fp;
-                    fp = fopen("rank.txt", "r");
+                    fp = fopen("../src/rank.txt", "r");
                     if (fp == NULL)
                     {
                         perror("[-]Error in reading file.");
@@ -645,18 +603,14 @@ int main(int argc, char *argv[])
                     break;
 
                 case LOGOUT:
-                    printf("------------LOGOUT------------\n");
                     tmp = checkUsername(c->login.username);
-                    printf("%s\n", tmp->acc.username);
                     tmp->acc.isLogin = 0;
                     writeFile();
                     sprintf(buff, "bye %s", c->login.username);
-                    printf("%s\n", buff);
                     send(conn_sock, buff, strlen(buff), 0);
                     break;
 
                 case LEAVE_ROOM:
-                    printf("------------LEAVE ROOM------------\n");
                     tmp1 = check_full_room();
                     tmp1->room.sockfd2.sock = 0;
                     break;
@@ -664,13 +618,6 @@ int main(int argc, char *argv[])
                 free_obj(c);
             }
 
-            // len = sizeof(cliaddr);
-            // if ((conn_sock = accept(listen_sock, (struct sockaddr *)&cliaddr, &len)) == -1)
-            // {
-            //     perror("\nError: ");
-            // }
-            // printf("You got a connection from %s\n", inet_ntoa(cliaddr.sin_addr));
-            //pthread_create(&tid, NULL, &client_handler, (void *)&conn_sock);
         }
     }
     close(conn_sock);
