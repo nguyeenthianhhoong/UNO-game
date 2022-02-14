@@ -102,7 +102,6 @@ NODE* find(LIST l, int id) {
 	if (check == 0) {
 		printf("\np null");
 	}
-	printf("find\n");
 	return q;
 }
 

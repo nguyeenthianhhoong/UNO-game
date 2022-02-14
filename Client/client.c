@@ -8,63 +8,8 @@
 #include <unistd.h>
 // #include "uno.h"
 #include "interface.h"
-// #include "structData.h"
 #define BUFF_SIZE 80
 
-
-
-int menu()
-{
-    int choice;
-    do
-    {
-        printf("\n--------------------------\n");
-        printf("1. Đăng nhập\n");
-        printf("2. Đăng ký\n");
-        printf("3. Thoát\n");
-        printf("--------------------------\nYour choice: ");
-        scanf("%d", &choice);
-    } while (choice < 1 && choice > 3);
-    return choice;
-}
-
-int main_menu()
-{
-    int choice;
-    do
-    {
-        printf("1. Chơi\n");
-        printf("2. Xếp hạng\n");
-        printf("3. Đăng xuất\n");
-        printf("--------------------------\nYour choice: ");
-        scanf("%d", &choice);
-    } while (choice < 1 && choice > 3);
-    return choice;
-}
-
-// void trim(char s[])
-// {
-//     int i = strlen(s);
-//     while (s[0] == ' ')
-//     {
-//         for (int j = 0; j < i; j++)
-//             s[j] = s[j + 1];
-//         i--;
-//     }
-//     while (s[i - 1] == ' ' || s[i - 1] == '\n')
-//         i--;
-//     s[i] = '\0';
-// }
-
-// int checkSpace(char s[])
-// {
-//     for (int i = 0; i < strlen(s); i++)
-//     {
-//         if (s[i] == ' ')
-//             return 1;
-//     }
-//     return 0;
-// }
 
 int main(int argc, char *argv[])
 {
@@ -80,15 +25,7 @@ int main(int argc, char *argv[])
     char buff[BUFF_SIZE + 1];
     char buff2[BUFF_SIZE + 1];
     char buff3[BUFF_SIZE + 1];
-    // LIST l, l1, l2;
-    // STACK s, s1;
-    // Init(&l);
-    // loadTuFile(fileIn, &l);
-    // inPutStack(&s, l);
-    // user *username = (user *)malloc(sizeof(user));
-    // Init(&username->l);
 
-    //char SERV_ADDR[50];
     struct sockaddr_in servaddr;
     if (inet_pton(AF_INET, argv[1], &servaddr.sin_addr) <= 0)
     {
@@ -101,7 +38,6 @@ int main(int argc, char *argv[])
         exit(1);
     }
     
-    // may(&s, &s1, &l1, &l2);
     //Step 1: Construct socket
     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
@@ -117,9 +53,7 @@ int main(int argc, char *argv[])
     // Step3: Request to connect server
     if (connect(sockfd, (struct sockaddr *)&servaddr, sizeof(struct sockaddr)) < 0)
     {
-        printf("\nError! Can not connect to sever! ");
         displayDisconnectToServer(argc,argv);
-        // return 0;
     }else{
          // GTK
         app(argc,argv,sockfd);
