@@ -271,12 +271,12 @@ node *checkUsername(char username[])
 
 int main(int argc, char *argv[])
 {
-    if (argc != 2)
-    {
-        printf("Wrong num of arguments!\n");
-        printf("correct syntax: \"server <Port number> \"\n");
-        return 1;
-    }
+    // if (argc != 2)
+    // {
+    //     printf("Wrong num of arguments!\n");
+    //     printf("correct syntax: \"server <Port number> \"\n");
+    //     return 1;
+    // }
     FILE *f;
     f = fopen("../src/account.txt", "r");
     if (f == NULL)
@@ -307,11 +307,11 @@ int main(int argc, char *argv[])
     Init(&l);
     loadTuFile(fileIn, &l); // do bai tu file vao dslk
 
-    if (atoi(argv[1]) < 0 && atoi(argv[1]) > 65535)
-    {
-        printf("[%s] is a invalid Port number\n", argv[1]);
-        exit(1);
-    }
+    // if (atoi(argv[1]) < 0 && atoi(argv[1]) > 65535)
+    // {
+    //     printf("[%s] is a invalid Port number\n", argv[1]);
+    //     exit(1);
+    // }
 
     //Step 1: Construct socket
     if ((listen_sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
@@ -325,10 +325,10 @@ int main(int argc, char *argv[])
     bzero(&servaddr, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
     servaddr.sin_addr.s_addr = inet_addr(hostname);
-    // servaddr.sin_port = htons(8000);
+    servaddr.sin_port = htons(8080);
 
     // servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    servaddr.sin_port = htons(atoi(argv[1]));
+    // servaddr.sin_port = htons(atoi(argv[1]));
 
     if (bind(listen_sock, (struct sockaddr *)&servaddr, sizeof(servaddr)) == -1)
     {
@@ -443,7 +443,6 @@ int main(int argc, char *argv[])
                     break;
 
                 case SIGNUP:
-                    printf("------------SIGN UP------------\n");
                     if (checkUsername(c->signup.username) != NULL)
                     {
                         strcpy(buff, "Tài khoản đã tồn tại");
