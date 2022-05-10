@@ -11,6 +11,6 @@
   + Play game!!!
 - You can read more in the file UNO_game_report.pdf
 # Link demo:
-- play_with_another_bot: https://youtu.be/w7La5GOkg48
+- play_with_bot: https://youtu.be/w7La5GOkg48
   
  - play_with_another_player: https://www.youtube.com/watch?v=PklIqfviPYE
